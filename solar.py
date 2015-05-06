@@ -24,13 +24,13 @@ class Solar:
         return self.planet.S/(r*r)
     
     def surface_irradience(self,areocentric_longitude,latitude,T):
-        cos_zenith_angle = planet.cos_zenith_angle(areocentric_longitude,latitude,T)
-        beam_irradience = self.beam_irradience(planet.instantaneous_distance(areocentric_longitude))
+        cos_zenith_angle = self.planet.cos_zenith_angle(areocentric_longitude,latitude,T)
+        beam_irradience = self.beam_irradience(self.planet.instantaneous_distance(areocentric_longitude))
         return cos_zenith_angle*beam_irradience
     
 if __name__=="__main__":
     import matplotlib.pyplot as plt
-    def generate_points(planet,areocentric_longitude,latitude):
+    def generate_irradiance(planet,areocentric_longitude,latitude):
         x=[]
         y=[]
         for T in range(12,22):
@@ -72,12 +72,12 @@ if __name__=="__main__":
     plt.title("Diurnal Variation of Beam Irradience on a horizontal surface")
     plt.xlabel("Solar Time")
     plt.ylabel("Beam Irradiance")
-    (x1,y1)=generate_points(mars,69,22.3)
-    (x2,y2)=generate_points(mars,120,22.3)
-    (x2,y2)=generate_points(mars,120,22.3)
-    (x3,y3)=generate_points(mars,153,22.3)
-    (x4,y4)=generate_points(mars,249,22.3)
-    (x5,y5)=generate_points(mars,299,22.3)
+    (x1,y1)=generate_irradiance(mars,69,22.3)
+    (x2,y2)=generate_irradiance(mars,120,22.3)
+    (x2,y2)=generate_irradiance(mars,120,22.3)
+    (x3,y3)=generate_irradiance(mars,153,22.3)
+    (x4,y4)=generate_irradiance(mars,249,22.3)
+    (x5,y5)=generate_irradiance(mars,299,22.3)
     plt.plot(x1,y1,"r",x2,y2,"g",x3,y3,"b",x4,y4,"c",x5,y5,"m")
     plt.axis([12, 20, 0, 600])
     plt.grid(True)    
