@@ -79,11 +79,13 @@ if __name__=="__main__":
     def generate_points(areocentric_longitude,latitude):
         x=[]
         y=[]
-        for T in range(12,21):
-            x.append(T)
+        for T in range(12,22):
             cos_zenith_angle = planet.cos_zenith_angle(areocentric_longitude,latitude,T)
             beam_irradience = planet.beam_irradience(planet.instantaneous_distance(areocentric_longitude))
-            y.append(cos_zenith_angle*beam_irradience)
+            irradiance = cos_zenith_angle*beam_irradience
+            x.append(T)
+            y.append(irradiance)
+            if irradiance<0: break
         return (x,y)
      
     planet = Mars()
@@ -112,25 +114,16 @@ if __name__=="__main__":
         y.append(math.degrees(math.asin(planet.sin_declination(i))))
     plt.plot(x,y)
 
-    plt.figure(5)
+    plt.figure(6)
     plt.title("Diurnal Variation of Beam Irradience on a horizontal surface")
     plt.xlabel("Solar Time")
     plt.ylabel("Beam Irradiance")
-    (x1,y1)=generate_points(69,0)
-    (x2,y2)=generate_points(120,0)
-    (x3,y3)=generate_points(153,0)
-    (x4,y4)=generate_points(249,0)
-    (x5,y5)=generate_points(299,0)
+    (x1,y1)=generate_points(69,22.3)
+    (x2,y2)=generate_points(120,22.3)
+    (x3,y3)=generate_points(153,22.3)
+    (x4,y4)=generate_points(249,22.3)
+    (x5,y5)=generate_points(299,22.3)
     plt.plot(x1,y1,"r",x2,y2,"g",x3,y3,"b",x4,y4,"c",x5,y5,"m")
-    #areocentric_longitude=153
-    #latitude=0
-    #x=[]
-    #y=[]
-    #for T in range(12,21):
-        #x.append(T)
-        #cos_zenith_angle = planet.cos_zenith_angle(areocentric_longitude,latitude,T)
-        #beam_irradience = planet.beam_irradience(planet.instantaneous_distance(areocentric_longitude))
-        #y.append(cos_zenith_angle*beam_irradience)
-    #plt.plot(x,y)
-    
+    plt.axis([12, 20, 0, 600])
+    plt.grid(True)    
     plt.show()
