@@ -21,33 +21,116 @@
 
 #The effect of condensation and evaporation on the energy balance
 
+##################################################################
+#The daily and yearly position of the sun
+
 #The total amount of volatile at the surface at each point in time
 
-# see http://ccar.colorado.edu/asen5050/projects/projects_2001/benoit/solar_irradiance_on_mars.htm
-
-# DF]Solar Radiation on Mars - NASA Technical Reports Server ...
-#ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19890018252.pdf
-
-
-import math
-
-S = 1371 # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
-a = 1.5236915 # the Mars semimajor axis in AU,
-e = 0.093377 # Mars eccentricity
-
-def beam_irradience(r):
-    return S/(r*r)
-
-def instantanaeous_distance(longitude):
-    theta = math.radians(longitude - 248)
-    return a*(1-e*e)/(1 + e *math.cos(theta))
-
-def beam_irradience_horizontal(G):
-    coz_z=math.sin(latitude)*math.sin(declination) +                  \
-        math.cos(latitude)*math.cos(declination)*math.cos(hour_angle)
-    return G*cos_z
+# The Solar model is based on NASA Technical Memorandum 102299
+# Solar Radiation on Mars
+# Joseph Appelbaum & Dennis J Flood
 
 
-if __name__=="__main__":
-    print "Mean beam irradience at top of atmosphere={0:6.2f}".format(beam_irradience(a))
+import math, matplotlib.pyplot as plt
+
+
+
+class Planet:
+    def __init__(self):
+        self.S = 1371 # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
+        self.a = 1.0 # the  semimajor axis in AU,
+        self.e = 0.017 #  eccentricity
+        self.obliquity = 23.4
+        self.hours_in_day = 24
+
+#   Beam Irradience in W/m2          (1)
+
+    def beam_irradience(self,r):
+        return self.S/(r*r)
     
+#   Instantaneaous Distance from Sun in AU
+
+    def instantaneous_distance(self,areocentric_longitude):
+        theta = math.radians(areocentric_longitude - 248)
+        return self.a*(1-self.e*self.e)/(1 + self.e * math.cos(theta))
+    
+    def sin_declination(self,areocentric_longitude):
+        return math.sin(math.radians(self.obliquity)) * \
+               math.sin(math.radians(areocentric_longitude))
+        
+    def cos_zenith_angle(self,areocentric_longitude,latitude,T):
+        sin_declination=self.sin_declination(areocentric_longitude)
+        cos_declination=math.sqrt(1-sin_declination*sin_declination)
+        return math.sin(math.radians(latitude))*sin_declination +            \
+            math.cos(math.radians(latitude))*cos_declination*math.cos(math.radians(self.hour_angle(T)))
+
+    def hour_angle(self,T):
+        return 360*T/self.hours_in_day-180
+    
+class Mars(Planet):
+    def __init__(self):
+        Planet.__init__(self)
+        self.a = 1.5236915
+        self.e = 0.093377
+        self.obliquity = 24.936
+        self.hours_in_day = 24 # should be 24.65
+        
+if __name__=="__main__":
+    def generate_points(areocentric_longitude,latitude):
+        x=[]
+        y=[]
+        for T in range(12,21):
+            x.append(T)
+            cos_zenith_angle = planet.cos_zenith_angle(areocentric_longitude,latitude,T)
+            beam_irradience = planet.beam_irradience(planet.instantaneous_distance(areocentric_longitude))
+            y.append(cos_zenith_angle*beam_irradience)
+        return (x,y)
+     
+    planet = Mars()
+    beam_irradience_top=planet.beam_irradience(planet.a)
+    print "Mean beam irradience at top of atmosphere = {0:6.2f}".format(beam_irradience_top)
+    
+    plt.figure(3)
+    plt.title("Mean beam irradience at top of Mars atmosphere")
+    plt.xlabel("Areocentric longitude")
+    plt.ylabel("Beam irradience")
+    x=[]
+    y=[]
+    for i in range(360):
+        x.append(i)
+        y.append(planet.beam_irradience(planet.instantaneous_distance(i)))
+    plt.plot(x,y)
+    
+    plt.figure(4)
+    plt.title("Variation of solar declination angle")
+    plt.xlabel("Areocentric longitude")
+    plt.ylabel("Solar Declination Angle")
+    x=[]
+    y=[]
+    for i in range(360):
+        x.append(i)
+        y.append(math.degrees(math.asin(planet.sin_declination(i))))
+    plt.plot(x,y)
+
+    plt.figure(5)
+    plt.title("Diurnal Variation of Beam Irradience on a horizontal surface")
+    plt.xlabel("Solar Time")
+    plt.ylabel("Beam Irradiance")
+    (x1,y1)=generate_points(69,0)
+    (x2,y2)=generate_points(120,0)
+    (x3,y3)=generate_points(153,0)
+    (x4,y4)=generate_points(249,0)
+    (x5,y5)=generate_points(299,0)
+    plt.plot(x1,y1,"r",x2,y2,"g",x3,y3,"b",x4,y4,"c",x5,y5,"m")
+    #areocentric_longitude=153
+    #latitude=0
+    #x=[]
+    #y=[]
+    #for T in range(12,21):
+        #x.append(T)
+        #cos_zenith_angle = planet.cos_zenith_angle(areocentric_longitude,latitude,T)
+        #beam_irradience = planet.beam_irradience(planet.instantaneous_distance(areocentric_longitude))
+        #y.append(cos_zenith_angle*beam_irradience)
+    #plt.plot(x,y)
+    
+    plt.show()
