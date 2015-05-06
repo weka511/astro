@@ -15,37 +15,46 @@
 
 import math, planet, solar
 
-class Slice:
+class Layer:
     def __init__(self,name,latitude,longitude,thickness,depth):
         self.name=name
         self.latitude = latitude
         self.longitude = longitude
         self.depth = depth
         self.thickness = thickness
+        self.top_temperature =0
+        self.bottom_temperature=0
     def __str__(self):
-        return "{0}: Latitude={1:6.1f},Longitude={2:6.1f}, Depth={3:6.3f}, Thickness={4:6.3f}".format(self.name,self.latitude,self.longitude,self.depth,self.thickness)
-    
-class Surface(Slice):
+        return "{0}: Latitude={1:6.1f},"            +\
+               "Longitude={2:6.1f}, "               +\
+               "Depth={3:6.3f}, "                   +\
+               "Thickness={4:6.3f}, "               +\
+               "Temperatures = ({5:6.3f},{6:6.3f})". \
+               format(self.name,self.latitude,self.longitude,self.depth,self.thickness,self.top_temperature,self.bottom_temperature)
+
+class MedialLayer(Layer):
+    def __init__(self,latitude,longitude,thickness,depth):
+        Layer.__init__(self,"Medial",latitude,longitude,thickness,depth)
+        
+class Surface(Layer):
     def __init__(self,latitude,longitude):
-        Slice.__init__(self,"Surface",latitude,longitude,0,0)
+        Layer.__init__(self,"Surface",latitude,longitude,0,0)
         
-class Bottom(Slice):
-    def __init__(self,aSlice):
-        Slice.__init__(self,"Bottom",aSlice.latitude,aSlice.longitude,aSlice.thickness,aSlice.depth)
+class Bottom(Layer):
+    def __init__(self,layer):
+        Layer.__init__(self,"Bottom",layer.latitude,layer.longitude,layer.thickness,layer.depth)
         
-class ThermalSlice:
+class ThermalModel:
     def __init__(self,latitude,longitude,spec):
         self.layers=[]
         z=0
         self.layers.append(Surface(latitude,longitude))
         for (n,dz)in spec:
             for i in range(n):
-                self.layers.append(Slice("Slice",latitude,longitude,dz,z))
+                self.layers.append(MedialLayer(latitude,longitude,dz,z))
                 z+=dz
         bottom=self.layers.pop()
         self.layers.append(Bottom(bottom))
-        for layer in self.layers:
-            print layer
             
 if __name__=="__main__":
     import matplotlib.pyplot as plt
@@ -53,4 +62,6 @@ if __name__=="__main__":
     mars = planet.Mars()
     solar = solar.Solar(mars)
         
-    thermal=ThermalSlice(45,0,[(9,0.015),(10,0.3)])   
+    thermal=ThermalModel(45,0,[(9,0.015),(10,0.3)])
+    for layer in thermal.layers:
+        print layer
