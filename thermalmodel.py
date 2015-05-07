@@ -92,6 +92,7 @@ class Bottom(Layer):
 class ThermalModel:
     def __init__(self,latitude,longitude,spec,solar,planet):
         self.layers=[]
+        self.planet=planet
         (n,dz)=spec[0]
         z=dz
         self.layers.append(Surface(latitude,longitude,dz,solar,planet))
@@ -108,7 +109,14 @@ class ThermalModel:
             above=layer.propagate_temperature(above,areocentric_longitude,T,dT)
 
 
-             
+    def runModel(self,start_day,number_of_days,number_of_steps_in_hour):
+        step_size=1/float(number_of_steps_in_hour)
+        for day in range(start_day,start_day+number_of_days):
+            for hour in range(self.planet.hours_in_day):
+                for step in range(number_of_steps_in_hour):
+                    self.propagate_temperature(153,hour,step_size)
+
+     
 if __name__=="__main__":
     import matplotlib.pyplot as plt
     
@@ -117,18 +125,4 @@ if __name__=="__main__":
         
     thermal=ThermalModel(22.3,0,[(9,0.015),(10,0.3)],solar,mars)
     
-    #for layer in thermal.layers:
-        #print layer
-     
-    n=10
-    for day in range(720):
-        for hour in range(24):
-            for i in range(n):
-                thermal.propagate_temperature(153,hour,1.0/n)
-    
-#    thermal.propagate_temperature(153,18, 0.1)
-    
-#    thermal.propagate_temperature(153,20, 0.1)
-    
-    #for layer in thermal.layers:
-        #print layer    
+    thermal.runModel(0,720,10)
