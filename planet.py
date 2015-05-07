@@ -16,13 +16,38 @@
 import math
 
 class Planet:
-    def __init__(self):
+    def __init__(self,name):
+        self.name = name
         self.S = 1371 # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
         self.a = 1.0 # the  semimajor axis in AU,
         self.e = 0.017 #  eccentricity
         self.obliquity = 23.4
         self.hours_in_day = 24
         
+    def __str__(self):
+        return ("{0}\nSemimajor axis = {1:9.7f} AU\n" +\
+               "eccentricity = {2:8.6f}\n" + \
+               "obliquity = {3:6.3f}\n" + \
+               "hours in day = {4:6.4f}\n" + \
+               "absorption = {5:4.2f}\n"+ \
+               "emissivity={6:4.2f}\n" + \
+               "conductivity={7:5.1f}\n" + \
+               "specific heat={8:6.1f}\n" + \
+               "rho={9:6.1f}" \
+               ).format(\
+            self.name,   \
+            self.a, \
+            self.e, \
+            self.obliquity, \
+            self.hours_in_day, \
+            self.F , \
+            self.E,  \
+            self.K, \
+            self.C, \
+            self.rho \
+        )
+  
+      
 #   Instantaneaous Distance from Sun in AU
 
     def instantaneous_distance(self,areocentric_longitude):
@@ -44,8 +69,17 @@ class Planet:
 
 class Mars(Planet):
     def __init__(self):
-        Planet.__init__(self)
+        Planet.__init__(self,"Mars")
         self.a = 1.5236915
         self.e = 0.093377
         self.obliquity = 24.936
         self.hours_in_day = 24 # should be 24.65
+        self.F = 0.85 # absorption fraction
+        self.E = 0.85 # Emissivity
+        self.K = 250 # soil conductivity
+        self.C = 3300 # specific heat
+        self.rho = 1600 # density
+
+if __name__=="__main__":
+    mars = Mars()
+    print mars

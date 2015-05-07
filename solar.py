@@ -26,7 +26,7 @@ class Solar:
     def surface_irradience(self,areocentric_longitude,latitude,T):
         cos_zenith_angle = self.planet.cos_zenith_angle(areocentric_longitude,latitude,T)
         beam_irradience = self.beam_irradience(self.planet.instantaneous_distance(areocentric_longitude))
-        return cos_zenith_angle*beam_irradience
+        return max(0,cos_zenith_angle*beam_irradience)
     
 if __name__=="__main__":
     import matplotlib.pyplot as plt
@@ -37,7 +37,6 @@ if __name__=="__main__":
             irradiance=solar.surface_irradience(areocentric_longitude,latitude,T)
             x.append(T)
             y.append(irradiance)
-            if irradiance<0: break
         return (x,y)
      
     mars = planet.Mars()
