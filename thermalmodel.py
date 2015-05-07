@@ -25,12 +25,11 @@ class Layer:
         self.longitude = longitude
         self.depth = depth
         self.thickness = thickness
-        self.top_temperature = float('NaN')
-        self.bottom_temperature = float('NaN')
+        self.temperature = planet.average_temperature
         self.planet = planet
         
     def inititialize_temperatures(self,t0):
-        self.top_temperature = t0
+        self.temperature = t0
         self.bottom_temperature = t0    
     
     def propagate_temperature(self,above,areocentric_longitude,T,dT):
@@ -42,7 +41,7 @@ class Layer:
             "Longitude={2:6.1f}, "               +\
             "Depth={3:6.3f}, "                   +\
             "Thickness={4:6.3f}, "               +\
-            "Temperatures = ({5:6.1f},{6:6.1f})"  \
+            "Temperature = {5:6.1f}"  \
             ).format(self.name,
                      self.latitude,
                      self.longitude,
@@ -66,14 +65,13 @@ class Surface(Layer):
     def propagate_temperature(self,above,areocentric_longitude,T,dT):
         previous= Layer.propagate_temperature(self,above,areocentric_longitude,T,dT)
         irradiance=self.planet.F*solar.surface_irradience(areocentric_longitude,self.latitude,T)
-        t2=self.top_temperature*self.top_temperature
+        t2=self.temperature*self.temperature
         outflow=self.planet.e*Surface.stefan_bolzmann*t2*t2
         nett_gain = irradiance - outflow
         print "Irradiance ={0:6.1f}, outflow={1:6.1f}, nett_gain={2:6.1f}".format(irradiance,outflow,nett_gain)
         heat = nett_gain*dT
         delta_temperature= heat / (self.planet.C * self.planet.rho * self.thickness)
-        self.top_temperature += delta_temperature
-        self.bottom_temperature += delta_temperature
+        self.temperature += delta_temperature
         print ( \
             "dT={0:4.2f}, "+\
             "heat={1:6.4f}, "+\
@@ -83,7 +81,7 @@ class Surface(Layer):
                   dT, \
                   heat, \
                   delta_temperature, \
-                  0.5*(self.top_temperature+self.bottom_temperature) \
+                  self.temperature \
             )
         return previous
     
@@ -103,11 +101,7 @@ class ThermalModel:
                 z+=dz
         bottom=self.layers.pop()
         self.layers.append(Bottom(bottom))
-        
-    def inititialize_temperatures(self,t0):
-        for layer in self.layers:
-            layer.inititialize_temperatures(t0)
-            
+                  
     def propagate_temperature(self,areocentric_longitude,T,dT):
         above=None
         for layer in self.layers:
@@ -122,7 +116,6 @@ if __name__=="__main__":
     solar = solar.Solar(mars)
         
     thermal=ThermalModel(22.3,0,[(9,0.015),(10,0.3)],solar,mars)
-    thermal.inititialize_temperatures(150)
     
     #for layer in thermal.layers:
         #print layer

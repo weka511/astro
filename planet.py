@@ -23,6 +23,7 @@ class Planet:
         self.e = 0.017 #  eccentricity
         self.obliquity = 23.4
         self.hours_in_day = 24
+        self.average_temperature = 300
         
     def __str__(self):
         return ("{0}\nSemimajor axis = {1:9.7f} AU\n" +\
@@ -33,7 +34,8 @@ class Planet:
                "emissivity={6:4.2f}\n" + \
                "conductivity={7:5.1f}\n" + \
                "specific heat={8:6.1f}\n" + \
-               "rho={9:6.1f}" \
+               "rho={9:6.1f}\n" \
+               "average temperature={10:5.1f}" \
                ).format(\
             self.name,   \
             self.a, \
@@ -44,7 +46,8 @@ class Planet:
             self.E,  \
             self.K, \
             self.C, \
-            self.rho \
+            self.rho, \
+            self.average_temperature \
         )
   
       
@@ -79,7 +82,8 @@ class Mars(Planet):
         self.K = 250 # soil conductivity
         self.C = 3300 # specific heat
         self.rho = 1600 # density
-
+        self.average_temperature = 150
+        
 if __name__=="__main__":
     mars = Mars()
     print mars
