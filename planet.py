@@ -79,7 +79,7 @@ class Mars(Planet):
         self.hours_in_day = 24 # should be 24.65
         self.F = 0.85 # absorption fraction
         self.E = 0.85 # Emissivity
-        self.K = 250 # soil conductivity
+        self.K = 2.50e-2 # soil conductivity
         self.C = 3300 # specific heat
         self.rho = 1600 # density
         self.average_temperature = 150
