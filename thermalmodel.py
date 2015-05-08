@@ -78,12 +78,15 @@ class Surface(Layer):
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         irradiance=self.planet.F*solar.surface_irradience(areocentric_longitude,self.latitude,T)
-        t2=self.temperature*self.temperature
-        outflow=self.planet.e*Surface.stefan_bolzmann*t2*t2
+        outflow=self.bolzmann(self.temperature)
         nett_gain = irradiance - outflow + self.heat_flow(below)
         self.update_temperature(nett_gain,dT,planet)
         record.add(self.temperature)
     
+    def bolzmann(self,t):
+        t2=t*t
+        return self.planet.E*Surface.stefan_bolzmann*t2*t2
+        
 class Bottom(Layer):
     def __init__(self,layer):
         Layer.__init__(self,"Bottom",layer.latitude,layer.longitude,layer.thickness,layer.depth,layer.planet)
