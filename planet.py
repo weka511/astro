@@ -70,6 +70,9 @@ class Planet:
     def hour_angle(self,T):
         return 360*T/self.hours_in_day-180
 
+    def get_areocentric_longitude(self,day,hour):
+        return day/2
+    
 class Mars(Planet):
     def __init__(self):
         Planet.__init__(self,"Mars")
@@ -82,7 +85,7 @@ class Mars(Planet):
         self.K = 2.50e-2 # soil conductivity
         self.C = 3300 # specific heat
         self.rho = 1600 # density
-        self.average_temperature = 150
+        self.average_temperature = 218
         
 if __name__=="__main__":
     mars = Mars()

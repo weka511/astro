@@ -36,18 +36,12 @@ class Layer:
         temperature_gradient =                          \
             (self.temperature-neighbour.temperature) /  \
             (0.5*(self.thickness + neighbour.thickness))
-        flow= - self.planet.K * temperature_gradient
-        #print \
-              #"Temp={0},neighbour={1},diff={2},dist={3}, grad={4}, flow={5}".format(
-                  #self.temperature, neighbour.temperature, self.temperature-neighbour.temperature, self.thickness + neighbour.thickness, temperature_gradient,flow)
-        return flow
+        return - (self.planet.K * temperature_gradient)
             
     def update_temperature(self,nett_gain,dT,planet):    
-        
         heat = nett_gain*dT*3600
         delta_temperature= heat / (self.planet.C * self.planet.rho * self.thickness)
         self.temperature += delta_temperature
-        #print "nett gain", nett_gain, "heat", heat, "delta_temperature", delta_temperature, "temperature", self.temperature
 
     
     def __str__(self):
@@ -129,7 +123,6 @@ class ThermalModel:
 
     
     def propagate_temperature(self,areocentric_longitude,T,dT):
-#        print "propagating..."
         for above,layer,below in self.zipper_layers:
             layer.propagate_temperature(above,below,areocentric_longitude,T,dT,self.record)
             
@@ -138,17 +131,16 @@ class ThermalModel:
         for day in range(start_day,start_day+number_of_days):
             if day%100==0: print "Day {0}".format(day)
             for hour in range(self.planet.hours_in_day):
+                areocentric_longitude=self.planet.get_areocentric_longitude(day,hour)
                 for step in range(number_of_steps_in_hour):
                     self.record = TemperatureRecord(day,hour,self.planet.hours_in_day)
-                    self.propagate_temperature(153,hour,step_size)
-                self.history.append(self.record)
+                    self.propagate_temperature(areocentric_longitude,hour,step_size)
+            self.history.append(self.record)
 
-    def extract(self,layer_number):
+    def extract(self,layer_number,skip=1):
         days=[]
         result=[]
-#        print len(self.history)
         for record in self.history:
-#            print record.day, record.temperatures[layer_number]
             days.append(record.day)
             result.append(record.temperatures[layer_number])
         return (days,result)
@@ -161,12 +153,14 @@ if __name__=="__main__":
         
     thermal=ThermalModel(22.3,0,[(9,0.015),(10,0.3)],solar,mars)
     
-    thermal.runModel(0,72,10)
+    thermal.runModel(0,7200,10)
     (days,surface_temp) = thermal.extract(0)
-    (_,t1) = thermal.extract(4)
-    (_,t2) = thermal.extract(8)
-    (_,t3) = thermal.extract(12)
-    (_,t4) = thermal.extract(16)
-#    (_,t5) = thermal.extract(19)
-    plt.plot(days,surface_temp,days,t1,days,t2,days,t3,days,t4)
+    (_,t1) = thermal.extract(1)
+    (_,t2) = thermal.extract(2)
+    (_,t3) = thermal.extract(3)
+    (_,t4) = thermal.extract(4)
+    (_,t5) = thermal.extract(5)
+    (_,t6) = thermal.extract(10)
+    (_,t7) = thermal.extract(19)
+    plt.plot(days,surface_temp,days,t1,days,t2,days,t3,days,t4,days,t5,days,t6,days,t7)
     plt.show()
