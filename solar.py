@@ -13,13 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+# Model for solar irradiation, based on Solar Radiation on Mars, 
+# Joseph Appelbaum & Dennis Flood, Lewis Research Center, NASA 
+
 import math, planet
 
 class Solar:
     def __init__(self,planet):
         self.planet=planet
-#   Beam Irradience in W/m2          (1)
-
+        
+#   Beam Irradience in W/m2
+#   Appelbaum & Flood equation (1)
     def beam_irradience(self,r):
         return self.planet.S/(r*r)
     
@@ -43,12 +47,14 @@ if __name__=="__main__":
     solar = Solar(mars)
     
     beam_irradience_top=solar.beam_irradience(mars.a)
-    print "Mean beam irradience at top of atmosphere = {0:6.2f}".format(beam_irradience_top)
+    print "Mean beam irradience at top of atmosphere = {0:6.2f} W/m2".\
+          format(beam_irradience_top)
     
     plt.figure(3)
-    plt.title("Mean beam irradience at top of Mars atmosphere")
-    plt.xlabel("Areocentric longitude")
-    plt.ylabel("Beam irradience")
+    plt.title("Beam irradience at top of Mars atmosphere")
+    plt.xlabel("Areocentric longitude - degrees")
+    plt.ylabel("eam irradience at top of Mars atmosphere - W/m2")
+    plt.grid(True) 
     x=[]
     y=[]
     for i in range(360):
@@ -58,8 +64,10 @@ if __name__=="__main__":
     
     plt.figure(4)
     plt.title("Variation of solar declination angle")
-    plt.xlabel("Areocentric longitude")
-    plt.ylabel("Solar Declination Angle")
+    plt.axis([0, 360, -25, 25])
+    plt.xlabel("Areocentric longitude - degrees")
+    plt.ylabel("Solar Declination Angle - degrees")
+    plt.grid(True) 
     x=[]
     y=[]
     for i in range(360):
@@ -69,8 +77,8 @@ if __name__=="__main__":
 
     plt.figure(6)
     plt.title("Diurnal Variation of Beam Irradience on a horizontal surface")
-    plt.xlabel("Solar Time")
-    plt.ylabel("Beam Irradiance")
+    plt.xlabel("Solar Time - Hours")
+    plt.ylabel("Beam Irradiance - W/m2")
     (x1,y1)=generate_irradiance(mars,69,22.3)
     (x2,y2)=generate_irradiance(mars,120,22.3)
     (x2,y2)=generate_irradiance(mars,120,22.3)

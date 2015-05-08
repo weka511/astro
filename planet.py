@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+# Repository for basic data about planets
+
 import math
 
 # Used to convert between CGS and SI
@@ -24,7 +26,8 @@ class Conversion:
 class Planet:     
     def __init__(self,name):
         self.name = name
-        self.S = 1371 # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
+        self.S = 1371   # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
+                        # Appelbaum & Flood
         self.a = 1.0 # the  semimajor axis in AU,
         self.e = 0.017 #  eccentricity
         self.obliquity = 23.4
@@ -58,33 +61,39 @@ class Planet:
   
       
 #   Instantaneaous Distance from Sun in AU
-
+#   Appelbaum & Flood equations (2) & (3)
     def instantaneous_distance(self,areocentric_longitude):
         theta = math.radians(areocentric_longitude - 248)
         return self.a*(1-self.e*self.e)/(1 + self.e * math.cos(theta))
-    
+
+    #   Sine of declination
+    #   Appelbaum & Flood equation (7)
     def sin_declination(self,areocentric_longitude):
         return math.sin(math.radians(self.obliquity)) * \
                math.sin(math.radians(areocentric_longitude))
-        
+     
+    #   Cosine of zenith angle
+    #   Appelbaum & Flood equation (6)        
     def cos_zenith_angle(self,areocentric_longitude,latitude,T):
         sin_declination=self.sin_declination(areocentric_longitude)
         cos_declination=math.sqrt(1-sin_declination*sin_declination)
         return math.sin(math.radians(latitude))*sin_declination +            \
             math.cos(math.radians(latitude))*cos_declination*math.cos(math.radians(self.hour_angle(T)))
 
+    #   Hour angle
+    #   Appelbaum & Flood equation (8) 
     def hour_angle(self,T):
         return 360*T/self.hours_in_day-180
 
     def get_areocentric_longitude(self,day,hour):    # FIXME
-        return day/2
+        return float(day)/2
     
 class Mars(Planet):
     def __init__(self):
         Planet.__init__(self,"Mars")
-        self.a = 1.524  #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
-        self.e = 0.0935  #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
-        self.obliquity = 25.19 #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
+        self.a = 1.5236915  # Appelbaum & Flood
+        self.e = 0.0933377  # Appelbaum & Flood
+        self.obliquity = 24.936 # Appelbaum & Flood
         self.hours_in_day = 24 # should be 24.6597 http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
         self.F = 0.85 # absorption fraction - Leighton & Murray
         self.E = 0.85 # Emissivity - Leighton & Murray
