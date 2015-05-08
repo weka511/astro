@@ -15,7 +15,13 @@
 
 import math
 
-class Planet:
+# Used to convert between CGS and SI
+class Conversion:
+    cm_per_metre = 100
+    gm_per_Kg = 1000
+    cm3_per_meter3 = cm_per_metre*cm_per_metre*cm_per_metre
+    
+class Planet:     
     def __init__(self,name):
         self.name = name
         self.S = 1371 # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
@@ -32,7 +38,7 @@ class Planet:
                "hours in day = {4:6.4f}\n" + \
                "absorption = {5:4.2f}\n"+ \
                "emissivity={6:4.2f}\n" + \
-               "conductivity={7:5.1f}\n" + \
+               "conductivity={7:6.2g}\n" + \
                "specific heat={8:6.1f}\n" + \
                "rho={9:6.1f}\n" \
                "average temperature={10:5.1f}" \
@@ -70,22 +76,22 @@ class Planet:
     def hour_angle(self,T):
         return 360*T/self.hours_in_day-180
 
-    def get_areocentric_longitude(self,day,hour):
+    def get_areocentric_longitude(self,day,hour):    # FIXME
         return day/2
     
 class Mars(Planet):
     def __init__(self):
         Planet.__init__(self,"Mars")
-        self.a = 1.5236915
-        self.e = 0.093377
-        self.obliquity = 24.936
-        self.hours_in_day = 24 # should be 24.65
-        self.F = 0.85 # absorption fraction
-        self.E = 0.85 # Emissivity
-        self.K = 2.50e-2 # soil conductivity
-        self.C = 3300 # specific heat
-        self.rho = 1600 # density
-        self.average_temperature = 218
+        self.a = 1.524  #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
+        self.e = 0.0935  #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
+        self.obliquity = 25.19 #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
+        self.hours_in_day = 24 # should be 24.6597 http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
+        self.F = 0.85 # absorption fraction - Leighton & Murray
+        self.E = 0.85 # Emissivity - Leighton & Murray
+        self.K = 2.50e-4 * Conversion.cm_per_metre # soil conductivity - Leighton & Murray
+        self.C = 3.3 * Conversion.gm_per_Kg # specific heat
+        self.rho = 1.6 * Conversion.cm3_per_meter3 / Conversion.gm_per_Kg # density
+        self.average_temperature = 210 #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
         
 if __name__=="__main__":
     mars = Mars()
