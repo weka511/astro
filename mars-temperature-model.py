@@ -16,7 +16,7 @@
 import thermalmodel, planet, solar, utilities, sys,getopt
 
 def help():
-      print 'mars-temperature-model.py -o <outputfile>'
+      print 'mars-temperature-model.py -o <outputfile> -f <hour from> -t <hour to> -l <latitude> -s <steps per hour>'
       
 def main(argv):
       outputfile='output.txt'
@@ -26,7 +26,10 @@ def main(argv):
       step = 10
       if len(argv)>0:
             try:
-                  opts, args = getopt.getopt(argv,"hi:o:f:t:l:s:",["ifile=","ofile="])
+                  opts, args = getopt.getopt( \
+                        argv,\
+                        "h:o:f:t:l:s:",\
+                        ["ofile=","from","to","latitude","step"])
             except getopt.GetoptError:
                   help()
                   sys.exit(2)
