@@ -13,33 +13,49 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import utilities
+import utilities, io, os,matplotlib.pyplot as plt
 
 def display(inputfile,figure):
     with open(inputfile, 'r') as f:
         history = utilities.ExternalTemperatureLog(f)
-        x,y=history.extract(1)
         plt.figure(figure)
         plt.title("Diurnal variation in temperature for {0}".format(inputfile))
         plt.xlabel("Time")
         plt.ylabel("Temperature - Kelvin")
-        plt.grid(True)    
-        plt.plot(x,y)    
+        plt.grid(True)
+        x1,y1=history.extract(1)
+        x2,y2=history.extract(2) 
+        x3,y3=history.extract(3)
+        x4,y4=history.extract(4)
+        x5,y5=history.extract(5)
+        x10,y10=history.extract(10)
+        plt.plot(x1,y1,'r-',x2,y2,'g-',x3,y3,'b-',x4,y4,'c-',x5,y5,'m-',x10,y10,'y-')
+        plt.savefig(os.path.splitext(inputfile)[0])
         
 if __name__=="__main__":
-    import matplotlib.pyplot as plt
+
     figure=0
-    for name in ['equator.txt',
-                 '10S.txt',
-                 '20S.txt',
-                 '30S.txt',
-                 '40S.txt',
-                 '50S.txt',
- #                '60S.txt',
-                 '70S.txt',
-                 '80S.txt',
-                 '90S.txt',
-                 ]:
+    for name in [
+        'equator.txt',
+        '10S.txt',
+        '20S.txt',
+        '30S.txt',
+        '40S.txt',
+        '50S.txt',
+        '60S.txt',
+        '70S.txt',
+        '80S.txt',
+        '90S.txt',
+        '10N.txt',
+        '30N.txt',
+        '20N.txt',
+        '40N.txt',
+        '50N.txt',
+        '60N.txt',
+        '70N.txt',
+        '80N.txt',
+        '90N.txt',
+        ]:
         figure+=1
         display(name,figure)
     

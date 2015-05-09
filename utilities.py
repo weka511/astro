@@ -44,9 +44,10 @@ class ExternalTemperatureLog(TemperatureLog):
         x=[]
         y=[]
         for line in self.logfile:
-            parts=line.strip().split()
+            parts=line.split()
             x.append(float(parts[0]))
-            y.append(float(parts[1]))
+            y.append(float(parts[channel]))
+        self.logfile.seek(0)  #rewind, in case we want to extract data again
         return (x,y)
         
 class InternalTemperatureLog(TemperatureLog):
