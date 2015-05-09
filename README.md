@@ -9,6 +9,7 @@ I have revisited Leighton and Murray's "Behavior of Carbon Dioside and Other Vol
  * solar.py   Model for solar irradiation, based on Solar Radiation on Mars, Joseph Appelbaum & Dennis Flood, Lewis Research Center, NASA 
  * slices.py  Slices of Mars' interior
  * mars-temperature-emodel.py  Driver program
+ * utilities.py Miscellaneous utility fucntions
 
 ### TODO
 

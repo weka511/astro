@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import math, planet, solar
+import math, planet, solar, utilities
 
 class Layer:
     next_id=0
@@ -77,7 +77,7 @@ class Surface(Layer):
         self.solar=solar
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
-        irradiance=self.planet.F*solar.surface_irradience(areocentric_longitude,self.latitude,T)
+        irradiance=self.planet.F*self.solar.surface_irradience(areocentric_longitude,self.latitude,T)
         outflow=self.bolzmann(self.temperature)
         nett_gain = irradiance - outflow + self.heat_flow(below)
         self.update_temperature(nett_gain,dT,planet)
@@ -96,19 +96,12 @@ class Bottom(Layer):
         self.update_temperature(nett_gain,dT,planet)
         record.add(self.temperature)
 
-class TemperatureRecord:
-    def __init__(self,day,hour,hours_in_day):
-        self.temperatures=[]
-        self.day=day+hour/float(hours_in_day)
-        
-    def add(self,temperature):
-        self.temperatures.append(temperature)
 
-def slip_zip(x):
-    return zip ([None]+x[:-1],x,x[1:]+[None])
+
+
     
 class ThermalModel:
-    def __init__(self,latitude,longitude,spec,solar,planet):
+    def __init__(self,latitude,longitude,spec,solar,planet,history):
         self.layers=[]
         self.planet=planet
         (n,dz)=spec[0]
@@ -120,9 +113,9 @@ class ThermalModel:
                 z+=dz
         bottom=self.layers.pop()
         self.layers.append(Bottom(bottom))
-        self.history=[]
+        self.history=history
         self.record=None
-        self.zipper_layers = slip_zip(self.layers)
+        self.zipper_layers = utilities.slip_zip(self.layers)
 
     
     def propagate_temperature(self,areocentric_longitude,T,dT):
@@ -136,34 +129,28 @@ class ThermalModel:
             for hour in range(self.planet.hours_in_day):
                 areocentric_longitude=self.planet.get_areocentric_longitude(day,hour)
                 for step in range(number_of_steps_in_hour):
-                    self.record = TemperatureRecord(day,hour,self.planet.hours_in_day)
+                    self.record = utilities.TemperatureRecord(day,hour,self.planet.hours_in_day)
                     self.propagate_temperature(areocentric_longitude,hour,step_size)
-            self.history.append(self.record)
+            self.history.add(self.record)
 
-    def extract(self,layer_number,skip=1):
-        days=[]
-        result=[]
-        for record in self.history:
-            days.append(record.day)
-            result.append(record.temperatures[layer_number])
-        return (days,result)
+
         
 if __name__=="__main__":
     import matplotlib.pyplot as plt
     
     mars = planet.Mars()
     solar = solar.Solar(mars)
-        
-    thermal=ThermalModel(22.3,0,[(9,0.015),(10,0.3)],solar,mars)
+    history = utilities.InternalTemperatureLog()    
+    thermal=ThermalModel(22.3,0,[(9,0.015),(10,0.3)],solar,mars,history)
     
-    thermal.runModel(0,7200,10)
-    (days,surface_temp) = thermal.extract(0)
-    (_,t1) = thermal.extract(1)
-    (_,t2) = thermal.extract(2)
-    (_,t3) = thermal.extract(3)
-    (_,t4) = thermal.extract(4)
-    (_,t5) = thermal.extract(5)
-    (_,t6) = thermal.extract(10)
-    (_,t7) = thermal.extract(19)
+    thermal.runModel(0,720,10)
+    (days,surface_temp) = history.extract(0)
+    (_,t1) = history.extract(1)
+    (_,t2) = history.extract(2)
+    (_,t3) = history.extract(3)
+    (_,t4) = history.extract(4)
+    (_,t5) = history.extract(5)
+    (_,t6) = history.extract(10)
+    (_,t7) = history.extract(19)
     plt.plot(days,surface_temp,days,t1,days,t2,days,t3,days,t4,days,t5,days,t6,days,t7)
     plt.show()
