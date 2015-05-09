@@ -53,7 +53,7 @@ if __name__=="__main__":
     plt.figure(3)
     plt.title("Beam irradience at top of Mars atmosphere")
     plt.xlabel("Areocentric longitude - degrees")
-    plt.ylabel("eam irradience at top of Mars atmosphere - W/m2")
+    plt.ylabel("Beam irradience at top of Mars atmosphere - W/m2")
     plt.grid(True) 
     x=[]
     y=[]

@@ -40,6 +40,15 @@ class ExternalTemperatureLog(TemperatureLog):
             self.logfile.write("{0} {1}".format(self.sep,temperature))
         self.logfile.write('\n')
 
+    def extract(self,channel):
+        x=[]
+        y=[]
+        for line in self.logfile:
+            parts=line.strip().split()
+            x.append(float(parts[0]))
+            y.append(float(parts[1]))
+        return (x,y)
+        
 class InternalTemperatureLog(TemperatureLog):
     def __init__(self):
         self.history=[]

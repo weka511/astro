@@ -1,5 +1,5 @@
 # astro
-Astronomical Calculations
+Astronomical Calculations inspired by Mike Brown's "Science of the Solar System" course
 
 ## Leighton and Murray
 
@@ -8,8 +8,9 @@ I have revisited Leighton and Murray's "Behavior of Carbon Dioside and Other Vol
  * planet.py  Repository for basic data about planets
  * solar.py   Model for solar irradiation, based on Solar Radiation on Mars, Joseph Appelbaum & Dennis Flood, Lewis Research Center, NASA 
  * slices.py  Slices of Mars' interior
- * mars-temperature-emodel.py  Driver program
+ * mars-temperature-model.py  Driver program
  * utilities.py Miscellaneous utility fucntions
+ * viewer.py  Used to plot data files from mars-temperature-model.py
 
 ### TODO
 
