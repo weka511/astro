@@ -95,11 +95,7 @@ class Bottom(Layer):
         nett_gain = self.heat_flow(above)
         self.update_temperature(nett_gain,dT,planet)
         record.add(self.temperature)
-
-
-
-
-    
+   
 class ThermalModel:
     def __init__(self,latitude,longitude,spec,solar,planet,history):
         self.layers=[]
@@ -125,7 +121,6 @@ class ThermalModel:
     def runModel(self,start_day,number_of_days,number_of_steps_in_hour):
         step_size=1/float(number_of_steps_in_hour)
         for day in range(start_day,start_day+number_of_days):
-            if day%100==0: print "Day {0}".format(day)
             for hour in range(self.planet.hours_in_day):
                 areocentric_longitude=self.planet.get_areocentric_longitude(day,hour)
                 for step in range(number_of_steps_in_hour):

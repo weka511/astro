@@ -13,12 +13,44 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import thermalmodel, planet, solar, utilities
+import thermalmodel, planet, solar, utilities, sys,getopt
 
-with open('output.txt', 'w') as f:
-     mars = planet.Mars()
-     solar = solar.Solar(mars)
-     history = utilities.ExternalTemperatureLog(f)    
-     thermal=thermalmodel.ThermalModel(22.3,0,[(9,0.015),(10,0.3)],solar,mars,history)
+def help():
+      print 'mars-temperature-model.py -o <outputfile>'
+      
+def main(argv):
+      outputfile='output.txt'
+      from_date=0
+      to_date=720
+      latitude = 22.3
+      step = 10
+      if len(argv)>0:
+            try:
+                  opts, args = getopt.getopt(argv,"hi:o:f:t:l:s:",["ifile=","ofile="])
+            except getopt.GetoptError:
+                  help()
+                  sys.exit(2)
+            for opt, arg in opts:
+                  if opt == '-h':
+                        help()
+                        sys.exit()
+                  elif opt in ("-o", "--ofile"):
+                        outputfile = arg
+                  elif opt in ("-f", "--from"):
+                        from_date=int(arg)
+                  elif opt in ("-t", "--to"):
+                        to_date=int(arg)
+                  elif opt in ("-l","--latitude"):
+                        latitude=float(arg)
+                  elif opt in ("-s","--step"):
+                        step=int(arg)                  
+                              
+      with open(outputfile, 'w') as f:
+            mars = planet.Mars()
+            solar_model = solar.Solar(mars)
+            history = utilities.ExternalTemperatureLog(f)    
+            thermal=thermalmodel.ThermalModel(latitude,0,[(9,0.015),(10,0.3)],solar_model,mars,history)
+            thermal.runModel(from_date,to_date,step)
      
-     thermal.runModel(0,720,10)     
+if __name__ == "__main__":
+      main(sys.argv[1:])
