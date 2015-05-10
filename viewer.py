@@ -29,7 +29,8 @@ def display(inputfile,figure):
         x4,y4=history.extract(4)
         x5,y5=history.extract(5)
         x10,y10=history.extract(10)
-        plt.plot(x1,y1,'r-',x2,y2,'g-',x3,y3,'b-',x4,y4,'c-',x5,y5,'m-',x10,y10,'y-')
+        x20,y20=history.extract(20)
+        plt.plot(x1,y1,'r-',x2,y2,'g-',x3,y3,'b-',x4,y4,'c-',x5,y5,'m-',x10,y10,'y-',x20,y20,'k-')
         plt.savefig(os.path.splitext(inputfile)[0])
         
 if __name__=="__main__":

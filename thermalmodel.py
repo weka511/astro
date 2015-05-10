@@ -26,6 +26,7 @@ class Layer:
         self.depth = depth
         self.thickness = thickness
         self.temperature = planet.average_temperature
+        self.new_temperature=self.temperature
         self.planet = planet
     
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
@@ -33,15 +34,16 @@ class Layer:
     
     # heat flow to me from neighbour
     def heat_flow(self,neighbour):
-        temperature_gradient =                          \
-            (self.temperature-neighbour.temperature) /  \
-            (0.5*(self.thickness + neighbour.thickness))
-        return - (self.planet.K * temperature_gradient)
+        temperature_difference = neighbour.temperature - self.temperature
+        distance = 0.5*(self.thickness + neighbour.thickness)
+        temperature_gradient =  temperature_difference / distance
+        return(self.planet.K * temperature_gradient)
+
             
     def update_temperature(self,nett_gain,dT,planet):    
         heat = nett_gain*dT*3600
         delta_temperature= heat / (self.planet.C * self.planet.rho * self.thickness)
-        self.temperature += delta_temperature
+        self.new_temperature += delta_temperature
 
     
     def __str__(self):
@@ -59,16 +61,6 @@ class Layer:
                      self.top_temperature,
                      self.bottom_temperature)
 
-
-class MedialLayer(Layer):
-    def __init__(self,latitude,longitude,thickness,depth,planet):
-        Layer.__init__(self,"Medial",latitude,longitude,thickness,depth,planet)
-        
-    def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
-        nett_gain = self.heat_flow(above) + self.heat_flow(below)
-        self.update_temperature(nett_gain,dT,planet)
-        record.add(self.temperature)
-
 class Surface(Layer):
     stefan_bolzmann = 5.670374e-8
     
@@ -79,23 +71,36 @@ class Surface(Layer):
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         irradiance=self.planet.F*self.solar.surface_irradience(areocentric_longitude,self.latitude,T)
         outflow=self.bolzmann(self.temperature)
-        nett_gain = irradiance - outflow + self.heat_flow(below)
+        internal_inflow=self.heat_flow(below)
+        nett_gain = irradiance - outflow + internal_inflow
         self.update_temperature(nett_gain,dT,planet)
         record.add(self.temperature)
+        return internal_inflow
     
     def bolzmann(self,t):
         t2=t*t
         return self.planet.E*Surface.stefan_bolzmann*t2*t2
+
+class MedialLayer(Layer):
+    def __init__(self,latitude,longitude,thickness,depth,planet):
+        Layer.__init__(self,"Medial",latitude,longitude,thickness,depth,planet)
         
+    def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
+        internal_inflow = self.heat_flow(above) + self.heat_flow(below)
+        self.update_temperature(internal_inflow,dT,planet)
+        record.add(self.temperature)
+        return internal_inflow
+    
 class Bottom(Layer):
     def __init__(self,layer):
         Layer.__init__(self,"Bottom",layer.latitude,layer.longitude,layer.thickness,layer.depth,layer.planet)
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
-        nett_gain = self.heat_flow(above)
-        self.update_temperature(nett_gain,dT,planet)
+        internal_inflow = self.heat_flow(above)
+        self.update_temperature(internal_inflow,dT,planet)
         record.add(self.temperature)
-   
+        return internal_inflow
+    
 class ThermalModel:
     def __init__(self,latitude,longitude,spec,solar,planet,history):
         self.layers=[]
@@ -115,8 +120,12 @@ class ThermalModel:
 
     
     def propagate_temperature(self,areocentric_longitude,T,dT):
+        internal_inflow=0
         for above,layer,below in self.zipper_layers:
-            layer.propagate_temperature(above,below,areocentric_longitude,T,dT,self.record)
+            internal_inflow+=layer.propagate_temperature(above,below,areocentric_longitude,T,dT,self.record)
+#        print internal_inflow
+        for layer in self.layers:
+            layer.temperature=layer.new_temperature
             
     def runModel(self,start_day,number_of_days,number_of_steps_in_hour):
         step_size=1/float(number_of_steps_in_hour)
