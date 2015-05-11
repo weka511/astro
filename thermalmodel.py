@@ -152,7 +152,7 @@ if __name__=="__main__":
     history = utilities.InternalTemperatureLog()    
     thermal=ThermalModel(22.3,0,[(9,0.015),(10,0.3)],solar,mars,history,0)
     
-    thermal.runModel(0,144,10)
+    thermal.runModel(0,144,20)
     (days,surface_temp) = history.extract(0)
     (_,t1) = history.extract(1)
     (_,t2) = history.extract(2)
