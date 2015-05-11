@@ -15,15 +15,14 @@
 
 import math, planet, solar, utilities
 
+# The thremal model consists of a series of Layers, the top one being the
+# Surface
+
 class Layer:
-    next_id=0
-    def __init__(self,name,latitude,longitude,thickness,depth,planet,temperature=-1):
-        self.id=Layer.next_id
-        Layer.next_id+=1
+    def __init__(self,name,latitude,longitude,thickness,planet,temperature=-1):
         self.name=name
         self.latitude = latitude
         self.longitude = longitude
-        self.depth = depth
         self.thickness = thickness
         self.temperature = temperature
         self.new_temperature=temperature
@@ -39,7 +38,10 @@ class Layer:
         temperature_gradient =  temperature_difference / distance
         return(self.planet.K * temperature_gradient)
 
-            
+    # Calculate new temperature given heat flow
+    # Don't change temperatures until every Layer has been processed
+    # otherwise energy won't be conserved, which would be a Very Bad Thing,
+    # just cache result
     def update_temperature(self,nett_gain,dT,planet):    
         heat = nett_gain*dT*3600
         delta_temperature= heat / (self.planet.C * self.planet.rho * self.thickness)
@@ -61,19 +63,19 @@ class Layer:
                      self.top_temperature,
                      self.bottom_temperature)
 
+# Top Layer: gains and loses heat through radiation, and exchanges heat with Layer below
 class Surface(Layer):
     stefan_bolzmann = 5.670374e-8
     
     def __init__(self,latitude,longitude,thickness,solar,planet,temperature):
-        Layer.__init__(self,"Surface",latitude,longitude,thickness,0,planet,temperature)
+        Layer.__init__(self,"Surface",latitude,longitude,thickness,planet,temperature)
         self.solar=solar
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         irradiance=self.planet.F*self.solar.surface_irradience(areocentric_longitude,self.latitude,T)
-        outflow=self.bolzmann(self.temperature)
+        radiation_loss=self.bolzmann(self.temperature)
         internal_inflow=self.heat_flow(below)
-        nett_gain = irradiance - outflow + internal_inflow
-        self.update_temperature(nett_gain,dT,planet)
+        self.update_temperature(irradiance - radiation_loss + internal_inflow,dT,planet)
         record.add(self.temperature)
         return internal_inflow
     
@@ -81,9 +83,10 @@ class Surface(Layer):
         t2=t*t
         return self.planet.E*Surface.stefan_bolzmann*t2*t2
 
+# Ordinary layers - excanges heat with Layers above and below
 class MedialLayer(Layer):
-    def __init__(self,latitude,longitude,thickness,depth,planet,temperature):
-        Layer.__init__(self,"Medial",latitude,longitude,thickness,depth,planet,temperature)
+    def __init__(self,latitude,longitude,thickness,planet,temperature):
+        Layer.__init__(self,"Medial",latitude,longitude,thickness,planet,temperature)
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above) + self.heat_flow(below)
@@ -91,27 +94,28 @@ class MedialLayer(Layer):
         record.add(self.temperature)
         return internal_inflow
     
+# Botton layer - exchanges heat with above only    
 class Bottom(Layer):
     def __init__(self,layer):
-        Layer.__init__(self,"Bottom",layer.latitude,layer.longitude,layer.thickness,layer.depth,layer.planet,layer.temperature)
+        Layer.__init__(self,"Bottom",layer.latitude,layer.longitude,layer.thickness,layer.planet,layer.temperature)
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above)
         self.update_temperature(internal_inflow,dT,planet)
         record.add(self.temperature)
         return internal_inflow
-    
+
+# The Thermal Model is a collection of Layers
+
 class ThermalModel:
     def __init__(self,latitude,longitude,spec,solar,planet,history,temperature):
         self.layers=[]
         self.planet=planet
         (n,dz)=spec[0]
-        z=dz
         self.layers.append(Surface(latitude,longitude,dz,solar,planet,temperature))
         for (n,dz)in spec:
             for i in range(n):
-                self.layers.append(MedialLayer(latitude,longitude,dz,z,planet,temperature))
-                z+=dz
+                self.layers.append(MedialLayer(latitude,longitude,dz,planet,temperature))
         bottom=self.layers.pop()
         self.layers.append(Bottom(bottom))
         self.history=history
