@@ -24,12 +24,13 @@ def main(argv):
       to_date=720
       latitude = 22.3
       step = 10
+      temperature = -1
       if len(argv)>0:
             try:
                   opts, args = getopt.getopt( \
                         argv,\
-                        "h:o:f:t:l:s:",\
-                        ["ofile=","from","to","latitude","step"])
+                        "h:o:f:t:l:s:m:",\
+                        ["ofile=","from","to","latitude","step","temperature"])
             except getopt.GetoptError:
                   help()
                   sys.exit(2)
@@ -47,12 +48,15 @@ def main(argv):
                         latitude=float(arg)
                   elif opt in ("-s","--step"):
                         step=int(arg)                  
-                              
+                  elif opt in ("-m","--temperature"):
+                        temperature=int(arg) 
+                        
       with open(outputfile, 'w') as f:
             mars = planet.Mars()
             solar_model = solar.Solar(mars)
-            history = utilities.ExternalTemperatureLog(f)    
-            thermal=thermalmodel.ThermalModel(latitude,0,[(9,0.015),(10,0.3)],solar_model,mars,history)
+            history = utilities.ExternalTemperatureLog(f)
+            if temperature<0: temperature=mars.average_temperature
+            thermal=thermalmodel.ThermalModel(latitude,0,[(9,0.015),(10,0.3)],solar_model,mars,history,temperature)
             thermal.runModel(from_date,to_date,step)
      
 if __name__ == "__main__":

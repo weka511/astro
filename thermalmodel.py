@@ -17,7 +17,7 @@ import math, planet, solar, utilities
 
 class Layer:
     next_id=0
-    def __init__(self,name,latitude,longitude,thickness,depth,planet):
+    def __init__(self,name,latitude,longitude,thickness,depth,planet,temperature=-1):
         self.id=Layer.next_id
         Layer.next_id+=1
         self.name=name
@@ -25,8 +25,8 @@ class Layer:
         self.longitude = longitude
         self.depth = depth
         self.thickness = thickness
-        self.temperature = planet.average_temperature
-        self.new_temperature=self.temperature
+        self.temperature = temperature
+        self.new_temperature=temperature
         self.planet = planet
     
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
@@ -64,8 +64,8 @@ class Layer:
 class Surface(Layer):
     stefan_bolzmann = 5.670374e-8
     
-    def __init__(self,latitude,longitude,thickness,solar,planet):
-        Layer.__init__(self,"Surface",latitude,longitude,thickness,0,planet)
+    def __init__(self,latitude,longitude,thickness,solar,planet,temperature):
+        Layer.__init__(self,"Surface",latitude,longitude,thickness,0,planet,temperature)
         self.solar=solar
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
@@ -82,8 +82,8 @@ class Surface(Layer):
         return self.planet.E*Surface.stefan_bolzmann*t2*t2
 
 class MedialLayer(Layer):
-    def __init__(self,latitude,longitude,thickness,depth,planet):
-        Layer.__init__(self,"Medial",latitude,longitude,thickness,depth,planet)
+    def __init__(self,latitude,longitude,thickness,depth,planet,temperature):
+        Layer.__init__(self,"Medial",latitude,longitude,thickness,depth,planet,temperature)
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above) + self.heat_flow(below)
@@ -93,7 +93,7 @@ class MedialLayer(Layer):
     
 class Bottom(Layer):
     def __init__(self,layer):
-        Layer.__init__(self,"Bottom",layer.latitude,layer.longitude,layer.thickness,layer.depth,layer.planet)
+        Layer.__init__(self,"Bottom",layer.latitude,layer.longitude,layer.thickness,layer.depth,layer.planet,layer.temperature)
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above)
@@ -102,15 +102,15 @@ class Bottom(Layer):
         return internal_inflow
     
 class ThermalModel:
-    def __init__(self,latitude,longitude,spec,solar,planet,history):
+    def __init__(self,latitude,longitude,spec,solar,planet,history,temperature):
         self.layers=[]
         self.planet=planet
         (n,dz)=spec[0]
         z=dz
-        self.layers.append(Surface(latitude,longitude,dz,solar,planet))
+        self.layers.append(Surface(latitude,longitude,dz,solar,planet,temperature))
         for (n,dz)in spec:
             for i in range(n):
-                self.layers.append(MedialLayer(latitude,longitude,dz,z,planet))
+                self.layers.append(MedialLayer(latitude,longitude,dz,z,planet,temperature))
                 z+=dz
         bottom=self.layers.pop()
         self.layers.append(Bottom(bottom))
@@ -118,12 +118,13 @@ class ThermalModel:
         self.record=None
         self.zipper_layers = utilities.slip_zip(self.layers)
 
-    
+    # Calculate heat transfer
+    # Don't change temperatures until every Layer has been processed
+    # otherwise energy won't be conserved, which would be a Very Bad Thing
     def propagate_temperature(self,areocentric_longitude,T,dT):
         internal_inflow=0
         for above,layer,below in self.zipper_layers:
             internal_inflow+=layer.propagate_temperature(above,below,areocentric_longitude,T,dT,self.record)
-#        print internal_inflow
         for layer in self.layers:
             layer.temperature=layer.new_temperature
             
@@ -145,9 +146,9 @@ if __name__=="__main__":
     mars = planet.Mars()
     solar = solar.Solar(mars)
     history = utilities.InternalTemperatureLog()    
-    thermal=ThermalModel(22.3,0,[(9,0.015),(10,0.3)],solar,mars,history)
+    thermal=ThermalModel(22.3,0,[(9,0.015),(10,0.3)],solar,mars,history,0)
     
-    thermal.runModel(0,720,10)
+    thermal.runModel(0,144,10)
     (days,surface_temp) = history.extract(0)
     (_,t1) = history.extract(1)
     (_,t2) = history.extract(2)
@@ -156,5 +157,5 @@ if __name__=="__main__":
     (_,t5) = history.extract(5)
     (_,t6) = history.extract(10)
     (_,t7) = history.extract(19)
-    plt.plot(days,surface_temp,days,t1,days,t2,days,t3,days,t4,days,t5,days,t6,days,t7)
+    plt.plot(days,surface_temp,'r-',days,t1,'g-',days,t2,'b-',days,t3,'c-',days,t4,'m-',days,t5,'y-',days,t6,'b-',days,t7,'b-')
     plt.show()
