@@ -56,7 +56,7 @@ def main(argv):
             solar_model = solar.Solar(mars)
             history = utilities.ExternalTemperatureLog(f)
             if temperature<0: temperature=mars.average_temperature
-            thermal=thermalmodel.ThermalModel(latitude,0,[(9,0.015),(10,0.3)],solar_model,mars,history,temperature)
+            thermal=thermalmodel.ThermalModel(latitude,[(9,0.015),(10,0.3)],solar_model,mars,history,temperature)
             thermal.runModel(from_date,to_date,step)
      
 if __name__ == "__main__":
