@@ -86,7 +86,7 @@ class Planet:
         return 360*T/self.hours_in_day-180
 
     def get_areocentric_longitude(self,day,hour):
-        days_in_year=365*Math.sqrt(self.a*self.a*self.a)
+        days_in_year=365*math.sqrt(self.a*self.a*self.a)
         return 360*float(day)/days_in_year
     
 class Mars(Planet):
