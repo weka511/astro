@@ -33,7 +33,7 @@ class Planet:
         self.obliquity = 23.4
         self.hours_in_day = 24
         self.average_temperature = 300
-        
+
     def __str__(self):
         return ("{0}\nSemimajor axis = {1:9.7f} AU\n" +\
                "eccentricity = {2:8.6f}\n" + \
@@ -85,8 +85,9 @@ class Planet:
     def hour_angle(self,T):
         return 360*T/self.hours_in_day-180
 
-    def get_areocentric_longitude(self,day,hour):    # FIXME
-        return float(day)/2
+    def get_areocentric_longitude(self,day,hour):
+        days_in_year=365*Math.sqrt(self.a*self.a*self.a)
+        return 360*float(day)/days_in_year
     
 class Mars(Planet):
     def __init__(self):
@@ -101,6 +102,7 @@ class Mars(Planet):
         self.C = 3.3 * Conversion.gm_per_Kg # specific heat
         self.rho = 1.6 * Conversion.cm3_per_meter3 / Conversion.gm_per_Kg # density
         self.average_temperature = 210 #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
+
         
 if __name__=="__main__":
     mars = Mars()
