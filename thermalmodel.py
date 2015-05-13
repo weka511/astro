@@ -19,56 +19,62 @@ import math, planet, solar, utilities
 # Surface
 
 class Layer:
-    def __init__(self,name,latitude,longitude,thickness,planet,temperature=-1):
-        self.name=name
+    def __init__(self,name,latitude,thickness,planet,temperature=-1):
+        self.name = name
         self.latitude = latitude
-        self.longitude = longitude
         self.thickness = thickness
         self.temperature = temperature
-        self.new_temperature=temperature
+        self.new_temperature = temperature
         self.planet = planet
-    
+        self.heat_gain = 0
+        
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         raise NotImplementedError("propagate_temperature")
     
-    # heat flow to me from neighbour
-    def heat_flow(self,neighbour):
+    # Calculate temperature gradient betwwn neighbour and this layer.
+    # Gradient will be +ve (heat will flow to me) if noeighbout is hotter
+    def temperature_gradient(self,neighbour):
         temperature_difference = neighbour.temperature - self.temperature
         distance = 0.5*(self.thickness + neighbour.thickness)
-        temperature_gradient =  temperature_difference / distance
-        return(self.planet.K * temperature_gradient)
+        return (temperature_difference / distance)
+        
+    # heat flow to me from neighbour
+    # parameters:
+    #    neighbour
+    def heat_flow(self,neighbour):
+        return(self.planet.K * self.temperature_gradient(neighbour))
 
     # Calculate new temperature given heat flow
     # Don't change temperatures until every Layer has been processed
     # otherwise energy won't be conserved, which would be a Very Bad Thing,
     # just cache result
-    def update_temperature(self,nett_gain,dT,planet):    
-        heat = nett_gain*dT*3600
-        delta_temperature= heat / (self.planet.C * self.planet.rho * self.thickness)
+    # parameters:
+    #    heat_gain_per_second
+    #    dT     Number of seconds
+    #    planet
+    def update_temperature(self,heat_gain_per_second,dT,planet):    
+        self.heat_gain = heat_gain_per_second*dT
+        delta_temperature= self.heat_gain / (self.planet.C * self.planet.rho * self.thickness)
         self.new_temperature += delta_temperature
 
     
     def __str__(self):
         return (                                  \
             "{0}: Latitude={1:6.1f},"            +\
-            "Longitude={2:6.1f}, "               +\
-            "Depth={3:6.3f}, "                   +\
-            "Thickness={4:6.3f}, "               +\
-            "Temperature = {5:6.1f}"  \
+            "Thickness={2:6.3f}, "               +\
+            "Temperature = {3:6.1f},{4:6.1f}"  \
             ).format(self.name,
                      self.latitude,
-                     self.longitude,
-                     self.depth,
                      self.thickness,
-                     self.top_temperature,
-                     self.bottom_temperature)
+                     self.temperature,
+                     self.new_temperature)
 
 # Top Layer: gains and loses heat through radiation, and exchanges heat with Layer below
 class Surface(Layer):
     stefan_bolzmann = 5.670374e-8
     
-    def __init__(self,latitude,longitude,thickness,solar,planet,temperature):
-        Layer.__init__(self,"Surface",latitude,longitude,thickness,planet,temperature)
+    def __init__(self,latitude,thickness,solar,planet,temperature):
+        Layer.__init__(self,"Surface",latitude,thickness,planet,temperature)
         self.solar=solar
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
@@ -85,8 +91,8 @@ class Surface(Layer):
 
 # Ordinary layers - excanges heat with Layers above and below
 class MedialLayer(Layer):
-    def __init__(self,latitude,longitude,thickness,planet,temperature):
-        Layer.__init__(self,"Medial",latitude,longitude,thickness,planet,temperature)
+    def __init__(self,latitude,thickness,planet,temperature):
+        Layer.__init__(self,"Medial",latitude,thickness,planet,temperature)
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above) + self.heat_flow(below)
@@ -97,7 +103,7 @@ class MedialLayer(Layer):
 # Botton layer - exchanges heat with above only    
 class Bottom(Layer):
     def __init__(self,layer):
-        Layer.__init__(self,"Bottom",layer.latitude,layer.longitude,layer.thickness,layer.planet,layer.temperature)
+        Layer.__init__(self,"Bottom",layer.latitude,layer.thickness,layer.planet,layer.temperature)
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above)
@@ -108,39 +114,49 @@ class Bottom(Layer):
 # The Thermal Model is a collection of Layers
 
 class ThermalModel:
-    def __init__(self,latitude,longitude,spec,solar,planet,history,temperature):
+    def __init__(self,latitude,spec,solar,planet,history,temperature):
         self.layers=[]
         self.planet=planet
         (n,dz)=spec[0]
-        self.layers.append(Surface(latitude,longitude,dz,solar,planet,temperature))
+        self.layers.append(Surface(latitude,dz,solar,planet,temperature))
         for (n,dz)in spec:
             for i in range(n):
-                self.layers.append(MedialLayer(latitude,longitude,dz,planet,temperature))
+                self.layers.append(MedialLayer(latitude,dz,planet,temperature))
         bottom=self.layers.pop()
         self.layers.append(Bottom(bottom))
         self.history=history
         self.record=None
         self.zipper_layers = utilities.slip_zip(self.layers)
-
-    # Calculate heat transfer
+ 
+    # Calculate heat transfer during one time step
     # Don't change temperatures until every Layer has been processed
     # otherwise energy won't be conserved, which would be a Very Bad Thing
     def propagate_temperature(self,areocentric_longitude,T,dT):
-        internal_inflow=0
+        total__internal_inflow=0
         for above,layer,below in self.zipper_layers:
-            internal_inflow+=layer.propagate_temperature(above,below,areocentric_longitude,T,dT,self.record)
+            total__internal_inflow+=layer.propagate_temperature(above,below,areocentric_longitude,T,dT,self.record)
+        if abs(total__internal_inflow)>1.0e-6: print total__internal_inflow
+        
+            #if above!=None and above.name=="Surface":
+                #print above.temperature, layer.temperature, above.heat_gain, layer.heat_gain
         for layer in self.layers:
             layer.temperature=layer.new_temperature
-            
+     
+    # Calculate heat transfer during all time step      
+    # parameters:
+    #    start_day
+    #    number_of_days
+    #    number_of_steps_in_hour
     def runModel(self,start_day,number_of_days,number_of_steps_in_hour):
-        step_size=1/float(number_of_steps_in_hour)
+        step_size = 3600/float(number_of_steps_in_hour)
+        hours_in_day = self.planet.hours_in_day
         for day in range(start_day,start_day+number_of_days):
-            for hour in range(self.planet.hours_in_day):
+            for hour in range(hours_in_day):
                 areocentric_longitude=self.planet.get_areocentric_longitude(day,hour)
                 for step in range(number_of_steps_in_hour):
-                    self.record = utilities.TemperatureRecord(day,hour,self.planet.hours_in_day)
+                    self.record = utilities.TemperatureRecord(day,hour,hours_in_day)
                     self.propagate_temperature(areocentric_longitude,hour,step_size)
-            self.history.add(self.record)
+                self.history.add(self.record)
 
 
         
@@ -150,9 +166,9 @@ if __name__=="__main__":
     mars = planet.Mars()
     solar = solar.Solar(mars)
     history = utilities.InternalTemperatureLog()    
-    thermal=ThermalModel(22.3,0,[(9,0.015),(10,0.3)],solar,mars,history,0)
+    thermal=ThermalModel(22.3,[(9,0.015),(10,0.3)],solar,mars,history,0)
     
-    thermal.runModel(0,144,20)
+    thermal.runModel(0,1440,10)
     (days,surface_temp) = history.extract(0)
     (_,t1) = history.extract(1)
     (_,t2) = history.extract(2)

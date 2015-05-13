@@ -26,8 +26,8 @@ class TemperatureRecord:
         self.temperatures.append(temperature)
 
 class TemperatureLog:
-     def add(self,record):
-         raise NotImplementedError("TemperatureLog.add(...)")
+    def add(self,record):
+        raise NotImplementedError("TemperatureLog.add(...)")
      
 class ExternalTemperatureLog(TemperatureLog):
     def __init__(self,logfile,sep=' '):
