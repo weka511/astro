@@ -107,3 +107,5 @@ class Mars(Planet):
 if __name__=="__main__":
     mars = Mars()
     print mars
+    for day in range(4):
+        print mars.get_areocentric_longitude(day*689/4,0)

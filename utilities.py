@@ -13,11 +13,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+# given a list, return a new list of triples, with the list "slipped", e.g.
+# [1,2,3,4,5] becomes
+# [(None, 1, 2), (1, 2, 3), (2, 3, 4), (3, 4, 5), (4, 5, None)]
+# This function is uses to iterate through the layers, with each layer being
+# sanwiched between the layes immediately above and below.
+
 def slip_zip(x):
     return zip ([None]+x[:-1],x,x[1:]+[None])
 
+# Used to store temperature values (abstract class,
+# needs to be implemeneted below
+class TemperatureLog:
+    def add(self,record):
+        raise NotImplementedError("TemperatureLog.add(...)")
 
-class TemperatureRecord:
+# Used to record temperaturs in a log
+class TemperatureRecord(TemperatureLog):
     def __init__(self,day,hour,hours_in_day):
         self.temperatures=[]
         self.day=day+hour/float(hours_in_day)
@@ -25,10 +37,8 @@ class TemperatureRecord:
     def add(self,temperature):
         self.temperatures.append(temperature)
 
-class TemperatureLog:
-    def add(self,record):
-        raise NotImplementedError("TemperatureLog.add(...)")
-     
+
+# Used to store temperature values in an external file     
 class ExternalTemperatureLog(TemperatureLog):
     def __init__(self,logfile,sep=' '):
         self.logfile=logfile
@@ -49,7 +59,8 @@ class ExternalTemperatureLog(TemperatureLog):
             y.append(float(parts[channel]))
         self.logfile.seek(0)  #rewind, in case we want to extract data again
         return (x,y)
-        
+
+# Used to store temperature values internally           
 class InternalTemperatureLog(TemperatureLog):
     def __init__(self):
         self.history=[]
@@ -77,5 +88,7 @@ if __name__=="__main__":
         r2.add(2)
         r2.add(2.345678)
         r2.add(99)
-        log.add(r2)        
+        log.add(r2) 
+        
+        print slip_zip([1,2,3,4,5])
         

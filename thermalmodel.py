@@ -166,7 +166,7 @@ if __name__=="__main__":
     mars = planet.Mars()
     solar = solar.Solar(mars)
     history = utilities.InternalTemperatureLog()    
-    thermal=ThermalModel(22.3,[(9,0.015),(10,0.3)],solar,mars,history,0)
+    thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,150)
     
     thermal.runModel(0,1440,10)
     (days,surface_temp) = history.extract(0)
