@@ -87,10 +87,22 @@ class Planet:
         return 15*T-180
 
     def get_days_in_year(self):
-        return 365.256363004*math.sqrt(self.a*self.a*self.a)
+        return Earth.get().earth.get_days_in_year()*math.sqrt(self.a*self.a*self.a)
          
     def get_areocentric_longitude(self,day,hour):
         return 360*float(day)/get_days_in_year()
+
+class Earth(Planet):
+    earth = None
+    @classmethod
+    def get(cls):
+        if Earth.earth==None:
+            Earth.earth=Earth()
+        return Earth.earth
+    def __init__(self):
+        Planet.__init__(self,"Earth")    
+    def get_days_in_year(self):
+        return 365.256363004
     
 class Mars(Planet):
     def __init__(self):
@@ -105,7 +117,6 @@ class Mars(Planet):
         self.C = 3.3 * Conversion.gm_per_Kg # specific heat
         self.rho = 1.6 * Conversion.cm3_per_meter3 / Conversion.gm_per_Kg # density
         self.average_temperature = 210 #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
-
         
 if __name__=="__main__":
     import unittest
