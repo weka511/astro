@@ -16,7 +16,7 @@
 # Model for solar irradiation, based on Solar Radiation on Mars, 
 # Joseph Appelbaum & Dennis Flood, Lewis Research Center, NASA 
 
-import math, planet
+import math, planet,utilities
 
 class Solar:
     def __init__(self,planet):
@@ -34,6 +34,7 @@ class Solar:
     
 if __name__=="__main__":
     import matplotlib.pyplot as plt
+    
     def generate_irradiance(planet,areocentric_longitude,latitude):
         x=[]
         y=[]
@@ -55,12 +56,29 @@ if __name__=="__main__":
     plt.xlabel("Areocentric longitude - degrees")
     plt.ylabel("Beam irradience at top of Mars atmosphere - W/m2")
     plt.grid(True) 
-    x=[]
-    y=[]
+    xs=[]
+    ys=[]
+    d0=-1
+    d1=-1
+
     for i in range(360):
-        x.append(i)
-        y.append(solar.beam_irradience(mars.instantaneous_distance(i)))
-    plt.plot(x,y)
+        xs.append(i)
+        d2=mars.instantaneous_distance(i)
+        ys.append(solar.beam_irradience(d2))
+        if d0>-1 and d1>-1:
+            if d0>d1 and d1<d2:
+                x=utilities.extremum(i-2,i-2,i,d0,d1,d2)
+                d=mars.instantaneous_distance(x)
+                irr=solar.beam_irradience(d)
+                print "perihelion", x,d,irr
+            if d0<d1 and d1>d2:
+                x=utilities.extremum(i-2,i-2,i,d0,d1,d2)
+                d=mars.instantaneous_distance(x) 
+                irr=solar.beam_irradience(d)
+                print "aphelion", x,d,irr
+        d0=d1
+        d1=d2
+    plt.plot(xs,ys)
     
     plt.figure(4)
     plt.title("Variation of solar declination angle")

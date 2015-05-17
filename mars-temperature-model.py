@@ -22,7 +22,7 @@ def main(argv):
       outputfile='output.txt'
       from_date=0
       to_date=720
-      latitude = 22.3
+      latitude = 0
       step = 10
       temperature = -1
       if len(argv)>0:

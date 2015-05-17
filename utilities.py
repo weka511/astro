@@ -23,7 +23,13 @@
 def slip_zip(x):
     return zip ([None]+x[:-1],x,x[1:]+[None])
 
+# Find extremem, given that y0<y1>y2, or y0>y1<y2
+# Fit a parabola to (x0,y0, (x1,y1), and (x2,y2), and find its extremum
 
+def extremum(x0,x1,x2,y0,y1,y2):
+    return (0.5 * 
+            ((x2-x1)*(x2+x1)*y0 + (x0-x2)*(x0+x2)*y1 + (x1-x0)*(x1+x0)*y2) /
+            ((x2-x1)*y0 + (x0-x2)*y1 + (x1-x0)*y2))
 
 # Used to record temperaturs in a log
 class TemperatureRecord:
