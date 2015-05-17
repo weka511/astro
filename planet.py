@@ -63,8 +63,9 @@ class Planet:
 #   Instantaneaous Distance from Sun in AU
 #   Appelbaum & Flood equations (2) & (3)
     def instantaneous_distance(self,areocentric_longitude):
-        theta = math.radians(areocentric_longitude - 248)
-        return self.a*(1-self.e*self.e)/(1 + self.e * math.cos(theta))
+        theta = areocentric_longitude - 248 # True anomaly
+        return (self.a*(1-self.e*self.e)/
+                (1 + self.e * math.cos(math.radians(theta))))
 
     #   Sine of declination
     #   Appelbaum & Flood equation (7)
@@ -83,29 +84,40 @@ class Planet:
     #   Hour angle
     #   Appelbaum & Flood equation (8) 
     def hour_angle(self,T):
-        return 360*T/self.hours_in_day-180
+        return 15*T-180
 
+    def get_days_in_year(self):
+        return 365.256363004*math.sqrt(self.a*self.a*self.a)
+         
     def get_areocentric_longitude(self,day,hour):
-        days_in_year=365*math.sqrt(self.a*self.a*self.a)
-        return 360*float(day)/days_in_year
+        return 360*float(day)/get_days_in_year()
     
 class Mars(Planet):
     def __init__(self):
         Planet.__init__(self,"Mars")
-        self.a = 1.5236915  # Appelbaum & Flood
-        self.e = 0.0933377  # Appelbaum & Flood
+        self.a = 1.523679  # Wikipedia Mars page
+        self.e = 0.093377  # Appelbaum & Flood
         self.obliquity = 24.936 # Appelbaum & Flood
         self.hours_in_day = 24 # should be 24.6597 http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
         self.F = 0.85 # absorption fraction - Leighton & Murray
         self.E = 0.85 # Emissivity - Leighton & Murray
-        self.K = 2.50e-4 * Conversion.cm_per_metre # soil conductivity - Leighton & Murray
+        self.K = 6e-5 * Conversion.cm_per_metre # soil conductivity - Leighton & Murray
         self.C = 3.3 * Conversion.gm_per_Kg # specific heat
         self.rho = 1.6 * Conversion.cm3_per_meter3 / Conversion.gm_per_Kg # density
         self.average_temperature = 210 #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
 
         
 if __name__=="__main__":
-    mars = Mars()
-    print mars
-    for day in range(4):
-        print mars.get_areocentric_longitude(day*689/4,0)
+    import unittest
+    
+    class TestMarsMethods(unittest.TestCase):
+        def setUp(self):
+            self.mars = Mars()
+        def test_get_days_in_year(self):
+            self.assertAlmostEqual(687,self.mars.get_days_in_year(),places=1)
+            
+    try:
+        unittest.main()
+    except SystemExit as inst:
+        if inst.args[0] is True: # raised by sys.exit(True) when tests failed
+            raise
