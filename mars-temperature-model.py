@@ -56,6 +56,18 @@ def main(argv):
             solar_model = solar.Solar(mars)
             history = utilities.ExternalTemperatureLog(f)
             if temperature<0: temperature=mars.average_temperature
+            history.write("Semimajor axes={0:10.7f} AU".format(mars.a))
+            history.write("Eccentricty={0:10.7f}".format(mars.e))
+            history.write("Obliquity={0:6.3f}".format(mars.obliquity))
+            history.write("Hours in Day={0:10.7f}".format(mars.hours_in_day))
+            history.write("Absorption Fraction={0:6.3f}".format(mars.F))
+            history.write("Emissivity={0:6.3f}".format(mars.E))            
+            history.write("Soil Conductivity={0:7.3f} W/M/K".format(mars.K))
+            history.write("Specific Heat={0:7.3f} J/Kg/K".format(mars.C))
+            history.write("Density={0:6.3f} Kg/M3".format(mars.rho))         
+            history.write("Latitude={0:6.1f}".format(latitude))
+            history.write("Step={0:6.1f}".format(step))
+            history.write("Starting Temperature={0:6.1f} K".format(temperature))
             thermal=thermalmodel.ThermalModel(latitude,[(9,0.015),(10,0.3)],solar_model,mars,history,temperature)
             thermal.runModel(from_date,to_date,step)
      

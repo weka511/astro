@@ -19,17 +19,14 @@
 # This function is uses to iterate through the layers, with each layer being
 # sanwiched between the layes immediately above and below.
 
+
 def slip_zip(x):
     return zip ([None]+x[:-1],x,x[1:]+[None])
 
-# Used to store temperature values (abstract class,
-# needs to be implemeneted below
-class TemperatureLog:
-    def add(self,record):
-        raise NotImplementedError("TemperatureLog.add(...)")
+
 
 # Used to record temperaturs in a log
-class TemperatureRecord(TemperatureLog):
+class TemperatureRecord:
     def __init__(self,day,hour,hours_in_day):
         self.temperatures=[]
         self.day=day+hour/float(hours_in_day)
@@ -37,27 +34,45 @@ class TemperatureRecord(TemperatureLog):
     def add(self,temperature):
         self.temperatures.append(temperature)
 
-
+# Used to store temperature values (abstract class,
+# needs to be implemeneted below
+class TemperatureLog:
+    def add(self,record):
+        raise NotImplementedError("TemperatureLog.add(...)")
+    def write(line):
+        pass
+    
 # Used to store temperature values in an external file     
 class ExternalTemperatureLog(TemperatureLog):
     def __init__(self,logfile,sep=' '):
         self.logfile=logfile
         self.sep=sep
+        self.skipping=True
         
     def add(self,record):
+        if self.skipping:
+            self.logfile.write("START\n")
+            self.skipping = False        
         self.logfile.write("{0:f}".format(record.day))
         for temperature in record.temperatures:
             self.logfile.write("{0} {1}".format(self.sep,temperature))
         self.logfile.write('\n')
 
+    def write(self,line):
+        self.logfile.write(line+'\n')
+        
     def extract(self,channel):
         x=[]
         y=[]
         for line in self.logfile:
-            parts=line.split()
-            x.append(float(parts[0]))
-            y.append(float(parts[channel]))
+            if self.skipping:
+                self.skipping = line[0:5]!="START"
+            else:
+                parts=line.split()
+                x.append(float(parts[0]))
+                y.append(float(parts[channel]))
         self.logfile.seek(0)  #rewind, in case we want to extract data again
+        self.skipping = True
         return (x,y)
 
 # Used to store temperature values internally           

@@ -37,6 +37,7 @@ if __name__=="__main__":
 
     figure=0
     for name in [
+        'output.txt',
         #'equator.txt',
         #'10S.txt',
         #'20S.txt',
@@ -47,7 +48,7 @@ if __name__=="__main__":
         #'70S.txt',
         #'80S.txt',
         #'90S.txt',
-        '10N.txt',
+#        '10N.txt',
         #'30N.txt',
         #'20N.txt',
         #'40N.txt',
