@@ -90,7 +90,7 @@ class Planet:
         return Earth.get().earth.get_days_in_year()*math.sqrt(self.a*self.a*self.a)
          
     def get_areocentric_longitude(self,day,hour):
-        return 360*float(day)/get_days_in_year()
+        return 360*float(day)/self.get_days_in_year()
 
 class Earth(Planet):
     earth = None
