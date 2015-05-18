@@ -34,6 +34,7 @@ class Solar:
     
 if __name__=="__main__":
     import matplotlib.pyplot as plt, unittest
+    from scipy.integrate import quad
     
     class TestMarsMethods(unittest.TestCase):
         def setUp(self):
@@ -71,19 +72,30 @@ if __name__=="__main__":
             self.assertAlmostEqual(1371/(1.5236915**2),
                                    self.solar.beam_irradience(self.mars.a),
                                    places=1)
-            
+
+        # The next few tests are based on Table II i Appelbaum & Flood
+        
         def test_top_atmosphere(self):
-            self.assertAlmostEqual(488,
-                                   self.solar.surface_irradience(69,22.3,14),
-                                   places=1)
-        #def test_top_atmosphere2(self):
-            #self.assertAlmostEqual(460,
-                                   #self.solar.surface_irradience(69,22.3,13),
-                                   #places=1) 
-        #def test_top_atmosphere7(self):
-                #self.assertAlmostEqual(29,
-                                       #self.solar.surface_irradience(69,22.3,19),
-                                       #places=1)
+            integral,error=quad(integrand,12,13,args=(self.solar,69))
+            self.assertAlmostEqual(488,integral,delta=1.5)
+            
+        def test_top_atmosphere2(self):
+            integral,error=quad(integrand,13,14,args=(self.solar,69))
+            self.assertAlmostEqual(460,integral,delta=1)            
+ 
+         
+        def test_top_atmosphere3(self):
+            integral,error=quad(integrand,14,15,args=(self.solar,249))
+            self.assertAlmostEqual(376,integral,delta=1)             
+ 
+        def test_top_atmosphere7(self):
+            integral,error=quad(integrand,18,19,args=(self.solar,69))
+            self.assertAlmostEqual(25,integral,delta=1)
+
+ 
+    def integrand(x, solar,ls):
+        return solar.surface_irradience(ls,22.3,x)
+    
     try:
         unittest.main()
     except SystemExit as inst:
