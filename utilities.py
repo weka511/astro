@@ -13,17 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+import string
+
+# slip_zip
+#
 # given a list, return a new list of triples, with the list "slipped", e.g.
 # [1,2,3,4,5] becomes
 # [(None, 1, 2), (1, 2, 3), (2, 3, 4), (3, 4, 5), (4, 5, None)]
 # This function is uses to iterate through the layers, with each layer being
 # sanwiched between the layes immediately above and below.
 
-import string
-
 def slip_zip(x):
     return zip ([None]+x[:-1],x,x[1:]+[None])
 
+# format_latitude
+#
+# Convert latitude to North/South form
 def format_latitude(latitude):
     if latitude>0:
         NS="N"
