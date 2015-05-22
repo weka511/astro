@@ -28,11 +28,6 @@ class Planet:
         self.name = name
         self.S = 1371   # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
                         # Appelbaum & Flood
-        self.a = 1.0 # the  semimajor axis in AU,
-        self.e = 0.017 #  eccentricity
-        self.obliquity = 23.4
-        self.hours_in_day = 24
-        self.average_temperature = 300
 
     def __str__(self):
         return ("{0}\nSemimajor axis = {1:9.7f} AU\n" +\
@@ -100,7 +95,12 @@ class Earth(Planet):
             Earth.earth=Earth()
         return Earth.earth
     def __init__(self):
-        Planet.__init__(self,"Earth")    
+        Planet.__init__(self,"Earth")
+        self.a = 1.0 # the  semimajor axis in AU,
+        self.e = 0.017 #  eccentricity
+        self.obliquity = 23.4
+        self.hours_in_day = 24
+        self.average_temperature = 300        
     def get_days_in_year(self):
         return 365.256363004
     

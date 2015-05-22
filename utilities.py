@@ -19,9 +19,24 @@
 # This function is uses to iterate through the layers, with each layer being
 # sanwiched between the layes immediately above and below.
 
+import string
 
 def slip_zip(x):
     return zip ([None]+x[:-1],x,x[1:]+[None])
+
+def format_latitude(latitude):
+    if latitude>0:
+        NS="N"
+    elif latitude<0:
+        NS="S"
+    else: 
+        NS=' '
+    return (NS,abs(latitude))
+
+colours=['b','r','g','c','m','y','b']
+
+def get_colour(index):
+    return colours[index%len(colours)]
 
 # Find extremem, given that y0<y1>y2, or y0>y1<y2
 # Fit a parabola to (x0,y0, (x1,y1), and (x2,y2), and find its extremum
@@ -47,7 +62,28 @@ class TemperatureLog:
         raise NotImplementedError("TemperatureLog.add(...)")
     def write(line):
         pass
-    
+    def get_max_min(self,channel):
+        xs,ys=self.extract(channel)
+        ys_for_period=[]
+        xxx=[]
+        ymin=[]
+        ymax=[]
+        x_previous=-1
+        for x,y in zip(xs,ys):
+              if x_previous<0:
+                    x_previous=x
+                    ys_for_period=[]
+              if x-x_previous>=1:
+                    xxx.append(x_previous)
+                    ymin.append(min(ys_for_period))
+                    ymax.append(max(ys_for_period))
+                    x_previous=x
+                    x_previous=-1
+                    ys_for_period=[]
+              ys_for_period.append(y)
+
+        return (xxx,ymin,ymax)    
+
 # Used to store temperature values in an external file     
 class ExternalTemperatureLog(TemperatureLog):
     def __init__(self,logfile,sep=' '):
@@ -81,6 +117,14 @@ class ExternalTemperatureLog(TemperatureLog):
         self.skipping = True
         return (x,y)
 
+    def get(self,key):
+        for record in self.logfile:
+            pair = string.split(record,'=')
+            if len(pair)>0 and pair[0].lower()==key.lower():
+                result=float(pair[1])
+                self.logfile.seek(0)  #rewind, in case we want to extract data again
+                return result
+            
 # Used to store temperature values internally           
 class InternalTemperatureLog(TemperatureLog):
     def __init__(self):
@@ -96,7 +140,7 @@ class InternalTemperatureLog(TemperatureLog):
             days.append(record.day)
             result.append(record.temperatures[layer_number])
         return (days,result)
-    
+
 if __name__=="__main__":
     with open('output.txt', 'w') as f:
         log=ExternalTemperatureLog(f)

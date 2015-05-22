@@ -13,11 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import utilities, io, os,matplotlib.pyplot as plt, sys, getopt
+import utilities, io, os,matplotlib.pyplot as plt, sys, getopt, glob
 
 def help():
       print 'viewer.py -i <outputfile>'
-      
+
+
+
 def display(inputfile,figure=1):
       with open(inputfile, 'r') as f:
             history = utilities.ExternalTemperatureLog(f)
@@ -39,27 +41,7 @@ def display(inputfile,figure=1):
 def display_maxmin(inputfile,figure=1):
       with open(inputfile, 'r') as f:
             history = utilities.ExternalTemperatureLog(f)
-            count=0
-            xs,ys=history.extract(1)
-            x_previous=-1
-            ys_for_period=[]
-            xxx=[]
-            ymin=[]
-            ymax=[]
-            for x,y in zip(xs,ys):
-                  if x_previous<0:
-                        x_previous=x
-                        ys_for_period=[]
-                  if x-x_previous>=1:
-                        xxx.append(x_previous)
-                        ymin.append(min(ys_for_period))
-                        ymax.append(max(ys_for_period))
-                        x_previous=x
-                        ys_for_period=[]
-                  ys_for_period.append(y)
-            xxx.append(x_previous)
-            ymax.append(max(ys_for_period))                  
-            ymin.append(min(ys_for_period))
+            (xxx,ymin,ymax)=history.get_max_min(1)   
             plt.figure(figure)
             plt.title("Diurnal variation in temperature for {0}".format(inputfile))
             plt.xlabel("Time")
@@ -67,19 +49,43 @@ def display_maxmin(inputfile,figure=1):
             plt.grid(True)            
             plt.plot(xxx,ymin,'b-',xxx,ymax,'r-')
             plt.savefig(os.path.splitext(inputfile)[0]+"-minmax")
+
+
+def display_daily_minima(inputfile,figure,colour):
+      with open(inputfile, 'r') as f:
+            history = utilities.ExternalTemperatureLog(f)
+            latitude=history.get('latitude')
+            (xxx,ymin,ymax)=history.get_max_min(1)
+            plt.figure(figure)
+            (NS,latitude)=utilities.format_latitude(latitude)
+          
+            plt.plot(xxx,ymin,colour,label="{0:5.1f}{1}".format(abs(latitude),NS)) 
             
+
+def display_daily_minima_all_latitudes(figure):
+      index=0;
+      for name in glob.glob('*.txt'):
+            display_daily_minima(name,figure,utilities.get_colour(index))
+            index+=1
+      plt.title("Minimum temperature for each Latitude")
+      plt.xlabel("Time")
+      plt.ylabel("Temperature - Kelvin")            
+      plt.legend(loc='upper left')
+      plt.grid(True)        
+      plt.savefig("SurfaceTemperatureAllLatitudes")
+      
 def main(argv):
       inputfile='output.txt'    
       figure=1
       all = False
       minmax= False
-      
+      daily_minima=False
       if len(argv)>0:
             try:
                   opts, args = getopt.getopt( \
                         argv,\
-                        "hi:am",\
-                        ["help","ifile=","allpoints","maxmin"])
+                        "hi:amd",\
+                        ["help","ifile=","allpoints","maxmin","daily"])
                         
             except getopt.GetoptError:
                   help()
@@ -91,17 +97,20 @@ def main(argv):
                   elif opt in ("-i", "--ifile"):
                         inputfile = arg
                   elif opt == '-a':
-                        print "-a"
                         all=True
                   elif opt == "-m":
-                        print "-m"
                         minmax=True
+                  elif opt == "-d":
+                        daily_minima=True
       
       if all:
             display(inputfile,figure)
             figure += 1
       if minmax:
             display_maxmin(inputfile,figure)
+            figure +=1
+      if daily_minima:
+            display_daily_minima_all_latitudes(figure)
             figure +=1
             
       plt.show()

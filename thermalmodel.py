@@ -136,9 +136,7 @@ class ThermalModel:
         for above,layer,below in self.zipper_layers:
             total__internal_inflow+=layer.propagate_temperature(above,below,areocentric_longitude,T,dT,self.record)
         if abs(total__internal_inflow)>1.0e-6: print total__internal_inflow
-        
-            #if above!=None and above.name=="Surface":
-                #print above.temperature, layer.temperature, above.heat_gain, layer.heat_gain
+ 
         for layer in self.layers:
             layer.temperature=layer.new_temperature
      
