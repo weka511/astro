@@ -13,24 +13,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import thermalmodel, planet, solar, utilities, sys,getopt
+import thermalmodel, planet, solar, utilities, sys,getopt, string
 
 def help():
-      print 'mars-temperature-model.py -o <outputfile> -f <hour from> -t <hour to> -l <latitude> -s <steps per hour>'
+      print 'leighton.py -o <outputfile> -f <hour from> -t <hour to> -l <latitude> -s <steps per hour>'
       
 def main(argv):
-      outputfile='output.txt'
+      outputfile=''
       from_date=0
       to_date=720
       latitude = 0
       step = 10
       temperature = -1
+      co2 = True
+      spec=[(9,0.015),(10,0.3)]
+      
       if len(argv)>0:
             try:
                   opts, args = getopt.getopt( \
                         argv,\
-                        "h:o:f:t:l:s:m:",\
-                        ["ofile=","from","to","latitude","step","temperature"])
+                        "ho:f:t:l:s:m:p:c",\
+                        ["ofile=","from","to","latitude","step","temperature","co2","spec"])
             except getopt.GetoptError:
                   help()
                   sys.exit(2)
@@ -49,8 +52,23 @@ def main(argv):
                   elif opt in ("-s","--step"):
                         step=int(arg)                  
                   elif opt in ("-m","--temperature"):
-                        temperature=int(arg) 
+                        temperature=int(arg)
+                  elif opt in ("-c","co2"):
+                        co2=False
+                  elif opt in ("-p","spec"):
+                        spec=[]
+                        for run in arg.strip('[]').split(';'):
+                              try:
+                                    couple=run.strip('()').split(',')
+                                    spec.append((int(couple[0]),float(couple[1])))
+                              except ValueError:
+                                    print "Could not parse {0}".format(run)
+                                    sys.exit(2)
                         
+      if outputfile=='':
+            (lat,ns)=utilities.format_latitude(latitude)
+            outputfile="{1:3.0f}{0}.txt".format(lat,ns).strip()
+           
       with open(outputfile, 'w') as f:
             mars = planet.Mars()
             solar_model = solar.Solar(mars)
@@ -68,7 +86,10 @@ def main(argv):
             history.write("Latitude={0:6.1f}".format(latitude))
             history.write("Step={0:6.1f}".format(step))
             history.write("Starting Temperature={0:6.1f} K".format(temperature))
-            thermal=thermalmodel.ThermalModel(latitude,[(9,0.015),(10,0.3)],solar_model,mars,history,temperature)
+            history.write("Layering (from top down)")
+            for n,thickness in spec:
+                  history.write("{0:d} layers, thickness {1:5.2f} metres each.".format(n,thickness))
+            thermal=thermalmodel.ThermalModel(latitude,spec,solar_model,mars,history,temperature,co2)
             thermal.runModel(from_date,to_date,step)
      
 if __name__ == "__main__":

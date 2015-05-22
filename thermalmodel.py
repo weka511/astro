@@ -114,7 +114,7 @@ class Bottom(Layer):
 # The Thermal Model is a collection of Layers
 
 class ThermalModel:
-    def __init__(self,latitude,spec,solar,planet,history,temperature):
+    def __init__(self,latitude,spec,solar,planet,history,temperature,co2):
         self.layers=[]
         self.planet=planet
         (n,dz)=spec[0]
