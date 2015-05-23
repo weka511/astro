@@ -72,8 +72,9 @@ def main(argv):
       with open(outputfile, 'w') as f:
             mars = planet.Mars()
             solar_model = solar.Solar(mars)
-            history = utilities.ExternalTemperatureLog(f)
             if temperature<0: temperature=mars.average_temperature
+            
+            history = utilities.ExternalTemperatureLog(f)
             history.write("Semimajor axes={0:10.7f} AU".format(mars.a))
             history.write("Eccentricty={0:10.7f}".format(mars.e))
             history.write("Obliquity={0:6.3f}".format(mars.obliquity))
@@ -89,6 +90,7 @@ def main(argv):
             history.write("Layering (from top down)")
             for n,thickness in spec:
                   history.write("{0:d} layers, thickness {1:5.2f} metres each.".format(n,thickness))
+
             thermal=thermalmodel.ThermalModel(latitude,spec,solar_model,mars,history,temperature,co2)
             thermal.runModel(from_date,to_date,step)
      

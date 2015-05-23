@@ -53,11 +53,13 @@ class Layer:
     #    dT     Number of seconds
     #    planet
     def update_temperature(self,heat_gain_per_second,dT,planet):    
-        self.heat_gain = heat_gain_per_second*dT
+        self.calculate_heat_gain(heat_gain_per_second,dT)
         delta_temperature= self.heat_gain / (self.planet.C * self.planet.rho * self.thickness)
         self.new_temperature += delta_temperature
 
-    
+    def calculate_heat_gain(self,heat_gain_per_second,dT):
+        self.heat_gain = heat_gain_per_second*dT
+        
     def __str__(self):
         return (                                  \
             "{0}: Latitude={1:6.1f},"            +\
@@ -72,23 +74,68 @@ class Layer:
 # Top Layer: gains and loses heat through radiation, and exchanges heat with Layer below
 class Surface(Layer):
     stefan_bolzmann = 5.670374e-8
+    co2_condensation_temperature = 190
+    co2_latent_heat = 574
     
-    def __init__(self,latitude,thickness,solar,planet,temperature):
+    def __init__(self,latitude,thickness,solar,planet,temperature,co2):
         Layer.__init__(self,"Surface",latitude,thickness,planet,temperature)
         self.solar=solar
-        
+        self.co2=co2
+        self.total_co2=0
+    
+
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
-        irradiance=self.planet.F*self.solar.surface_irradience(areocentric_longitude,self.latitude,T)
+        irradiance=self.absorption()*self.solar.surface_irradience(areocentric_longitude,self.latitude,T)
         radiation_loss=self.bolzmann(self.temperature)
         internal_inflow=self.heat_flow(below)
-        self.update_temperature(irradiance - radiation_loss + internal_inflow,dT,planet)
+        total_inflow_before_latent_heat = irradiance - radiation_loss + internal_inflow
+        if self.co2:
+            if self.temperature>Surface.co2_condensation_temperature:
+                if self.total_co2>0 and total_inflow_before_latent_heat>0:
+                    total_inflow_before_latent_heat=self.sublimate_co2(total_inflow_before_latent_heat)
+                self.update_temperature(total_inflow_before_latent_heat,dT,planet)
+            else:
+                if self.co2_is_available() and total_inflow_before_latent_heat<0:
+                    total_inflow_before_latent_heat=self.freeze_co2(total_inflow_before_latent_heat)
+                
+                self.update_temperature(total_inflow_before_latent_heat,dT,planet)
+        else:
+            self.update_temperature(total_inflow_before_latent_heat,dT,planet)
         record.add(self.temperature)
         return internal_inflow
     
     def bolzmann(self,t):
         t2=t*t
-        return self.planet.E*Surface.stefan_bolzmann*t2*t2
+        return self.emissivity()*Surface.stefan_bolzmann*t2*t2
+ 
+    def absorption(self):
+        if self.total_co2>0:
+            return 0.5     # TODO co2
+        else:        
+            return self.planet.F  
+    
+    def emissivity(self):
+        return self.planet.E   # TODO co2
+    
+    def sublimate_co2(self,total_inflow_before_latent_heat):
+        if self.total_co2>0:
+            self.total_co2-=abs(total_inflow_before_latent_heat)/Surface.co2_latent_heat
+            if self.total_co2>0:
+                return 0
+            else:
+                balance=abs(self.total_co2)*Surface.co2_latent_heat
+                self.total_co2=0
+                return balance
+        else:
+            return total_inflow_before_latent_heat
 
+    def co2_is_available(self):
+        return True
+    
+    def freeze_co2(self,total_inflow_before_latent_heat):
+        self.total_co2+=abs(total_inflow_before_latent_heat)/Surface.co2_latent_heat
+        return 0
+    
 # Ordinary layers - excanges heat with Layers above and below
 class MedialLayer(Layer):
     def __init__(self,latitude,thickness,planet,temperature):
@@ -118,7 +165,7 @@ class ThermalModel:
         self.layers=[]
         self.planet=planet
         (n,dz)=spec[0]
-        self.layers.append(Surface(latitude,dz,solar,planet,temperature))
+        self.layers.append(Surface(latitude,dz,solar,planet,temperature,co2))
         for (n,dz)in spec:
             for i in range(n):
                 self.layers.append(MedialLayer(latitude,dz,planet,temperature))
