@@ -118,7 +118,7 @@ class ExternalTemperatureLog(TemperatureLog):
                 parts=line.split()
                 x.append(float(parts[0]))
                 y.append(float(parts[channel]))
-        self.logfile.seek(0)  #rewind, in case we want to extract data again
+        self.rewind()
         self.skipping = True
         return (x,y)
 
@@ -127,9 +127,13 @@ class ExternalTemperatureLog(TemperatureLog):
             pair = string.split(record,'=')
             if len(pair)>0 and pair[0].lower()==key.lower():
                 result=float(pair[1])
-                self.logfile.seek(0)  #rewind, in case we want to extract data again
+                self.rewind()
                 return result
             
+    #rewind, in case we want to extract data again
+    def rewind(self):
+        self.logfile.seek(0)
+        
 # Used to store temperature values internally           
 class InternalTemperatureLog(TemperatureLog):
     def __init__(self):

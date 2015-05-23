@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import math, planet, solar, utilities
+import math, planet, solar, utilities, physics
 
 # The thremal model consists of a series of Layers, the top one being the
 # Surface
@@ -73,9 +73,6 @@ class Layer:
 
 # Top Layer: gains and loses heat through radiation, and exchanges heat with Layer below
 class Surface(Layer):
-    stefan_bolzmann = 5.670374e-8
-    co2_condensation_temperature = 190
-    co2_latent_heat = 574
     
     def __init__(self,latitude,thickness,solar,planet,temperature,co2):
         Layer.__init__(self,"Surface",latitude,thickness,planet,temperature)
@@ -90,7 +87,7 @@ class Surface(Layer):
         internal_inflow=self.heat_flow(below)
         total_inflow_before_latent_heat = irradiance - radiation_loss + internal_inflow
         if self.co2:
-            if self.temperature>Surface.co2_condensation_temperature:
+            if self.temperature>physics.CO2.condensation_temperature:
                 if self.total_co2>0 and total_inflow_before_latent_heat>0:
                     total_inflow_before_latent_heat=self.sublimate_co2(total_inflow_before_latent_heat)
                 self.update_temperature(total_inflow_before_latent_heat,dT,planet)
@@ -105,12 +102,11 @@ class Surface(Layer):
         return internal_inflow
     
     def bolzmann(self,t):
-        t2=t*t
-        return self.emissivity()*Surface.stefan_bolzmann*t2*t2
+        return self.emissivity()*physics.Radiation.bolzmann(t)
  
     def absorption(self):
         if self.total_co2>0:
-            return 0.5     # TODO co2
+            return 1-physics.CO2.albedo
         else:        
             return self.planet.F  
     
@@ -119,11 +115,11 @@ class Surface(Layer):
     
     def sublimate_co2(self,total_inflow_before_latent_heat):
         if self.total_co2>0:
-            self.total_co2-=abs(total_inflow_before_latent_heat)/Surface.co2_latent_heat
+            self.total_co2-=abs(total_inflow_before_latent_heat)/physics.CO2.latent_heat
             if self.total_co2>0:
                 return 0
             else:
-                balance=abs(self.total_co2)*Surface.co2_latent_heat
+                balance=abs(self.total_co2)*physics.CO2.latent_heat
                 self.total_co2=0
                 return balance
         else:
@@ -133,7 +129,7 @@ class Surface(Layer):
         return True
     
     def freeze_co2(self,total_inflow_before_latent_heat):
-        self.total_co2+=abs(total_inflow_before_latent_heat)/Surface.co2_latent_heat
+        self.total_co2+=abs(total_inflow_before_latent_heat)/physics.CO2.latent_heat
         return 0
     
 # Ordinary layers - excanges heat with Layers above and below

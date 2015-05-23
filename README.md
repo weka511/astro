@@ -14,6 +14,7 @@ I have revisited [Leighton and Murray's Behavior of Carbon Dioside and Other Vol
 | thermalmodel.py | Slices of Mars' interior, together with model for heat flow |
 | utilities.py | Utility fucntions for log files, zipping lists, choosing colours for plots |
 | viewer.py | Used to plot data files from leighton.py |
+| physics.py | Repository for physical laws and constants |
 
 ### TODO
 

@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import thermalmodel, planet, solar, utilities, sys,getopt, string
+import thermalmodel, planet, solar, utilities, sys,getopt, string, physics
 
 def help():
       print 'leighton.py -o <outputfile> -f <hour from> -t <hour to> -l <latitude> -s <steps per hour>'
@@ -90,7 +90,8 @@ def main(argv):
             history.write("Layering (from top down)")
             for n,thickness in spec:
                   history.write("{0:d} layers, thickness {1:5.2f} metres each.".format(n,thickness))
-
+            history.write("Albedo of snowcap = {0:5.2f}".format(physics.CO2.albedo))
+            
             thermal=thermalmodel.ThermalModel(latitude,spec,solar_model,mars,history,temperature,co2)
             thermal.runModel(from_date,to_date,step)
      
