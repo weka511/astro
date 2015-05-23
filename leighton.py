@@ -70,7 +70,7 @@ def main(argv):
             outputfile="{1:3.0f}{0}.txt".format(lat,ns).strip()
            
       with open(outputfile, 'w') as f:
-            mars = planet.Mars()
+            mars = planet.create("Mars")
             solar_model = solar.Solar(mars)
             if temperature<0: temperature=mars.average_temperature
             

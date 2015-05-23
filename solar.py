@@ -113,7 +113,7 @@ if __name__=="__main__":
             y.append(irradiance)
         return (x,y)
      
-    mars = planet.Mars()
+    mars = planet.create("Mars")
     solar = Solar(mars)
     
     beam_irradience_top=solar.beam_irradience(mars.a)

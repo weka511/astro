@@ -204,10 +204,10 @@ class ThermalModel:
 if __name__=="__main__":
     import matplotlib.pyplot as plt
     
-    mars = planet.Mars()
+    mars = planet.create("Mars")
     solar = solar.Solar(mars)
     history = utilities.InternalTemperatureLog()    
-    thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,150)
+    thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,150,False)
     
     thermal.runModel(0,1440,10)
     (days,surface_temp) = history.extract(0)

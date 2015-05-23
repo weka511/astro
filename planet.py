@@ -30,28 +30,28 @@ class Planet:
                         # Appelbaum & Flood
 
     def __str__(self):
-        return ("{0}\nSemimajor axis = {1:9.7f} AU\n" +\
-               "eccentricity = {2:8.6f}\n" + \
-               "obliquity = {3:6.3f}\n" + \
-               "hours in day = {4:6.4f}\n" + \
-               "absorption = {5:4.2f}\n"+ \
-               "emissivity={6:4.2f}\n" + \
-               "conductivity={7:6.2g}\n" + \
-               "specific heat={8:6.1f}\n" + \
-               "rho={9:6.1f}\n" \
-               "average temperature={10:5.1f}" \
-               ).format(\
-            self.name,   \
-            self.a, \
-            self.e, \
-            self.obliquity, \
-            self.hours_in_day, \
-            self.F , \
-            self.E,  \
-            self.K, \
-            self.C, \
-            self.rho, \
-            self.average_temperature \
+        return ("{0}\nSemimajor axis = {1:9.7f} AU\n"                + \
+                "eccentricity = {2:8.6f}\n"                          + \
+               "obliquity = {3:6.3f}\n"                              + \
+               "hours in day = {4:6.4f}\n"                           + \
+               "absorption = {5:4.2f}\n"                             + \
+               "emissivity={6:4.2f}\n"                               + \
+               "conductivity={7:6.2g}\n"                             + \
+               "specific heat={8:6.1f}\n"                            + \
+               "rho={9:6.1f}\n"                                      + \
+               "average temperature={10:5.1f}"                         \
+               ).format(                                               \
+            self.name,                                                 \
+            self.a,                                                    \
+            self.e,                                                    \
+            self.obliquity,                                            \
+            self.hours_in_day,                                         \
+            self.F,                                                    \
+            self.E,                                                    \
+            self.K,                                                    \
+            self.C,                                                    \
+            self.rho,                                                  \
+            self.average_temperature                                   \
         )
   
       
@@ -87,6 +87,20 @@ class Planet:
     def get_areocentric_longitude(self,day,hour):
         return 360*float(day)/self.get_days_in_year()
 
+class Mercury(Planet):
+    def __init__(self):
+        Planet.__init__(self,"Mercury")
+        self.a = 0.387098  # Wikipedia Mercury page
+        self.e = 0.205630  # Wikipedia Mercury page
+        self.obliquity = 0 # Wikipedia Axial Tilt page
+        
+class Venus(Planet):
+    def __init__(self):
+        Planet.__init__(self,"Venus")
+        self.a = 0.723327  # Wikipedia Venus page
+        self.e = 0.0067  # Wikipedia Venus page
+        self.obliquity = 177.36 # Wikipedia Axial Tilt pagee
+        
 class Earth(Planet):
     earth = None
     @classmethod
@@ -98,7 +112,7 @@ class Earth(Planet):
         Planet.__init__(self,"Earth")
         self.a = 1.0 # the  semimajor axis in AU,
         self.e = 0.017 #  eccentricity
-        self.obliquity = 23.4
+        self.obliquity = 23.4 # Wikipedia Axial Tilt page
         self.hours_in_day = 24
         self.average_temperature = 300        
     def get_days_in_year(self):
@@ -118,12 +132,54 @@ class Mars(Planet):
         self.rho = 1.6 * Conversion.cm3_per_meter3 / Conversion.gm_per_Kg # density
         self.average_temperature = 210 #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
         
+class Jupiter(Planet):
+    def __init__(self):
+        Planet.__init__(self,"Jupiter")
+        self.a = 5.204267  # Wikipedia Jupiter page
+        self.e = 0.048775  # Wikipedia Jupiter page
+        self.obliquity = 3.13 # Wikipedia Axial Tilt page
+
+class Saturn(Planet):
+    def __init__(self):
+        Planet.__init__(self,"Saturn")
+        self.a = 9.5820172   # Wikipedia Saturn page
+        self.e = 0.055723219  # Wikipedia Saturn page
+        self.obliquity = 26.73 # Wikipedia Axial Tilt page
+        
+class Uranus(Planet):
+    def __init__(self):
+        Planet.__init__(self,"Uranus")
+        self.a = 19.189253   # Wikipedia Jupiter page
+        self.e = 0.047220087  # Wikipedia Uranus page
+        self.obliquity = 97.77 # Wikipedia Axial Tilt page
+        
+class Neptune(Planet):
+    def __init__(self):
+        Planet.__init__(self,"Neptune")
+        self.a = 30.070900  # Wikipedia Jupiter page
+        self.e = 0.00867797  # Wikipedia Neptune page
+        self.obliquity = 28.32 # Wikipedia Axial Tilt page
+
+def create(name):
+    planets=[Mercury(),
+             Venus(),
+             Earth(),
+             Mars(),
+             Jupiter(),
+             Saturn(),
+             Uranus(),
+             Neptune()
+    ]
+    for planet in planets:
+        if planet.name.upper()==name.upper(): return planet
+    return None
+
 if __name__=="__main__":
     import unittest
     
     class TestMarsMethods(unittest.TestCase):
         def setUp(self):
-            self.mars = Mars()
+            self.mars = create("mars")
         def test_get_days_in_year(self):
             self.assertAlmostEqual(687,self.mars.get_days_in_year(),places=1)
             
