@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import string
+import string, time
 
 # slip_zip
 #
@@ -38,7 +38,15 @@ def format_latitude(latitude):
         NS=' '
     return (NS,abs(latitude))
 
-colours=['b','r','g','c','m','y','b']
+colours=[
+    'b',   #Blue
+    'r',   #Red
+    'g',   #Green
+    'c',   #Cyan
+    'm',   #Magents
+    'y',   #Yellow
+    'k'    #Black
+]
 
 def get_colour(index):
     return colours[index%len(colours)]
@@ -75,26 +83,29 @@ class TemperatureLog:
         ymax=[]
         x_previous=-1
         for x,y in zip(xs,ys):
-              if x_previous<0:
-                    x_previous=x
-                    ys_for_period=[]
-              if x-x_previous>=1:
-                    xxx.append(x_previous)
-                    ymin.append(min(ys_for_period))
-                    ymax.append(max(ys_for_period))
-                    x_previous=x
-                    x_previous=-1
-                    ys_for_period=[]
-              ys_for_period.append(y)
+            if x_previous<0:
+                x_previous=x
+                ys_for_period=[]
+            if x-x_previous>=1:
+                xxx.append(x_previous)
+                ymin.append(min(ys_for_period))
+                ymax.append(max(ys_for_period))
+                x_previous=x
+                x_previous=-1
+                ys_for_period=[]
+            ys_for_period.append(y)
 
         return (xxx,ymin,ymax)    
-
+    def close(self):
+        pass
+        
 # Used to store temperature values in an external file     
 class ExternalTemperatureLog(TemperatureLog):
     def __init__(self,logfile,sep=' '):
         self.logfile=logfile
         self.sep=sep
         self.skipping=True
+        self.start=time.time()
         
     def add(self,record):
         if self.skipping:
@@ -112,6 +123,7 @@ class ExternalTemperatureLog(TemperatureLog):
         x=[]
         y=[]
         for line in self.logfile:
+            if line[0:3]=="END": return (x,y)
             if self.skipping:
                 self.skipping = line[0:5]!="START"
             else:
@@ -133,6 +145,9 @@ class ExternalTemperatureLog(TemperatureLog):
     #rewind, in case we want to extract data again
     def rewind(self):
         self.logfile.seek(0)
+     
+    def close(self):
+        self.logfile.write("END, Elapsed time = {0:.1f} seconds\n".format(time.time()-self.start))
         
 # Used to store temperature values internally           
 class InternalTemperatureLog(TemperatureLog):

@@ -14,7 +14,7 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 class CO2:
-    condensation_temperature = 190
+    condensation_temperature = 145
     latent_heat = 574               # http://www.engineeringtoolbox.com/fluids-evaporation-latent-heat-d_147.html    
     albedo = 0.6
     
