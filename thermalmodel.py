@@ -157,7 +157,16 @@ class Bottom(Layer):
 # The Thermal Model is a collection of Layers
 
 class ThermalModel:
+    
+    @staticmethod
+    # Estimate stable temperature
+    def stable_temperature(solar,planet,proportion=0.25):
+        beam_irradience=proportion * solar.beam_irradience(planet.a)
+        return physics.Radiation.reverse_bolzmann(beam_irradience)    
+    
     def __init__(self,latitude,spec,solar,planet,history,temperature,co2):
+        if temperature<0:
+            temperature=ThermalModel.stable_temperature(solar,planet)         
         self.layers=[]
         self.planet=planet
         (n,dz)=spec[0]
@@ -199,7 +208,6 @@ class ThermalModel:
                     self.propagate_temperature(areocentric_longitude,hour,step_size)
                 self.history.add(self.record)
 
-
         
 if __name__=="__main__":
     import matplotlib.pyplot as plt
@@ -207,7 +215,7 @@ if __name__=="__main__":
     mars = planet.create("Mars")
     solar = solar.Solar(mars)
     history = utilities.InternalTemperatureLog()    
-    thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,150,False)
+    thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,-1,False)
     
     thermal.runModel(0,1440,10)
     (days,surface_temp) = history.extract(0)

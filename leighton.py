@@ -72,7 +72,6 @@ def main(argv):
       with open(outputfile, 'w') as f:
             mars = planet.create("Mars")
             solar_model = solar.Solar(mars)
-            if temperature<0: temperature=mars.average_temperature
             
             history = utilities.ExternalTemperatureLog(f)
             history.write("Semimajor axes={0:10.7f} AU".format(mars.a))

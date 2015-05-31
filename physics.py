@@ -23,5 +23,9 @@ class Radiation:
     
     @staticmethod
     def bolzmann(t):
-        t2=t*t
-        return Radiation.stefan_bolzmann*t2*t2    
+        t2=t*t    # we call this function often, so don't use exponentiation
+        return Radiation.stefan_bolzmann*t2*t2 
+    
+    @staticmethod
+    def reverse_bolzmann(radiation):
+        return (radiation/Radiation.stefan_bolzmann)**0.25
