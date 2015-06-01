@@ -18,6 +18,5 @@ I have revisited [Leighton and Murray's Behavior of Carbon Dioside and Other Vol
 
 ### TODO
 
- * The effect of condensation and evaporation on the energy balance (WIP)
- * The total amount of volatile at the surface at each point in time (WIP)
+  * The total amount of volatile at the surface at each point in time (WIP)
 
