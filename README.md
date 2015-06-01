@@ -16,7 +16,4 @@ I have revisited [Leighton and Murray's Behavior of Carbon Dioside and Other Vol
 | viewer.py | Used to plot data files from leighton.py |
 | physics.py | Repository for physical laws and constants |
 
-### TODO
-
-  * The total amount of volatile at the surface at each point in time (WIP)
 
