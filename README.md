@@ -16,4 +16,10 @@ I have revisited [Leighton and Murray's Behavior of Carbon Dioside and Other Vol
 | viewer.py | Used to plot data files from leighton.py |
 | physics.py | Repository for physical laws and constants |
 
+## Orbital calculations
 
+I have started working on some code for orbital calculatione
+
+| File | Purpose |
+|--------------------------|-------------------------------------------------------|
+| kepler.py | Integrate Kepler using [Kotovich & Bowman: an Exactly Conservative Integegrator for the --body Problem](arxiv.org/pdf/physics/0112084) |
