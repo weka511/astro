@@ -22,4 +22,4 @@ I have started working on some code for orbital calculatione
 
 | File | Purpose |
 |--------------------------|-------------------------------------------------------|
-| kepler.py | Integrate Kepler using [Kotovich & Bowman: an Exactly Conservative Integegrator for the --body Problem](arxiv.org/pdf/physics/0112084) |
+| kepler.py | Integrate Kepler using [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084) |
