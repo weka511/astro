@@ -59,6 +59,11 @@ def extremum(x0,x1,x2,y0,y1,y2):
             ((x2-x1)*(x2+x1)*y0 + (x0-x2)*(x0+x2)*y1 + (x1-x0)*(x1+x0)*y2) /
             ((x2-x1)*y0 + (x0-x2)*y1 + (x1-x0)*y2))
 
+def signum(x):
+    if x<0: return -1
+    if x>0: return +1
+    return 0
+        
 # Used to record temperaturs in a log
 class TemperatureRecord:
     def __init__(self,day,hour,hours_in_day):

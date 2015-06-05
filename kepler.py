@@ -13,15 +13,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import math
+import math, utilities
 
 def predict(h,f,x):
     #print x
     #print f(x)
     return [x0 + h * f0 for (x0,f0) in zip(x,f(x))]
 
-def correct(h,f,x,xpred):
-    return [x0 + (h/2) * (f0 + fpred) for (x0,f0,fpred) in zip(x,f(x),f(xpred))]
+def eta(x,m,k):
+    return [
+        -k/x[0],
+        x[2]*x[2]/(2*m) + x[3]*x[3]/(2*m*x[0]*x[0]),
+        x[3]
+    ]
+
+def correct(h,f,eta0,eta1,x0,x1):
+    return [e0 + (h/2) * (f0 + f1) for (e0,f0,f1) in zip(eta0,f(eta0,x0),f(eta1,x1))]
+
+
+    
+def inverse(eta,m,k,x):
+    r=-k/eta[0]
+    L=eta[2]
+    psq=2*m*eta[1]-L*L/(r*r)
+    if psq>0:
+        p=utilities.signum(x[2])*math.sqrt(2*m*eta[1]-L*L/(r*r))
+    else:
+        p=0
+    return [r, x[1], p, L]
 
 def kepler_pred(x,m,k): # r, theta, p, l
     return [
@@ -31,8 +50,15 @@ def kepler_pred(x,m,k): # r, theta, p, l
         0
     ]
 
+def kepler_corr(eta,m,k,x):
+    term=k*x[2]/(m*x[0]*x[0])
+    return [term,-term,0]
+
 def hamiltonian(x,m,k):
     return x[2]*x[2]/(2*m) + x[3]*x[3]/(2*m*x[0]*x[0])-k/x[0]
+
+def ff(eta,x):
+    return kepler_corr(eta,m,k,x)
 
 if __name__=='__main__':
     import matplotlib.pyplot as plt
@@ -40,18 +66,24 @@ if __name__=='__main__':
     v=[]
     w=[]
     z=[]
-    h=0.01
+    h=0.001
     k = 1
-    r = 1
+    r = 1.0000
+    p = 0.0001
     m = 0.001
     L = math.sqrt((m/r*r*r ))
-    x=[r,0,0,L]
+    x=[r,0,p,L]
     #print x
     nn=10000
-    step = 100
+    step = 1
+    print hamiltonian(x,m,k)
+     
     for i in range(nn):
         x1 = predict(h,lambda(z) : kepler_pred(z,m,k),x)
-        x=correct(h,lambda(z) : kepler_pred(z,m,k),x,x1)
+        eta0=eta(x,m,k)
+        eta1=eta(x1,m,k)
+        eta2=correct(h,ff,eta0,eta1,x,x1)
+        x=inverse(eta2,m,k,x1)
         #print x
         if i%step==0:
             w.append(x1[0]*math.cos(x1[1]))
