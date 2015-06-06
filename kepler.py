@@ -15,7 +15,7 @@
 
 import math, utilities, integrators
 
-class Kepler:
+class Kepler(integrators.Hamiltonian):
     def __init__(self,x,m,k):
         self.x = x
         self.m = m
@@ -28,7 +28,7 @@ class Kepler:
     def transform(self):
         self.eta=[
             -self.k/self.x[0],
-            self.x[2]*self.x[2]/(2*self.m) + 
+            self.x[2]*self.x[2]/(2*self.m) + \
             self.x[3]*self.x[3]/(2*self.m*self.x[0]*self.x[0]),
             x[3]
         ]
@@ -46,8 +46,9 @@ class Kepler:
     def dx(self):
         return [
             self.x[2]/self.m, # p/m
-            self.x[3]/(self.m*self.x[0]*self.x[0]), # l/(m*r*r)
-            self.x[3]*self.x[3]/(self.m*self.x[0]*self.x[0]*self.x[0]) - self.k / (self.x[0]*self.x[0]),
+            self.x[3]/(self.m*self.x[0]*self.x[0]), 
+            self.x[3]*self.x[3]/(self.m*self.x[0]*self.x[0]*self.x[0]) - 
+                self.k / (self.x[0]*self.x[0]),
             0
         ]    
 
@@ -56,7 +57,8 @@ class Kepler:
         return [term,-term,0]
 
     def hamiltonian(self):
-        return self.x[2]*self.x[2]/(2*self.m) + self.x[3]*self.x[3]/(2*self.m*self.x[0]*self.x[0])-self.k/self.x[0]
+        return self.x[2]*self.x[2]/(2*self.m) + \
+               self.x[3]*self.x[3]/(2*self.m*self.x[0]*self.x[0])-self.k/self.x[0]
 
     def display(self):
         print "x",self.x

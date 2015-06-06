@@ -13,6 +13,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+class Hamiltonian:
+    def dx(self):
+        raise NotImplementedError
+    def d_eta(self):
+        raise NotImplementedError
+    def create(self,x):
+        raise NotImplementedError
+    def invert(self,hamiltonian):
+        raise NotImplementedError
+    def hamiltonian(self):
+        raise NotImplementedError
+    
 class Integrate2:
     def __init__(self,h,hamiltonian):
         self.h=h
