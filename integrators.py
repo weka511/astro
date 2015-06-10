@@ -13,15 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-class Hamiltonian:
+class Hamiltonian(object):
     def dx(self):
         raise NotImplementedError
     def d_eta(self):
         raise NotImplementedError
     def create(self,x):
         raise NotImplementedError
-    def invert(self,hamiltonian):
+    def transform(self):
         raise NotImplementedError
+    def invert(self,hamiltonian):
+        self.x = hamiltonian.x
     def hamiltonian(self):
         raise NotImplementedError
     

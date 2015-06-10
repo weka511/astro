@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import string, time
+import string, time, math
 
 # slip_zip
 #
@@ -63,6 +63,9 @@ def signum(x):
     if x<0: return -1
     if x>0: return +1
     return 0
+
+def guarded_sqrt(x):
+    return math.sqrt(x) if x>0 else 0
         
 # Used to record temperaturs in a log
 class TemperatureRecord:

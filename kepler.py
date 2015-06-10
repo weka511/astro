@@ -26,31 +26,25 @@ class Kepler(integrators.Hamiltonian):
         return Kepler(x,self.m,self.k)
     
     def transform(self):
-        self.eta=[
-            -self.k/self.x[0],
-            self.x[2]*self.x[2]/(2*self.m) + \
-            self.x[3]*self.x[3]/(2*self.m*self.x[0]*self.x[0]),
-            x[3]
-        ]
+        r = self.x[0]
+        p = self.x[2]
+        L = x[3]
+        self.eta=[-self.k/r, p*p/(2*self.m)+L*L/(2*self.m*r*r),L]
     
     def invert(self,kepler):
-        r=-self.k/self.eta[0]
-        L=self.eta[2]
-        psq=2*self.m*self.eta[1]-L*L/(r*r)        
-        p=utilities.signum(x[2])*math.sqrt(psq) if psq>0 else 0
+        super(Kepler,self).invert(kepler)  #FIXME
+        r = -self.k/self.eta[0]
+        L = self.eta[2]
+        p_squared = 2*self.m*self.eta[1]-L*L/(r*r)        
+        p=utilities.signum(x[2])*math.sqrt(p_squared) if p_squared>0 else 0
         self.x[0] = r
-        self.x[1] = kepler.x[1]
         self.x[2] = p
         self.x[3] = L
 
     def dx(self):
-        return [
-            self.x[2]/self.m, # p/m
-            self.x[3]/(self.m*self.x[0]*self.x[0]), 
-            self.x[3]*self.x[3]/(self.m*self.x[0]*self.x[0]*self.x[0]) - 
-                self.k / (self.x[0]*self.x[0]),
-            0
-        ]    
+        r = self.x[0]
+        L = self.x[3]
+        return [self.x[2]/self.m,L/(self.m*r*r), L*L/(self.m*r*r*r) - self.k / (r*r),0]    
 
     def d_eta(self):
         term=self.k*self.x[2]/(self.m*self.x[0]*self.x[0])
@@ -63,10 +57,6 @@ class Kepler(integrators.Hamiltonian):
     def display(self):
         print "x",self.x
         print "eta",self.eta
-        
-
-
-
 
 if __name__=='__main__':
     import matplotlib.pyplot as plt
@@ -82,7 +72,7 @@ if __name__=='__main__':
     L = math.sqrt((m/r*r*r ))
     x=[r,0,p,L]
     kepler=Kepler(x,m,k)
-    nn=100000
+    nn=1000000
     step = 1
     print kepler.hamiltonian()
     integrator = integrators.Integrate2(h,kepler)
@@ -93,5 +83,4 @@ if __name__=='__main__':
         v.append(kepler.x[0]*math.sin(kepler.x[1]))
     plt.plot(u,v)
   
-    
     print kepler.hamiltonian()
