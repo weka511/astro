@@ -15,7 +15,7 @@
 
 import math
 
-# TODO: more general case, e.g. 
+# TODO: more general case
 class ImplicitRungeKutta2:
     def __init__(self,f,n,iteration_error):
         self.gamma1          = 1.0/2.0
