@@ -66,7 +66,39 @@ def signum(x):
 
 def guarded_sqrt(x):
     return math.sqrt(x) if x>0 else 0
-        
+
+def newton_raphson(x,f,df,epsilon,N):
+    x0 = x
+    for i in range(N):
+        x1 = x0-f(x0)/df(x0)
+        if abs(x1-x0)<epsilon:
+            return x1
+        else:
+            x0 = x1    
+    return x0
+
+def get_angle(r):
+    abs_theta=0 if r[0]==0 else math.atan(r[1]/r[0])
+    return abs_theta+adjust_quadrant(r)
+
+def adjust_quadrant(r):
+    if r[0]>=0 and r[1]>=0: return 0
+    if r[0]<0 and r[1]>=0: return math.pi/2
+    if r[0]<0 and r[1]<0: return path.pi
+    return 3*math.pi/2
+
+def get_r(z):
+    [x,y]=z
+    return math.sqrt(x*x*y*y)
+
+def get_r_velocity(zdot,theta):
+    [xdot,ydot]=zdot
+    return math.cos(theta)*xdot + math.sin(theta)*ydot
+
+def get_theta_dot(zdot,theta,r):
+    [xdot,ydot]=zdot
+    return (math.cos(theta)*ydot - math.sin(theta)*xdot)/r
+
 # Used to record temperaturs in a log
 class TemperatureRecord:
     def __init__(self,day,hour,hours_in_day):
