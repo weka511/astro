@@ -18,9 +18,10 @@ I have revisited [Leighton and Murray's Behavior of Carbon Dioside and Other Vol
 
 ## Orbital calculations
 
-I have started working on some code for orbital calculatione
+I have started working on some code for orbital calculatione, based on [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084)
 
 | File | Purpose |
 |--------------------------|---------------------------------------------------------------------|
-| kepler.py | Integrate Kepler using [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084) |
-| integrators.py |  Integrate Kepler using [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084)|
+| kepler.py |  Hamiltonion for integrating Kepler problem |
+| integrators.py |  Simple integratorr based on Kotovich & Bowman |
+| Threebody.py | Hamiltonion for 2 Dimensional, but otherwise general,  3 body problem |
