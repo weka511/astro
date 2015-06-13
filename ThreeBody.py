@@ -21,13 +21,13 @@ class ThreeBody(integrators.Hamiltonian):
     
     def __init__(self,r1,r2,r3,r1dot, r2dot,r3dot,m1,m2,m3,G=1,clone=False):
         self.G=G
-        M = m1 + m2 + m3
+        self.M = m1 + m2 + m3
         self.mu = m1 + m2
         self.m1 = m1
         self.m2 = m2
         self.m3 = m3
         self.g1 = m1*m2/self.mu
-        self.g2 = m3 * self.mu /M
+        self.g2 = m3 * self.mu /self.M
         if clone: return
 
         r = [r2_-r1_ for (r1_,r2_) in zip(r1,r2)]
@@ -37,8 +37,8 @@ class ThreeBody(integrators.Hamiltonian):
         p = self.g1 * utilities.get_r_velocity(r_dot,theta)
         l = self.g1 * r_polar * r_polar * utilities.get_theta_dot(r_dot,theta,r_polar)
 
-        rho = [M*r3_/self.mu for r3_ in r3]
-        rho_dot = [M*r3_/self.mu for r3_ in r3dot]        
+        rho = [self.M*r3_/self.mu for r3_ in r3]
+        rho_dot = [self.M*r3_/self.mu for r3_ in r3dot]        
         rho_polar=utilities.get_r(rho)
         Theta=utilities.get_angle(rho)
         P = self.g2 * utilities.get_r_velocity(rho_dot,Theta)
@@ -106,7 +106,8 @@ class ThreeBody(integrators.Hamiltonian):
         self.x = [r, theta, rho, Theta, p, l, P, L ]
          
     def hamiltonian(self):
-        return sum(self.hamiltonian_components())    
+        [r,theta,rho,Theta,p,l,P,L] = self.x
+        return (p*p/self.g1 +P*P/self.g2 +l*l/(self.g1*r*r)+L*L/(self.g2*rho*rho))/2 + self.V(r,theta,rho,Theta)
 
     def dV(self,r,theta,rho,Theta):
         r23_sq      = rho*rho - 2*(self.m1/self.mu)*rho*r*math.cos(Theta-theta) + (self.m1/self.mu)*(self.m1/self.mu)*r*r  
@@ -162,7 +163,11 @@ class ThreeBody(integrators.Hamiltonian):
             P*P_dot/self.g2 + (L*rho*rho*L_dot-rho*L*L*rho_dot)/(self.g2*rho*rho*rho*rho),
             Vr*r_dot + Vtheta*theta_dot + Vrho*rho_dot + VTheta*Theta_dot
         ]
-    
+
+    def inverse_jacobi(self):
+        r3 = [(self.mu/self.M)*rho for rho in self.rho]
+        r1 = [rr3-r]
+        
 if __name__=='__main__':
     import matplotlib.pyplot as plt, sys
     
@@ -182,21 +187,21 @@ if __name__=='__main__':
         1.0
     )
     
-    integrator = integrators.Integrate2(1.0e-4,hamiltonian)
+    integrator = integrators.Integrate2(1.0e-5,hamiltonian)
     
-    nn = 100000
+    nn = 2000000
     mm = 1000
+    print hamiltonian.hamiltonian()
     try:
         for i in range(nn):
             integrator.integrate()
-  #          print hamiltonian.x[0], hamiltonian.x[1]
-            #hamiltonian.x=integrator.predict()
             if i>mm:
                 u.append(hamiltonian.x[0]*math.cos(hamiltonian.x[1]))
                 v.append(hamiltonian.x[0]*math.sin(hamiltonian.x[1]))
                 w.append(hamiltonian.x[2]*math.cos(hamiltonian.x[3]))
                 z.append(hamiltonian.x[2]*math.sin(hamiltonian.x[3]))        
         plt.plot(u,v,'b',w,z,'r')
+        print hamiltonian.hamiltonian()
     except:
         plt.plot(u,v,'b',w,z,'r')
         print "Unexpected error:", sys.exc_info()[0]        
