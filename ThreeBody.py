@@ -26,27 +26,25 @@ class ThreeBody(integrators.Hamiltonian):
         self.m1 = m1
         self.m2 = m2
         self.m3 = m3
-        if clone: return
         self.g1 = m1*m2/self.mu
+        self.g2 = m3 * self.mu /M
+        if clone: return
+
         r = [r2_-r1_ for (r1_,r2_) in zip(r1,r2)]
         r_dot = [r2_-r1_ for (r1_,r2_) in zip(r1dot,r2dot)]        
         r_polar=utilities.get_r(r)
         theta=utilities.get_angle(r)
-        r_velocity=utilities.get_r_velocity(r_dot,theta)
-        p = self.g1 * r_velocity
+        p = self.g1 * utilities.get_r_velocity(r_dot,theta)
         l = self.g1 * r_polar * r_polar * utilities.get_theta_dot(r_dot,theta,r_polar)
 
-        self.g2 = m3 * self.mu /M
         rho = [M*r3_/self.mu for r3_ in r3]
         rho_dot = [M*r3_/self.mu for r3_ in r3dot]        
         rho_polar=utilities.get_r(rho)
         Theta=utilities.get_angle(rho)
-        rho_velocity=utilities.get_r_velocity(rho_dot,Theta)
-        P = self.g2 * rho_velocity
+        P = self.g2 * utilities.get_r_velocity(rho_dot,Theta)
         L = self.g2 * rho_polar * rho_polar * utilities.get_theta_dot(rho_dot,Theta,rho_polar)
 
         self.x = [r_polar,theta,rho_polar,Theta,p,l,P,L]
-
         self.transform()
         
     def dx(self):
@@ -118,7 +116,7 @@ class ThreeBody(integrators.Hamiltonian):
         dr23_dTheta = 2 * (self.m1/self.mu)*r*rho * math.sin(Theta-theta)/r23
         dr23_dtheta = - dr23_dTheta        
 
-        r31_sq      = rho*rho - 2*(self.m1/self.mu)*rho*r*math.cos(Theta-theta) + (self.m1/self.mu)*(self.m1/self.mu)*r*r
+        r31_sq      = rho*rho + 2*(self.m2/self.mu)*rho*r*math.cos(Theta-theta) + (self.m2/self.mu)*(self.m2/self.mu)*r*r
         r31         = math.sqrt(r31_sq)       
         dr31_drho   = (rho + (self.m2/self.mu)*r*math.cos(Theta-theta))/r31
         dr31_dr     = ((self.m2/self.mu)*rho*math.cos(Theta-theta) + (self.m2/self.mu)*(self.m2/self.mu)*r)/r31
@@ -142,7 +140,7 @@ class ThreeBody(integrators.Hamiltonian):
     def V(self,r,theta,rho,Theta):
         r23_sq      = rho*rho - 2*(self.m1/self.mu)*rho*r*math.cos(Theta-theta) + (self.m1/self.mu)*(self.m1/self.mu)*r*r  
         r23         = math.sqrt(r23_sq)         
-        r31_sq      = rho*rho - 2*(self.m1/self.mu)*rho*r*math.cos(Theta-theta) + (self.m1/self.mu)*(self.m1/self.mu)*r*r
+        r31_sq      = rho*rho + 2*(self.m2/self.mu)*rho*r*math.cos(Theta-theta) + (self.m2/self.mu)*(self.m2/self.mu)*r*r
         r31         = math.sqrt(r31_sq)              
         return self.G*self.m1*self.m2/r + self.G*self.m2*self.m3/r23  + self.G*self.m3*self.m1/r31
         
@@ -152,7 +150,7 @@ class ThreeBody(integrators.Hamiltonian):
         return utilities.newton_raphson(r,\
                                         lambda r: self.V(r,theta,rho,Theta)-eta3, \
                                         lambda r: self.dV(r,theta,rho,Theta)[0], \
-                                        1.0e-12,
+                                        1.0e-3,
                                         1000)
     
     def hamiltonian_components(self):
@@ -161,8 +159,8 @@ class ThreeBody(integrators.Hamiltonian):
         [Vr,Vtheta,Vrho,VTheta]=self.dV(r,theta,rho,Theta)        
         return [
             p*p_dot/self.g1 + (l*r*r*l_dot-r*l*l*r_dot)/(self.g1*r*r*r*r),
-            P*P_dot/self.g2 + (l*rho*rho*L_dot-rho*L*L*rho_dot)/(self.g1*rho*rho*rho*rho),
-            Vr*r_dot + VTheta*theta_dot + Vrho*rho_dot + VTheta*Theta_dot
+            P*P_dot/self.g2 + (L*rho*rho*L_dot-rho*L*L*rho_dot)/(self.g2*rho*rho*rho*rho),
+            Vr*r_dot + Vtheta*theta_dot + Vrho*rho_dot + VTheta*Theta_dot
         ]
     
 if __name__=='__main__':
@@ -184,13 +182,14 @@ if __name__=='__main__':
         1.0
     )
     
-    integrator = integrators.Integrate2(1.0e-4,hamiltonian)
+    integrator = integrators.Integrate2(1.0e-5,hamiltonian)
     
-    nn = 1000
+    nn = 200
     try:
         for i in range(nn):
-            #integrator.integrate()
-            hamiltonian.x=integrator.predict()
+            integrator.integrate()
+            print hamiltonian.x[0], hamiltonian.x[1]
+            #hamiltonian.x=integrator.predict()
             u.append(hamiltonian.x[0]*math.cos(hamiltonian.x[1]))
             v.append(hamiltonian.x[0]*math.sin(hamiltonian.x[1]))
             w.append(hamiltonian.x[2]*math.cos(hamiltonian.x[3]))
