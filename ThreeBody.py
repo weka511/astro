@@ -142,7 +142,7 @@ class ThreeBody(integrators.Hamiltonian):
         r23         = math.sqrt(r23_sq)         
         r31_sq      = rho*rho + 2*(self.m2/self.mu)*rho*r*math.cos(Theta-theta) + (self.m2/self.mu)*(self.m2/self.mu)*r*r
         r31         = math.sqrt(r31_sq)              
-        return self.G*self.m1*self.m2/r + self.G*self.m2*self.m3/r23  + self.G*self.m3*self.m1/r31
+        return -self.G*self.m1*self.m2/r - self.G*self.m2*self.m3/r23  - self.G*self.m3*self.m1/r31
         
 
 
@@ -182,18 +182,20 @@ if __name__=='__main__':
         1.0
     )
     
-    integrator = integrators.Integrate2(1.0e-5,hamiltonian)
+    integrator = integrators.Integrate2(1.0e-4,hamiltonian)
     
-    nn = 200
+    nn = 100000
+    mm = 1000
     try:
         for i in range(nn):
             integrator.integrate()
-            print hamiltonian.x[0], hamiltonian.x[1]
+  #          print hamiltonian.x[0], hamiltonian.x[1]
             #hamiltonian.x=integrator.predict()
-            u.append(hamiltonian.x[0]*math.cos(hamiltonian.x[1]))
-            v.append(hamiltonian.x[0]*math.sin(hamiltonian.x[1]))
-            w.append(hamiltonian.x[2]*math.cos(hamiltonian.x[3]))
-            z.append(hamiltonian.x[2]*math.sin(hamiltonian.x[3]))        
+            if i>mm:
+                u.append(hamiltonian.x[0]*math.cos(hamiltonian.x[1]))
+                v.append(hamiltonian.x[0]*math.sin(hamiltonian.x[1]))
+                w.append(hamiltonian.x[2]*math.cos(hamiltonian.x[3]))
+                z.append(hamiltonian.x[2]*math.sin(hamiltonian.x[3]))        
         plt.plot(u,v,'b',w,z,'r')
     except:
         plt.plot(u,v,'b',w,z,'r')
