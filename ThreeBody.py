@@ -63,17 +63,8 @@ class ThreeBody(integrators.Hamiltonian):
      
     def d_eta(self):
         [r_dot,theta_dot,rho_dot,Theta_dot,p_dot,l_dot,P_dot,L_dot] = self.dx()
-        hamiltonian_components = self.hamiltonian_components()
-        return [
-             hamiltonian_components[0],
-             hamiltonian_components[1],
-             hamiltonian_components[2],
-             rho_dot,
-             l_dot,
-             L_dot,
-             theta_dot,
-             Theta_dot
-         ]
+        dH = self.dH()
+        return [dH[0], dH[1], dH[2], rho_dot, l_dot, L_dot, theta_dot, Theta_dot]
      
     def create(self,x):
         product = ThreeBody(0,0,0,0,0,0,self.m1,self.m2,self.m3,self.G,True)
@@ -154,7 +145,7 @@ class ThreeBody(integrators.Hamiltonian):
                                         1.0e-3,
                                         1000)
     
-    def hamiltonian_components(self):
+    def dH(self):
         [r,theta,rho,Theta,p,l,P,L] = self.x
         [r_dot,theta_dot,rho_dot,Theta_dot,p_dot,l_dot,P_dot,L_dot] = self.dx()
         [Vr,Vtheta,Vrho,VTheta]=self.dV(r,theta,rho,Theta)        
