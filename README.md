@@ -24,4 +24,7 @@ I have started working on some code for orbital calculatione, based on [Kotovich
 |--------------------------|---------------------------------------------------------------------|
 | kepler.py |  Hamiltonion for integrating Kepler problem |
 | integrators.py |  Simple integratorr based on Kotovich & Bowman |
+| rki.py | Implicit Runge Ketta (symplectic) integrators |
 | Threebody.py | Hamiltonion for 2 Dimensional, but otherwise general,  3 body problem |
+| Lorentz.py | # This tests the ImplicitRungeKutts Inntegrator by calculating the evolution of the Lorntz Attractor|
+
