@@ -49,11 +49,12 @@ class ImplicitRungeKutta2(ImplicitRungeKutta):
                 return [yy + self.gamma1*kk1 + self.gamma2*kk2 for (yy,kk1,kk2) in zip(y,k1_new,k2_new)]
             else:
                 k1,k2 = k1_new,k2_new
-        raise ImplicitRungeKuttaException(                     \
-            'Failed to Converge within {0} after {1} iterations'.format(  \
-                self.iteration_error,                          \
-                self.max_iterations)                           \
-        )
+        return [yy + self.gamma1*kk1 + self.gamma2*kk2 for (yy,kk1,kk2) in zip(y,k1,k2)]        
+        #raise ImplicitRungeKuttaException(                     \
+            #'Failed to Converge within {0} after {1} iterations'.format(  \
+                #self.iteration_error,                          \
+                #self.max_iterations)                           \
+        #)
  
     def iterate(self,h,y,k1,k2):
         y_k1_k2 = zip(y,k1,k2)
@@ -72,14 +73,14 @@ if __name__=='__main__':
     nn=1000
     h=2*math.pi/nn
     rk=ImplicitRungeKutta2(lambda (y): [y[1],-y[0]],10,0.000000001)
-    y=[1,0,1]
-    u=[]
-    v=[]
+    y=[1,0]
+    xs=[]
+    ys=[]
     for i in range(nn):
         y= rk.step(h,y)
-        u.append(y[0])
-        v.append(y[1])
-    plt.plot(u,v) 
+        xs.append(y[0])
+        ys.append(y[1])
+    plt.plot(xs,ys) 
     
 
         

@@ -16,7 +16,7 @@
 # This tests the ImplicitRungeKutts Inntegrator by calculating the
 # evolution of the Lorntz Attractor
 
-import rki
+
 
 class Lorentz:
     def __init__(self,sigma,rho,beta):
@@ -35,6 +35,8 @@ class Lorentz:
 if __name__=='__main__':
     import matplotlib.pyplot as plt
     from mpl_toolkits.mplot3d import Axes3D
+    import rki
+    
     nn=10000
     h=0.01
     lorentz=Lorentz(10,28,8.0/3.0)
