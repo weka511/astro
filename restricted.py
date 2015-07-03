@@ -27,7 +27,7 @@ def dx(x,G,M1,M2):
     x3=x[4]
     y3=x[5]
     denom12=denom(x1,x2,y1,y2)
-    print denom12
+
     denom31=denom(x3,x1,y3,y1)
     denom23=denom(x2,x3,y2,y3)
     return [
@@ -53,11 +53,16 @@ if __name__=='__main__':
     
     nn=50000
     h=0.01
-    rk=rki.ImplicitRungeKutta2(lambda (x): dx(x,1,10,1),100,0.01)
+    M1=10
+    M2=1
+    #rk=rki.ImplicitRungeKutta2(lambda (x): dx(x,1,M1,M2),100,0.0001)
+    rk=rki.ImplicitRungeKuttaN(lambda (x): dx(x,1,M1,M2),100,0.01)
     omega=math.sqrt(1.0/121)
     print "omega=",omega
-    x=[-1,0, 10,0,              0,17, 
-       0,-1*omega,  0, 10*omega, 17*math.sqrt(10.0/(17*17*17)),0.0]
+    R2=10
+    R3=17 #(1.1*(R2**3))**(1.0/3.0)
+    x=[-1,0, 10,0,              0,R3, 
+       0,-1*omega,  0, 10*omega, R3*math.sqrt(10.0/(R3*R3*R3)),0.0]
     
     x1s=[]
     y1s=[]
