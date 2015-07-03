@@ -51,15 +51,15 @@ def T(x,G,M1,M2):
 if __name__=='__main__':
     import rki, matplotlib.pyplot as plt
     
-    nn=50000
-    h=0.01
-    M1=10
-    M2=1
+    nn=500000
+    h=0.0001
+    M1=10.0
+    M2=1.0
     rk=rki.ImplicitRungeKutta4(lambda (x): dx(x,1,M1,M2),100,0.000001)
     omega=math.sqrt(1.0/121)
     print "omega=",omega
-    R2=10
-    R3=17 #(1.1*(R2**3))**(1.0/3.0)
+    R2=10.0
+    R3=17.0 #(1.1*(R2**3))**(1.0/3.0)
     x=[-1,0, 10,0,              0,R3, 
        0,-1*omega,  0, 10*omega, R3*math.sqrt(10.0/(R3*R3*R3)),0.0]
     
@@ -78,3 +78,6 @@ if __name__=='__main__':
         x3s.append(x[4])
         y3s.append(x[5])
     plt.plot(x1s,y1s,'b', x2s,y2s,'g', x3s,y3s,'r') 
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.title('M1={0:5.1f},M2={1:5.0f},R2={2:5.1f},R3={3:5.1f},nn={4:5.1f},h={5:.1e}'.format(M1,M2,R2,R3,nn,h))

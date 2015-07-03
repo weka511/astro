@@ -15,33 +15,23 @@
 
 import math
 
-# TODO: more general case
+# see https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Gauss.E2.80.93Legendre_methods 
 
-class ImplicitRungeKuttaException(Exception):
-    def __init__(self, value):
-            self.value = value
-    def __str__(self):
-        return repr(self.value)
-    
 class ImplicitRungeKutta(object):
+    class Failed(Exception):
+        def __init__(self, value):
+                self.value = value
+        def __str__(self):
+            return repr(self.value)  
+        
     def __init__(self, dy,max_iterations,iteration_error):
         self.dy              = dy
         self.max_iterations  = max_iterations
         self.iteration_error = iteration_error    
-    def step(self,h,y):
-        raise NotImplementedError
+
     def distance(self,k,k_new):
             return max([abs(a-b) for (a,b) in zip(k,k_new)])  
-    def fail(self):
-        raise ImplicitRungeKuttaException(                     \
-            'Failed to Converge within {0} after {1} iterations'.format(  \
-                self.iteration_error,                          \
-                self.max_iterations))
-       
-# see https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Gauss.E2.80.93Legendre_methods    
-class ImplicitRungeKuttaN(ImplicitRungeKutta):
-    def __init__(self,dy,max_iterations,iteration_error):
-        super(ImplicitRungeKuttaN, self).__init__(dy,max_iterations,iteration_error)    
+
 
     def step(self,h,y):
         k=[[0 for col in y] for row in range(len(self.b))]
@@ -71,8 +61,14 @@ class ImplicitRungeKuttaN(ImplicitRungeKutta):
                 yy[l]+=h*inner_product
             result[i]=self.dy(yy)
         return result
-
-class ImplicitRungeKutta2(ImplicitRungeKuttaN):
+    
+    def fail(self):
+        raise ImplicitRungeKutta.Failed(                     \
+            'Failed to Converge within {0} after {1} iterations'.format(  \
+                self.iteration_error,                          \
+                self.max_iterations)) 
+    
+class ImplicitRungeKutta2(ImplicitRungeKutta):
     def __init__(self,dy,max_iterations,iteration_error):
         super(ImplicitRungeKutta2, self).__init__(dy,max_iterations,iteration_error)
         r3=math.sqrt(3.0)
@@ -88,7 +84,7 @@ class ImplicitRungeKutta2(ImplicitRungeKuttaN):
         ]
         self.s=len(self.b)        
    
-class ImplicitRungeKutta4(ImplicitRungeKuttaN):
+class ImplicitRungeKutta4(ImplicitRungeKutta):
     def __init__(self,dy,max_iterations,iteration_error):
         super(ImplicitRungeKutta4, self).__init__(dy,max_iterations,iteration_error)
         r15=math.sqrt(15.0)
@@ -112,16 +108,19 @@ if __name__=='__main__':
     rk=ImplicitRungeKutta2(lambda (y): [y[1],-y[0]],10,0.000000001)
     
     import matplotlib.pyplot as plt
-    nn=1000
-    h=2*math.pi/nn
-    y=[1,0]
-    xs=[]
-    ys=[]
-    for i in range(nn):
-        y= rk.step(h,y)
-        xs.append(y[0])
-        ys.append(y[1])
-    plt.plot(xs,ys) 
+    try:
+        nn=1000
+        h=2*math.pi/nn
+        y=[1,0]
+        xs=[]
+        ys=[]
+        for i in range(nn):
+            y= rk.step(h,y)
+            xs.append(y[0])
+            ys.append(y[1])
+        plt.plot(xs,ys)
+    except ImplicitRungeKutta.Failed,e:
+        print "caught!",e
     
 
         
