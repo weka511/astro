@@ -55,8 +55,7 @@ if __name__=='__main__':
     h=0.01
     M1=10
     M2=1
-    #rk=rki.ImplicitRungeKutta2(lambda (x): dx(x,1,M1,M2),100,0.0001)
-    rk=rki.ImplicitRungeKuttaN(lambda (x): dx(x,1,M1,M2),100,0.01)
+    rk=rki.ImplicitRungeKutta4(lambda (x): dx(x,1,M1,M2),100,0.000001)
     omega=math.sqrt(1.0/121)
     print "omega=",omega
     R2=10

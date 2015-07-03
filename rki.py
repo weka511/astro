@@ -17,6 +17,12 @@ import math
 
 # TODO: more general case
 
+class ImplicitRungeKuttaException(Exception):
+    def __init__(self, value):
+            self.value = value
+    def __str__(self):
+        return repr(self.value)
+    
 class ImplicitRungeKutta(object):
     def __init__(self, dy,max_iterations,iteration_error):
         self.dy              = dy
@@ -31,85 +37,11 @@ class ImplicitRungeKutta(object):
             'Failed to Converge within {0} after {1} iterations'.format(  \
                 self.iteration_error,                          \
                 self.max_iterations))
-    
-class ImplicitRungeKuttaException(Exception):
-    def __init__(self, value):
-            self.value = value
-    def __str__(self):
-        return repr(self.value)
-    
-class ImplicitRungeKutta2(ImplicitRungeKutta):
-    def __init__(self,dy,max_iterations,iteration_error):
-        self.gamma1          = 1.0/2.0
-        self.gamma2          = 1.0/2.0
-        self.alpha1          = 1.0/2.0-math.sqrt(3.0)/6.0
-        self.alpha2          = 1.0/2.0+math.sqrt(3.0)/6.0
-        self.beta11          = 1.0/4.0
-        self.beta22          = 1.0/4.0
-        self.beta12          = 1.0/4.0 - math.sqrt(3.0)/6.0
-        self.beta21          = 1.0/4.0 + math.sqrt(3.0)/6.0
-        self.dy              = dy
-        self.max_iterations  = max_iterations
-        self.iteration_error = iteration_error
-
-    def step(self,h,y):
-        (k1,k2)=self.iterate(h,y,[0 for yy in y],[0 for yy in y])
-        for i in range(self.max_iterations):
-            (k1_new,k2_new)=self.iterate(h,y,k1,k2)
-            if self.distance(k1,k1_new) < self.iteration_error and self.distance(k2,k2_new) < self.iteration_error:
-                return [yy + self.gamma1*kk1 + self.gamma2*kk2 for (yy,kk1,kk2) in zip(y,k1_new,k2_new)]
-            else:
-                k1,k2 = k1_new,k2_new
-        return [yy + self.gamma1*kk1 + self.gamma2*kk2 for (yy,kk1,kk2) in zip(y,k1,k2)]        
-        raise ImplicitRungeKuttaException(                     \
-            'Failed to Converge within {0} after {1} iterations'.format(  \
-                self.iteration_error,                          \
-                self.max_iterations)                           \
-        )
- 
-    def iterate(self,h,y,k1,k2):
-        y_k1_k2 = zip(y,k1,k2)
-        return (
-            [h * ff for ff in self.dy([yy+self.beta11*kk1+self.beta12*kk2 for (yy,kk1,kk2) in y_k1_k2])],
-            [h * ff for ff in self.dy([yy+self.beta21*kk1+self.beta22*kk2 for (yy,kk1,kk2) in y_k1_k2])]
-        )
-    
-    
+       
 # see https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Gauss.E2.80.93Legendre_methods    
 class ImplicitRungeKuttaN(ImplicitRungeKutta):
     def __init__(self,dy,max_iterations,iteration_error):
-        super(ImplicitRungeKuttaN, self).__init__(dy,max_iterations,iteration_error)
-        r15=math.sqrt(15.0)
-        self.a=[
-            [5.0/36.0,          2.0/9.0-r15/15.0, 5.0/36.0-r15/30.0],
-            [5.0/36.0+r15/24.0, 2.0/9.0,          5.0/36.0-r15/24.0],
-            [5.0/36.0+r15/30.0, 2.0/9.0+r15/15.0, 5.0/36.0]
-            #[
-                #5.0/36.0,
-                #5.0/36.0+r15/24.0,
-                #5.0/36.0+r15/30.0,
-                #],
-            #[
-                #2.0/9.0-r15/15.0,
-                #2.0/9.0,
-                #2.0/9.0+r15/15.0
-                #],
-            #[
-                #5.0/36.0-r15/30.0,
-                #5.0/36.0-r15/24.0,
-                #5.0/36.0
-            #]
-        ]
-        self.b=[
-            5.0/18.0,
-            4.0/9.0,
-            5.0/18.0]
-        self.c=[
-            0.5-r15/10.0,
-            0.5,
-            0.5+r15/10.0
-        ]
-        self.s=3
+        super(ImplicitRungeKuttaN, self).__init__(dy,max_iterations,iteration_error)    
 
     def step(self,h,y):
         k=[[0 for col in y] for row in range(len(self.b))]
@@ -129,9 +61,7 @@ class ImplicitRungeKuttaN(ImplicitRungeKutta):
     
     # assume that each row of the matrix is a single vector a = [[row1,...]]    
     def iterate(self,h,y,k):
-        k_new=[[0 for col in y] for row in range(self.s)]
-        #print k
-        #print k_new
+        result=[[0 for col in y] for row in range(self.s)]
         for i in range(self.s):
             yy=[y0 for y0 in y]
             for l in range(len(k[i])):
@@ -139,28 +69,51 @@ class ImplicitRungeKuttaN(ImplicitRungeKutta):
                 for j in range(self.s):
                     inner_product+=self.a[i][j]*k[j][l]
                 yy[l]+=h*inner_product
-            k_new[i]=self.dy(yy)
-        #print k_new
-        return k_new
-    
-    #def inner_product(self,a,k):
-        #product=[[0 for col in y] for row in range(self.s)]
-        #for i in range(self.s):
-            #for j in range(self.s):
-                #print k[i]
-                #for l in range(len(k[i])):
-                    #product[i][l]+=a[i][j]*product[j][l]
-        #return product
+            result[i]=self.dy(yy)
+        return result
+
+class ImplicitRungeKutta2(ImplicitRungeKuttaN):
+    def __init__(self,dy,max_iterations,iteration_error):
+        super(ImplicitRungeKutta2, self).__init__(dy,max_iterations,iteration_error)
+        r3=math.sqrt(3.0)
+        self.a=[
+            [0.25,        0.25-r3/6.0],
+            [0.25+r3/6.0, 0.25],
+        ]
+        self.b=[
+            0.5, 0.5]
+        self.c=[
+            0.5-r3/6,
+            0.5+r3/6
+        ]
+        self.s=len(self.b)        
+   
+class ImplicitRungeKutta4(ImplicitRungeKuttaN):
+    def __init__(self,dy,max_iterations,iteration_error):
+        super(ImplicitRungeKutta4, self).__init__(dy,max_iterations,iteration_error)
+        r15=math.sqrt(15.0)
+        self.a=[
+            [5.0/36.0,          2.0/9.0-r15/15.0, 5.0/36.0-r15/30.0],
+            [5.0/36.0+r15/24.0, 2.0/9.0,          5.0/36.0-r15/24.0],
+            [5.0/36.0+r15/30.0, 2.0/9.0+r15/15.0, 5.0/36.0]
+        ]
+        self.b=[
+            5.0/18.0,
+            4.0/9.0,
+            5.0/18.0]
+        self.c=[
+            0.5-r15/10.0,
+            0.5,
+            0.5+r15/10.0
+        ]
+        self.s=len(self.b)
         
-        
-    
 if __name__=='__main__':
-    rk=ImplicitRungeKuttaN(lambda (y): [y[1],-y[0]],10,0.000000001)
+    rk=ImplicitRungeKutta2(lambda (y): [y[1],-y[0]],10,0.000000001)
     
     import matplotlib.pyplot as plt
     nn=1000
     h=2*math.pi/nn
-#    rk=ImplicitRungeKutta2(lambda (y): [y[1],-y[0]],10,0.000000001)
     y=[1,0]
     xs=[]
     ys=[]
