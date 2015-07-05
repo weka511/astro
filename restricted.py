@@ -52,16 +52,31 @@ if __name__=='__main__':
     import rki, matplotlib.pyplot as plt
     
     nn=500000
-    h=0.0001
-    M1=10.0
-    M2=1.0
-    rk=rki.ImplicitRungeKutta4(lambda (x): dx(x,1,M1,M2),100,0.000001)
-    omega=math.sqrt(1.0/121)
-    print "omega=",omega
-    R2=10.0
-    R3=17.0 #(1.1*(R2**3))**(1.0/3.0)
-    x=[-1,0, 10,0,              0,R3, 
-       0,-1*omega,  0, 10*omega, R3*math.sqrt(10.0/(R3*R3*R3)),0.0]
+    h = 0.001
+    M1 = 250000
+    epsilon=0.1
+    M2 = 1.0
+    G = 1.0
+    L = 25.0
+    R2 = L*M1/(M1+M2)
+    x2 = R2
+    y2 = 0
+    x1 = -L*M2/(M1+M2)
+    y1 = 0.0
+    x3 = 0.5*(x1+x2)*(1+epsilon)
+    y3 = L* math.sqrt(3.0)/2.0
+    omega = math.sqrt(G*(M1+M2)/(L*L*L))
+    x=[
+        x1, y1,
+        x2, y2,
+        x3, y3, 
+        0, x1*omega,
+        0, x2*omega,
+        -0.5*math.sqrt(3)*L*omega, 0.5*L*omega
+    ]
+    
+    rk = rki.ImplicitRungeKutta4(lambda (x): dx(x,1,M1,M2),100,1e-18)
+    
     
     x1s=[]
     y1s=[]
@@ -80,4 +95,4 @@ if __name__=='__main__':
     plt.plot(x1s,y1s,'b', x2s,y2s,'g', x3s,y3s,'r') 
     plt.xlabel('X')
     plt.ylabel('Y')
-    plt.title('M1={0:5.1f},M2={1:5.0f},R2={2:5.1f},R3={3:5.1f},nn={4:5.1f},h={5:.1e}'.format(M1,M2,R2,R3,nn,h))
+    plt.title('M1={0:5.1f},M2={1:5.0f},R2={2:5.1f},L={3:5.1f},nn={4:5.1f},h={5:.1e}'.format(M1,M2,R2,L,nn,h))
