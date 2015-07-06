@@ -51,7 +51,7 @@ def T(x,G,M1,M2):
 if __name__=='__main__':
     import rki, matplotlib.pyplot as plt
     
-    nn=500000
+    nn=100000
     h = 0.001
     M1 = 250000
     epsilon=0.1
@@ -75,8 +75,9 @@ if __name__=='__main__':
         -0.5*math.sqrt(3)*L*omega, 0.5*L*omega
     ]
     
-    rk = rki.ImplicitRungeKutta4(lambda (x): dx(x,1,M1,M2),100,1e-18)
+    rk = rki.ImplicitRungeKutta4(lambda (x): dx(x,1,M1,M2),200,1e-18)
     
+    driver = rki.Driver(rk,0.000000001,0.5,1.0,0.000000001)
     
     x1s=[]
     y1s=[]
@@ -85,7 +86,7 @@ if __name__=='__main__':
     x3s=[]
     y3s=[]
     for i in range(nn):
-        x= rk.step(h,x)
+        x= driver.step(x)
         x1s.append(x[0])
         y1s.append(x[1])
         x2s.append(x[2])

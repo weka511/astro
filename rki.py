@@ -15,6 +15,35 @@
 
 import math
 
+class Driver(object):
+    def __init__(self,integrator,h_minimum,h,h_maximum,epsilon,mult=0.01):
+        self.integrator=integrator
+        self.h_minimum=h_minimum
+        self.h_maximum=h_maximum
+        self.epsilon = epsilon
+        self.h = h
+        self.min_epsilon=mult*epsilon
+    def step(self,y):
+        try:
+            y1=self.integrator.step(self.h,y)
+            y11=self.integrator.step(0.5*self.h,self.integrator.step(0.5*self.h,y))
+            error = self.integrator.distance(y1,y11)
+            if error> self.epsilon:
+                ratio=self.epsilon/error
+                self.h*=ratio**(1.0/self.integrator.order)
+                print self.h
+                return self.step(y)
+            if error<self.min_epsilon:
+                ratio=self.min_epsilon/error
+                self.h*=ratio**(1.0/self.integrator.order)
+                if self.h>self.h_maximum:
+                    self.h=self.h_maximum
+            return y11
+        except ImplicitRungeKutta.Failed,e:
+            self.h*=0.5
+            print self.h
+            return self.step(y)            
+
 # see https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Gauss.E2.80.93Legendre_methods 
 
 class ImplicitRungeKutta(object):
@@ -24,11 +53,12 @@ class ImplicitRungeKutta(object):
         def __str__(self):
             return repr(self.value)  
         
-    def __init__(self, dy,max_iterations,iteration_error):
+    def __init__(self, dy,max_iterations,iteration_error,order):
         self.dy              = dy
         self.max_iterations  = max_iterations
         self.iteration_error = iteration_error    
-
+        self.order           = order
+        
     def distance(self,k,k_new):
             return max([abs(a-b) for (a,b) in zip(k,k_new)])  
 
@@ -70,7 +100,7 @@ class ImplicitRungeKutta(object):
     
 class ImplicitRungeKutta2(ImplicitRungeKutta):
     def __init__(self,dy,max_iterations,iteration_error):
-        super(ImplicitRungeKutta2, self).__init__(dy,max_iterations,iteration_error)
+        super(ImplicitRungeKutta2, self).__init__(dy,max_iterations,iteration_error,4)
         r3=math.sqrt(3.0)
         self.a=[
             [0.25,        0.25-r3/6.0],
@@ -86,7 +116,7 @@ class ImplicitRungeKutta2(ImplicitRungeKutta):
    
 class ImplicitRungeKutta4(ImplicitRungeKutta):
     def __init__(self,dy,max_iterations,iteration_error):
-        super(ImplicitRungeKutta4, self).__init__(dy,max_iterations,iteration_error)
+        super(ImplicitRungeKutta4, self).__init__(dy,max_iterations,iteration_error,6)
         r15=math.sqrt(15.0)
         self.a=[
             [5.0/36.0,          2.0/9.0-r15/15.0, 5.0/36.0-r15/30.0],
@@ -106,16 +136,15 @@ class ImplicitRungeKutta4(ImplicitRungeKutta):
         
 if __name__=='__main__':
     rk=ImplicitRungeKutta2(lambda (y): [y[1],-y[0]],10,0.000000001)
-    
+    driver = Driver(rk,0.000000001,0.5,1.0,0.000000001)
     import matplotlib.pyplot as plt
     try:
         nn=1000
-        h=2*math.pi/nn
         y=[1,0]
         xs=[]
         ys=[]
         for i in range(nn):
-            y= rk.step(h,y)
+            y= driver.step(y)
             xs.append(y[0])
             ys.append(y[1])
         plt.plot(xs,ys)
