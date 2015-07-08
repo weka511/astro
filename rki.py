@@ -29,19 +29,18 @@ class Driver(object):
             y11=self.integrator.step(0.5*self.h,self.integrator.step(0.5*self.h,y))
             error = self.integrator.distance(y1,y11)
             if error> self.epsilon:
-                ratio=self.epsilon/error
-                self.h*=ratio**(1.0/self.integrator.order)
-                print self.h
+                self.h*=(self.epsilon/error)**(1.0/self.integrator.order)
                 return self.step(y)
             if error<self.min_epsilon:
-                ratio=self.min_epsilon/error
-                self.h*=ratio**(1.0/self.integrator.order)
+                if error>0:
+                    self.h*=(self.min_epsilon/error)**(1.0/self.integrator.order)
+                else:
+                    self.h*=2.0
                 if self.h>self.h_maximum:
                     self.h=self.h_maximum
             return y11
         except ImplicitRungeKutta.Failed,e:
             self.h*=0.5
-            print self.h
             return self.step(y)            
 
 # see https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Gauss.E2.80.93Legendre_methods 
