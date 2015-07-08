@@ -94,7 +94,7 @@ if __name__=='__main__':
         while len(xs)>0:
             x=xs[0:12]
             xs=xs[12:]
-            if i%sampling_period==0
+            if i%sampling_period==0:
                 x1s.append(x[0])
                 y1s.append(x[1])
                 x2s.append(x[2])
