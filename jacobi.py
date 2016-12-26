@@ -36,7 +36,7 @@ def bounds(Z):
                 maxZ = z
     return (minZ,maxZ)     
 
-def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5): 
+def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5,origin='lower'): 
     plt.figure(fig)
     xlist = np.linspace(-limit, limit+0.001, 100)   
     ylist = np.linspace(-limit, limit+0.001, 100)
@@ -44,19 +44,22 @@ def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5):
     Z = jacobi(X,Y,n,mu2,Cj)
     (z0,z1) = bounds(Z)
     
-    levels=list(range(m.floor(z0),0,10))+list(range(0,m.ceil(z1),10))
-    
+    levels=list(range(m.floor(z0),0,10))+list(range(0,m.ceil(z1)+1,10))
+
+    ticks = [z0,0,z1]
     c = plt.pcolor(X,Y,Z)
-    d = plt.colorbar(c,orientation='horizontal')
-      
-    CS3=plt.contourf(X, Y, Z, levels)
+    cbar = plt.colorbar(c,orientation='vertical',ticks=ticks)
+    cbar.ax.set_yticklabels(['min', '0', 'max']) 
+    CS3=plt.contourf(X, Y, Z, levels, cmap=plt.cm.jet,origin=origin)
+    CS2 = plt.contour(X,Y,Z,levels=[0],colors='w',origin=origin,hold='on',linewidths=(3,))
+    cbar.add_lines(CS2)
     plt.xlabel('x')
     plt.ylabel('y')
     plt.title(r'Zero velocity surfaces for $n={0},\mu_2 = {1},C_j={2}$'.format(n,mu2,Cj))
 
 
 if __name__=='__main__':
-    for i in range(1,50):
-        plot_jacobi(fig=i,n=1,mu2=0.2,Cj=0.0+i/10,limit=2)
+    for i in range(6):
+        plot_jacobi(fig=i,n=1,mu2=0.2,Cj=3.0+i/5,limit=2)
 
     plt.show()
