@@ -56,10 +56,13 @@ def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5,origin='lower'):
     plt.xlabel('x')
     plt.ylabel('y')
     plt.title(r'Zero velocity surfaces for $n={0},\mu_2 = {1},C_j={2}$'.format(n,mu2,Cj))
-
+    plt.savefig('Jacobi{0}.png'.format(fig))
 
 if __name__=='__main__':
-    for i in range(6):
-        plot_jacobi(fig=i,n=1,mu2=0.2,Cj=3.0+i/5,limit=2)
+    fig=1
+    for i in range(1,10):
+        for j in range(10):
+            plot_jacobi(fig=fig,n=1,mu2=i/10.0,Cj=3.0+j/10,limit=2)
+            fig+=1
 
     plt.show()
