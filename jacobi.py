@@ -12,8 +12,9 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
-import numpy as np, matplotlib.pyplot as plt, math as m 
 
+import numpy as np, matplotlib.pyplot as plt, math as m 
+from matplotlib.backends.backend_pdf import PdfPages
 
 @np.vectorize
 def jacobi(x,y,n=1,mu2=0.2,Cj=3.9):
@@ -34,9 +35,9 @@ def bounds(Z):
                 minZ = z
             if z > maxZ:
                 maxZ = z
-    return (minZ,maxZ)     
+    return (m.floor(minZ),m.ceil(maxZ))     
 
-def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5,origin='lower'): 
+def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5,origin='lower',pdf_pages=None): 
     plt.figure(fig)
     xlist = np.linspace(-limit, limit+0.001, 100)   
     ylist = np.linspace(-limit, limit+0.001, 100)
@@ -44,25 +45,28 @@ def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5,origin='lower'):
     Z = jacobi(X,Y,n,mu2,Cj)
     (z0,z1) = bounds(Z)
     
-    levels=list(range(m.floor(z0),0,10))+list(range(0,m.ceil(z1)+1,10))
+    levels=list(range(z0,0,10))+list(range(0,z1+1,10))
 
     ticks = [z0,0,z1]
-    c = plt.pcolor(X,Y,Z)
+    c = plt.pcolormesh(X,Y,Z)
     cbar = plt.colorbar(c,orientation='vertical',ticks=ticks)
     cbar.ax.set_yticklabels(['min', '0', 'max']) 
     CS3=plt.contourf(X, Y, Z, levels, cmap=plt.cm.jet,origin=origin)
-    CS2 = plt.contour(X,Y,Z,levels=[0],colors='w',origin=origin,hold='on',linewidths=(3,))
+    CS2 = plt.contour(X,Y,Z,levels=[0],colors='w',origin=origin,hold='on',linewidths=(1,))
     cbar.add_lines(CS2)
     plt.xlabel('x')
     plt.ylabel('y')
     plt.title(r'Zero velocity surfaces for $n={0},\mu_2 = {1},C_j={2}$'.format(n,mu2,Cj))
-    plt.savefig('Jacobi{0}.png'.format(fig))
-
+    if pdf_pages==None:
+        plt.savefig('Jacobi{0}.png'.format(fig))
+    else:
+        pdf_pages.savefig()
+    plt.close(fig)
+    
 if __name__=='__main__':
-    fig=1
-    for i in range(1,10):
-        for j in range(10):
-            plot_jacobi(fig=fig,n=1,mu2=i/10.0,Cj=3.0+j/10,limit=2)
-            fig+=1
-
-    plt.show()
+    with PdfPages('jacobi.pdf') as pdf_pages:
+        fig=1
+        for i in range(1,11):
+            for j in range(25):
+                plot_jacobi(fig=fig,n=1,mu2=i/20.0,Cj=3.0+j/10,limit=2.5,pdf_pages=pdf_pages)
+                fig+=1
