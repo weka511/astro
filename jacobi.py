@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2016 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ def bounds(Z):
                 maxZ = z
     return (m.floor(minZ),m.ceil(maxZ))     
 
-def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5,origin='lower',pdf_pages=None): 
+def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5,origin='lower',pdf_pages=None,close=True): 
     plt.figure(fig)
     xlist = np.linspace(-limit, limit+0.001, 100)   
     ylist = np.linspace(-limit, limit+0.001, 100)
@@ -61,7 +61,8 @@ def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5,origin='lower',pdf_pages=None):
         plt.savefig('Jacobi{0}.png'.format(fig))
     else:
         pdf_pages.savefig()
-    plt.close(fig)
+    if close:
+        plt.close(fig)
     
 if __name__=='__main__':
     with PdfPages('jacobi.pdf') as pdf_pages:
