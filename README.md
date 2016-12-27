@@ -28,7 +28,7 @@ I have started working on some code for orbital calculatione, based on [Kotovich
 | rki.py | Implicit Runge Ketta (symplectic) integrators |
 | Threebody.py | Hamiltonion for 2 Dimensional, but otherwise general,  3 body problem |
 | tracking.py | Record results in logfile so they can be played back, and analyses can be restarted |
-| Lorentz.py | # This tests the ImplicitRungeKutts Inntegrator by calculating the evolution of the Lorntz Attractor|
+| Lorentz.py | This tests the ImplicitRungeKutts Integrator by calculating the evolution of the Lorntz Attractor|
 
 ## Murray and Dermott
 
