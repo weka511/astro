@@ -21,3 +21,5 @@ jacobi.plot_jacobi(fig=1,Cj=3.805,close=False)
 jacobi.plot_jacobi(fig=2,Cj=3.552,close=False)
 
 jacobi.plot_jacobi(fig=3,Cj=3.197,close=False)
+
+jacobi.plot_jacobi(fig=4,Cj=2.84011,close=False,limit=1)
