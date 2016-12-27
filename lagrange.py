@@ -14,12 +14,11 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 import jacobi
+from matplotlib.backends.backend_pdf import PdfPages
 
-
-jacobi.plot_jacobi(fig=1,Cj=3.805,close=False)
-
-jacobi.plot_jacobi(fig=2,Cj=3.552,close=False)
-
-jacobi.plot_jacobi(fig=3,Cj=3.197,close=False)
-
-jacobi.plot_jacobi(fig=4,Cj=2.84011,close=False,limit=1)
+if __name__=='__main__':
+    with PdfPages('lagrange.pdf') as pdf_pages:
+        fig=1
+        for (Cj,limit) in zip([3.805,3.552,3.197,2.84011],[2,2,2,1]):    
+            jacobi.plot_jacobi(fig=fig,Cj=Cj,pdf_pages=pdf_pages,limit=limit)
+            fig+=1
