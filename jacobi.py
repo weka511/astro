@@ -63,11 +63,29 @@ def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5,origin='lower',pdf_pages=None,c
         pdf_pages.savefig()
     if close:
         plt.close(fig)
-    
+
+
 if __name__=='__main__':
-    with PdfPages('jacobi.pdf') as pdf_pages:
-        fig=1
-        for i in range(1,11):
-            for j in range(25):
-                plot_jacobi(fig=fig,n=1,mu2=i/20.0,Cj=3.0+j/10,limit=2.5,pdf_pages=pdf_pages)
-                fig+=1
+    import getopt,sys
+    def usage():
+        print ('python jacobi.py')    
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "ho:v", ["help", "output="])
+    except getopt.GetoptError as err:
+        print(err)
+        usage()
+        sys.exit(2)
+
+    output=None
+    for opt, arg in opts:
+        if opt=='-o' or opt=='output':
+            output = arg if arg.endswith('pdf') else arg + '.pdf'
+    
+    if output == None:
+        pass
+    else:
+        with PdfPages(output) as pdf_pages:
+            fig=1
+            for (Cj,limit) in zip([3.805,3.552,3.197,2.84011],[2,2,2,1]):    
+                plot_jacobi(fig=fig,Cj=Cj,pdf_pages=pdf_pages,limit=limit)
+                fig+=1        
