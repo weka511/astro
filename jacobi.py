@@ -17,7 +17,7 @@ import numpy as np, matplotlib.pyplot as plt, math as m
 from matplotlib.backends.backend_pdf import PdfPages
 
 @np.vectorize
-def jacobi(x,y,n=1,mu2=0.2,Cj=3.9):
+def jacobi(x,y,n=1,mu2=0.2,Cj=0):
     n2  = n*n
     mu1 = 1-mu2
     x2  = x*x
@@ -68,9 +68,9 @@ def plot_jacobi(fig=1,n=1,mu2=0.2,Cj=3.9,limit=5,origin='lower',pdf_pages=None,c
 if __name__=='__main__':
     import getopt,sys
     def usage():
-        print ('python jacobi.py')    
+        print ('Usage: python jacobi.py [-h] [-o pdf_file]')    
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ho:v", ["help", "output="])
+        opts, args = getopt.getopt(sys.argv[1:], "ho:", ["help", "output="])
     except getopt.GetoptError as err:
         print(err)
         usage()
@@ -78,14 +78,17 @@ if __name__=='__main__':
 
     output=None
     for opt, arg in opts:
-        if opt=='-o' or opt=='output':
+        if opt=='-o' or opt=='--output':
             output = arg if arg.endswith('pdf') else arg + '.pdf'
-    
+        if opt=='-h' or opt=='--help':
+            usage()
+            sys.exit(0)
+            
     if output == None:
         pass
     else:
         with PdfPages(output) as pdf_pages:
             fig=1
-            for (Cj,limit) in zip([3.805,3.552,3.197,2.84011],[2,2,2,1]):    
+            for (Cj,limit) in zip([3.80465327630637,3.552,3.197,2.84011],[1.5,2,2,1]):    
                 plot_jacobi(fig=fig,Cj=Cj,pdf_pages=pdf_pages,limit=limit)
                 fig+=1        
