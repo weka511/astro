@@ -22,14 +22,13 @@ I have started working on some code for orbital calculatione, based on [Kotovich
 
 | File | Purpose |
 |--------------------------|---------------------------------------------------------------------|
-| kepler.py |  Hamiltonian for integrating Kepler problem |
-| integrators.py |  Simple integrator based on Kotovich & Bowman |
+| kepler.py |  Hamiltonion for integrating Kepler problem |
+| integrators.py |  Simple integratorr based on Kotovich & Bowman |
 | plot_points.py | Display data that has been stored by tracking.py |
 | rki.py | Implicit Runge Ketta (symplectic) integrators |
-| restricted.py| Restricted 3 body problem |
-| Threebody.py | Hamiltonian for 2 Dimensional, but otherwise general,  3 body problem |
+| Threebody.py | Hamiltonion for 2 Dimensional, but otherwise general,  3 body problem |
 | tracking.py | Record results in logfile so they can be played back, and analyses can be restarted |
-| Lorentz.py | This tests the ImplicitRungeKutts Integrator by calculating the evolution of the Lorentz Attractor|
+| Lorentz.py | This tests the ImplicitRungeKutts Integrator by calculating the evolution of the Lorntz Attractor|
 
 ## Murray and Dermott
 
@@ -37,6 +36,5 @@ Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.
 
 | File | Purpose |
 |--------------------------|---------------------------------------------------------------------|
-| jacobi.py |  Zero velocity Surfaces for the Jacobi Integral |
-| jacobi3d.py |  Potential surfaces |
+| jacobi.py |  Zero velocity Surfaces for the Jacobi Integral | |
 

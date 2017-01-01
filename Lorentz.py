@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 # This tests the ImplicitRungeKutts Inntegrator by calculating the
-# evolution of the Lorntz Attractor
+# evolution of the Lorentz Attractor
 
 
 
@@ -40,7 +40,7 @@ if __name__=='__main__':
     nn=10000
     h=0.01
     lorentz=Lorentz(10,28,8.0/3.0)
-    rk=rki.ImplicitRungeKutta2(lambda (x): lorentz.dx(x),10,0.000000001)
+    rk=rki.ImplicitRungeKutta2(lambda x: lorentz.dx(x),10,0.0000001)
     v=[1,0,1]
     xs=[]
     ys=[]
