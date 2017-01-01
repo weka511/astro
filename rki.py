@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ class Driver(object):
                 if self.h>self.h_maximum:
                     self.h=self.h_maximum
             return y11
-        except ImplicitRungeKutta.Failed,e:
+        except ImplicitRungeKutta.Failed:
             self.h*=0.5
             return self.step(y)            
 
@@ -134,7 +134,7 @@ class ImplicitRungeKutta4(ImplicitRungeKutta):
         self.s=len(self.b)
         
 if __name__=='__main__':
-    rk=ImplicitRungeKutta2(lambda (y): [y[1],-y[0]],10,0.000000001)
+    rk=ImplicitRungeKutta2(lambda y: [y[1],-y[0]],10,0.000000001)
     driver = Driver(rk,0.000000001,0.5,1.0,0.000000001)
     import matplotlib.pyplot as plt
     try:
@@ -147,8 +147,8 @@ if __name__=='__main__':
             xs.append(y[0])
             ys.append(y[1])
         plt.plot(xs,ys)
-    except ImplicitRungeKutta.Failed,e:
-        print "caught!",e
+    except ImplicitRungeKutta.Failed as e:
+        print ("caught!",e)
     
 
         

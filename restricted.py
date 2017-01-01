@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ if __name__=='__main__':
         -0.5*math.sqrt(3)*L*omega, 0.5*L*omega
     ]
     
-    rk = rki.ImplicitRungeKutta4(lambda (x): dx(x,1,M1,M2),200,1e-18)
+    rk = rki.ImplicitRungeKutta4(lambda x: dx(x,1,M1,M2),200,1e-18)
     
     driver = rki.Driver(rk,1.e-8,0.5,1.0,1e-12)
     
