@@ -38,18 +38,20 @@ if __name__=='__main__':
     import rki
     
     nn=10000
+    resolution = 1
     h=0.01
     lorentz=Lorentz(10,28,8.0/3.0)
-    rk=rki.ImplicitRungeKutta2(lambda x: lorentz.dx(x),10,0.0000001)
+    rk=rki.ImplicitRungeKutta4(lambda x: lorentz.dx(x),10,0.0000001)
     v=[1,0,1]
     xs=[]
     ys=[]
     zs=[]
     for i in range(nn):
         v= rk.step(h,v)
-        xs.append(v[0])
-        ys.append(v[1])
-        zs.append(v[2])
+        if i%resolution==0:
+            xs.append(v[0])
+            ys.append(v[1])
+            zs.append(v[2])
         
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')    
