@@ -12,7 +12,7 @@ I have revisited [Leighton and Murray's Behavior of Carbon Dioside and Other Vol
 | planet.py |  Repository for basic data about planets |
 | solar.py |  Model for solar irradiation, based on [Solar Radiation on Mars, Joseph Appelbaum & Dennis Flood, Lewis Research Center, NASA](http://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19890018252.pdf) |
 | thermalmodel.py | Slices of Mars' interior, together with model for heat flow |
-| utilities.py | Utility fucntions for log files, zipping lists, choosing colours for plots |
+| utilities.py | Utility functions for log files, zipping lists, choosing colours for plots |
 | viewer.py | Used to plot data files from leighton.py |
 | physics.py | Repository for physical laws and constants |
 
@@ -29,7 +29,7 @@ I have started working on some code for orbital calculatione, based on [Kotovich
 | restricted.py| Restricted 3 body problem |
 | Threebody.py | Hamiltonian for 2 Dimensional, but otherwise general,  3 body problem |
 | tracking.py | Record results in logfile so they can be played back, and analyses can be restarted |
-| Lorentz.py | This tests the ImplicitRungeKutts Integrator by calculating the evolution of the Lorentz Attractor|
+| Lorentz.py | This tests the ImplicitRungeKutts Integrator by calculating the evolution of the Lorentz Attractor |
 
 ## Murray and Dermott
 
