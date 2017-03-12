@@ -219,5 +219,6 @@ if __name__=="__main__":
         r2.add(99)
         log.add(r2) 
         
-        print slip_zip([1,2,3,4,5])
+        for a,b,c in slip_zip([1,2,3,4,5]):
+            print (a,b,c)
         

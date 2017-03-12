@@ -117,8 +117,8 @@ if __name__=="__main__":
     solar = Solar(mars)
     
     beam_irradience_top=solar.beam_irradience(mars.a)
-    print "Mean beam irradience at top of atmosphere = {0:6.2f} W/m2".\
-          format(beam_irradience_top)
+    print ("Mean beam irradience at top of atmosphere = {0:6.2f} W/m2".\
+          format(beam_irradience_top))
     
     plt.figure(3)
     plt.title("Beam irradience at top of Mars atmosphere")
@@ -139,12 +139,12 @@ if __name__=="__main__":
                 x=utilities.extremum(i-2,i-2,i,d0,d1,d2)
                 d=mars.instantaneous_distance(x)
                 irr=solar.beam_irradience(d)
-                print "perihelion", x,d,irr
+                print ("perihelion", x,d,irr)
             if d0<d1 and d1>d2:
                 x=utilities.extremum(i-2,i-2,i,d0,d1,d2)
                 d=mars.instantaneous_distance(x) 
                 irr=solar.beam_irradience(d)
-                print "aphelion", x,d,irr
+                print ("aphelion", x,d,irr)
         d0=d1
         d1=d2
     plt.plot(xs,ys)
