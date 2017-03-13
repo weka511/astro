@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,3 +29,6 @@ class Radiation:
     @staticmethod
     def reverse_bolzmann(radiation):
         return (radiation/Radiation.stefan_bolzmann)**0.25
+    
+if __name__=='__main__':
+    print (Radiation.reverse_bolzmann(1350*(1-0.3)/4))

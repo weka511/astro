@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,8 +27,8 @@ class Solar:
     def beam_irradience(self,r):
         return self.planet.S/(r*r)
  
- # Beam irradience on a horizonal surface
-    #   Appelbaum & Flood equations (5) & (6)
+#   Beam irradience on a horizonal surface
+#   Appelbaum & Flood equations (5) & (6)
     def surface_irradience(self,areocentric_longitude,latitude,T):
         cos_zenith_angle = self.planet.cos_zenith_angle(areocentric_longitude,latitude,T)
         beam_irradience = self.beam_irradience(self.planet.instantaneous_distance(areocentric_longitude))
@@ -47,7 +47,7 @@ if __name__=="__main__":
     #   Appelbaum & Flood have the perihelion and aphelion at LS = 249 degress and
     #   68 degress respectively (Figure 3). But in the section preceding equation (3)
     #   the perihelion is stated to be at 248 degrees. The aphelion is 180 degrees
-    #   before or after the perihelion, so this has also been shited.
+    #   before or after the perihelion, so this has also been shifted.
     
         def test_beam_irradience_as_function_areocentric_longitude(self):
             d0=-1
@@ -120,11 +120,7 @@ if __name__=="__main__":
     print ("Mean beam irradience at top of atmosphere = {0:6.2f} W/m2".\
           format(beam_irradience_top))
     
-    plt.figure(3)
-    plt.title("Beam irradience at top of Mars atmosphere")
-    plt.xlabel("Areocentric longitude - degrees")
-    plt.ylabel("Beam irradience at top of Mars atmosphere - W/m2")
-    plt.grid(True) 
+
     xs=[]
     ys=[]
     d0=-1
@@ -139,30 +135,38 @@ if __name__=="__main__":
                 x=utilities.extremum(i-2,i-2,i,d0,d1,d2)
                 d=mars.instantaneous_distance(x)
                 irr=solar.beam_irradience(d)
-                print ("perihelion", x,d,irr)
+                print ("Perihelion day={0:.3f}, distance={1:.3f}, irradiance={2:.2f}".format(x,d,irr))
             if d0<d1 and d1>d2:
                 x=utilities.extremum(i-2,i-2,i,d0,d1,d2)
                 d=mars.instantaneous_distance(x) 
                 irr=solar.beam_irradience(d)
-                print ("aphelion", x,d,irr)
+                print ("Aphelion day={0:.3f}, distance={1:.3f}, irradiance={2:.2f}".format(x,d,irr))
         d0=d1
         d1=d2
+    plt.figure(1,figsize=(12,12))
+    plt.subplot(221)
+
+    plt.title("Beam irradience at top of Mars atmosphere")
+    plt.xlabel("Areocentric longitude - degrees")
+    plt.ylabel("Beam irradience at top of Mars atmosphere - W/m2")    
+    plt.grid(True)
     plt.plot(xs,ys)
     
-    plt.figure(4)
-    plt.title("Variation of solar declination angle")
-    plt.axis([0, 360, -25, 25])
-    plt.xlabel("Areocentric longitude - degrees")
-    plt.ylabel("Solar Declination Angle - degrees")
-    plt.grid(True) 
     x=[]
     y=[]
     for i in range(360):
         x.append(i)
         y.append(math.degrees(math.asin(mars.sin_declination(i))))
+
+    plt.subplot(222)
+    plt.title("Variation of solar declination angle")
+    plt.axis([0, 360, -25, 25])
+    plt.xlabel("Areocentric longitude - degrees")
+    plt.ylabel("Solar Declination Angle - degrees")
+    plt.grid(True)     
     plt.plot(x,y)
 
-    plt.figure(6)
+    plt.subplot(223)
     plt.title("Diurnal Variation of Beam Irradience on a horizontal surface")
     plt.xlabel("Solar Time - Hours")
     plt.ylabel("Beam Irradiance - W/m2")
