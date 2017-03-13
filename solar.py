@@ -112,7 +112,11 @@ if __name__=="__main__":
             x.append(T)
             y.append(irradiance)
         return (x,y)
-     
+    
+    def add_text(y0,xs,ys):
+        i0=ys.index(y0)
+        plt.text (xs[i0],y0,"{0:.0f}".format(y0))        
+
     mars = planet.create("Mars")
     solar = Solar(mars)
     
@@ -148,7 +152,9 @@ if __name__=="__main__":
 
     plt.title("Beam irradience at top of Mars atmosphere")
     plt.xlabel("Areocentric longitude - degrees")
-    plt.ylabel("Beam irradience at top of Mars atmosphere - W/m2")    
+    plt.ylabel("Beam irradience at top of Mars atmosphere - W/m2")
+    add_text(min(ys),xs,ys)
+    add_text(max(ys),xs,ys)
     plt.grid(True)
     plt.plot(xs,ys)
     
