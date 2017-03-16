@@ -30,12 +30,13 @@ def slip_zip(x):
 #
 # Convert latitude to North/South form
 def format_latitude(latitude):
+    print (latitude)
     if latitude>0:
         NS="N"
     elif latitude<0:
         NS="S"
     else: 
-        NS=' '
+        NS=''
     return (NS,abs(latitude))
 
 colours=[
@@ -179,7 +180,7 @@ class ExternalTemperatureLog(TemperatureLog):
 
     def get(self,key):
         for record in self.logfile:
-            pair = string.split(record,'=')
+            pair = record.split(sep='=')
             if len(pair)>0 and pair[0].lower()==key.lower():
                 result=float(pair[1])
                 self.rewind()

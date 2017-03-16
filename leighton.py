@@ -65,10 +65,10 @@ def main(argv):
                                     print ("Could not parse {0}".format(run))
                                     sys.exit(2)
                         
-      if outputfile=='':
+      if outputfile=='': #if output file not specified, latitude determines 
             (lat,ns)=utilities.format_latitude(latitude)
             outputfile="{1:3.0f}{0}.txt".format(lat,ns).strip()
-           
+
       with open(outputfile, 'w') as f:
             mars = planet.create("Mars")
             solar_model = solar.Solar(mars)

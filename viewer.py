@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 import utilities, io, os,matplotlib.pyplot as plt, sys, getopt, glob
 
 def help():
-      print 'viewer.py -i <outputfile>'
+      print ('viewer.py -i <outputfile>')
 
 
 
@@ -57,14 +57,14 @@ def display_daily_minima(inputfile,figure,colour):
             latitude=history.get('latitude')
             (xxx,ymin,ymax)=history.get_max_min(1)
             plt.figure(figure)
-            (NS,latitude)=utilities.format_latitude(latitude)
-          
+            (NS,latitude)=utilities.format_latitude(latitude)        
             plt.plot(xxx,ymin,colour,label="{0:5.1f}{1}".format(abs(latitude),NS)) 
             
 
 def display_daily_minima_all_latitudes(figure):
       index=0;
-      for name in glob.glob('*.txt'):
+      for name in glob.glob('[0-9]+.txt'):
+            print (name)         
             display_daily_minima(name,figure,utilities.get_colour(index))
             index+=1
       plt.title("Minimum temperature for each Latitude")

@@ -15,7 +15,7 @@
 
 import math, planet, solar, utilities, physics
 
-# The thremal model consists of a series of Layers, the top one being the
+# The thermal model consists of a series of Layers, the top one being the
 # Surface
 
 class Layer:
@@ -218,7 +218,7 @@ if __name__=="__main__":
     thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,-1,False)
     
     thermal.runModel(0,1440,10) #1440,10
-    #print (history)
+
     (days,surface_temp) = history.extract(0)
     print (days,surface_temp)
     (_,t1) = history.extract(1)
