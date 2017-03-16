@@ -164,6 +164,8 @@ class ExternalTemperatureLog(TemperatureLog):
         self.logfile.write(line+'\n')
         
     def extract(self,channel):
+        self.rewind()
+        self.skipping = True        
         x=[]
         y=[]
         for line in self.logfile:
@@ -174,8 +176,6 @@ class ExternalTemperatureLog(TemperatureLog):
                 parts=line.split()
                 x.append(float(parts[0]))
                 y.append(float(parts[channel]))
-        self.rewind()
-        self.skipping = True
         return (x,y)
 
     def get(self,key):
