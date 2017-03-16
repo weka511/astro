@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 import thermalmodel, planet, solar, utilities, sys,getopt, string, physics
 
 def help():
-      print 'leighton.py -o <outputfile> -f <hour from> -t <hour to> -l <latitude> -s <steps per hour>'
+      print ('leighton.py -o <outputfile> -f <hour from> -t <hour to> -l <latitude> -s <steps per hour>')
       
 def main(argv):
       outputfile=''
@@ -62,7 +62,7 @@ def main(argv):
                                     couple=run.strip('()').split(',')
                                     spec.append((int(couple[0]),float(couple[1])))
                               except ValueError:
-                                    print "Could not parse {0}".format(run)
+                                    print ("Could not parse {0}".format(run))
                                     sys.exit(2)
                         
       if outputfile=='':

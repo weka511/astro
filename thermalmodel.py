@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -143,7 +143,7 @@ class MedialLayer(Layer):
         record.add(self.temperature)
         return internal_inflow
     
-# Botton layer - exchanges heat with above only    
+# Bottom layer - exchanges heat with above only    
 class Bottom(Layer):
     def __init__(self,layer):
         Layer.__init__(self,"Bottom",layer.latitude,layer.thickness,layer.planet,layer.temperature)
@@ -178,7 +178,7 @@ class ThermalModel:
         self.layers.append(Bottom(bottom))
         self.history=history
         self.record=None
-        self.zipper_layers = utilities.slip_zip(self.layers)
+        self.zipper_layers = list(utilities.slip_zip(self.layers))
  
     # Calculate heat transfer during one time step
     # Don't change temperatures until every Layer has been processed
@@ -187,12 +187,12 @@ class ThermalModel:
         total__internal_inflow=0
         for above,layer,below in self.zipper_layers:
             total__internal_inflow+=layer.propagate_temperature(above,below,areocentric_longitude,T,dT,self.record)
-        if abs(total__internal_inflow)>1.0e-6: print total__internal_inflow
+        if abs(total__internal_inflow)>1.0e-6: print ("Total Internal Inflow {0}".format(total__internal_inflow))
  
         for layer in self.layers:
             layer.temperature=layer.new_temperature
      
-    # Calculate heat transfer during all time step      
+    # Calculate heat transfer during all time steps      
     # parameters:
     #    start_day
     #    number_of_days
@@ -217,8 +217,10 @@ if __name__=="__main__":
     history = utilities.InternalTemperatureLog()    
     thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,-1,False)
     
-    thermal.runModel(0,1440,10)
+    thermal.runModel(0,1440,10) #1440,10
+    #print (history)
     (days,surface_temp) = history.extract(0)
+    print (days,surface_temp)
     (_,t1) = history.extract(1)
     (_,t2) = history.extract(2)
     (_,t3) = history.extract(3)

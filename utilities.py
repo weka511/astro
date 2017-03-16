@@ -107,9 +107,12 @@ class TemperatureRecord:
         
     def add(self,temperature):
         self.temperatures.append(temperature)
+        
+    def __str__(self):
+        return '{0} {1}'.format(self.day,self.temperatures)
 
 # Used to store temperature values (abstract class,
-# needs to be implemeneted below
+# needs to be implemented by descendents
 class TemperatureLog:
     def add(self,record):
         raise NotImplementedError("TemperatureLog.add(...)")
@@ -219,6 +222,19 @@ if __name__=="__main__":
         r2.add(99)
         log.add(r2) 
         
-        for a,b,c in slip_zip([1,2,3,4,5]):
-            print (a,b,c)
+    for a,b,c in slip_zip([1,2,3,4,5]):
+        print (a,b,c)
         
+    log=InternalTemperatureLog()
+    r1=TemperatureRecord(0,1,24)
+    r1.add(1)
+    r1.add(1.345)
+    r1.add(99)
+    log.add(r1)
+    r2=TemperatureRecord(1,1,24)
+    r2.add(2)
+    r2.add(2.345678)
+    r2.add(99)
+    log.add(r2) 
+    (days,surface_temp) = log.extract(0)
+    print (days,surface_temp)   
