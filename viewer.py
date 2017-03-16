@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import utilities, io, os,matplotlib.pyplot as plt, sys, getopt, glob
+import utilities, io, os,matplotlib.pyplot as plt, sys, getopt, glob, re
 
 def help():
       print ('viewer.py -i <outputfile>')
@@ -63,10 +63,10 @@ def display_daily_minima(inputfile,figure,colour):
 
 def display_daily_minima_all_latitudes(figure):
       index=0;
-      for name in glob.glob('[0-9]+.txt'):
-            print (name)         
-            display_daily_minima(name,figure,utilities.get_colour(index))
-            index+=1
+      for name in glob.glob('*.txt'): 
+            if re.search('[0-9]+[NS]?',name):       
+                  display_daily_minima(name,figure,utilities.get_colour(index))
+                  index+=1
       plt.title("Minimum temperature for each Latitude")
       plt.xlabel("Time")
       plt.ylabel("Temperature - Kelvin")            
@@ -110,6 +110,7 @@ def main(argv):
             display_maxmin(inputfile,figure)
             figure +=1
       if daily_minima:
+            print ('daily_minima')
             display_daily_minima_all_latitudes(figure)
             figure +=1
             
