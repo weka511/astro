@@ -30,7 +30,6 @@ def slip_zip(x):
 #
 # Convert latitude to North/South form
 def format_latitude(latitude):
-    print (latitude)
     if latitude>0:
         NS="N"
     elif latitude<0:
