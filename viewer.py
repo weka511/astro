@@ -70,7 +70,7 @@ def display_daily_minima_all_latitudes(figure):
       plt.title("Minimum temperature for each Latitude")
       plt.xlabel("Time")
       plt.ylabel("Temperature - Kelvin")            
-      plt.legend(loc='upper right')
+      plt.legend(loc='lower left')
       plt.grid(True)        
       plt.savefig("SurfaceTemperatureAllLatitudes")
       
