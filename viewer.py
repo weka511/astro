@@ -35,7 +35,6 @@ def display(inputfile,figure=1):
             _,y5=history.extract(5)
             _,y10=history.extract(10)
             _,y20=history.extract(20)
-            print(len(x),len(y1),len(y2),len(y3),len(y4),len(y5),len(y10),len(y20))
             plt.plot(x,y1,'r-',x,y2,'g-',x,y3,'b-',x,y4,'c-',x,y5,'m-',x,y10,'y-',x,y20,'k-')
             plt.savefig(os.path.splitext(inputfile)[0]+"-all")
 
@@ -111,16 +110,14 @@ def main(argv):
             display_maxmin(inputfile,figure)
             figure +=1
       if daily_minima:
-            print ('daily_minima')
             display_daily_minima_all_latitudes(figure)
             figure +=1
             
       plt.show()
 
 # Tested: -m    OK
-#         -d    Not OK
-#         -a    Not OK
+#         -d    OK
+#         -a    OK
 
 if __name__=="__main__":
       main(sys.argv[1:])
-      #display('90N.txt',1) 
