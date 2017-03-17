@@ -164,9 +164,7 @@ class ThermalModel:
         beam_irradience=proportion * solar.beam_irradience(planet.a)
         return physics.Radiation.reverse_bolzmann(beam_irradience)    
     
-    def __init__(self,latitude,spec,solar,planet,history,temperature,co2):
-        if temperature<0:
-            temperature=ThermalModel.stable_temperature(solar,planet)         
+    def __init__(self,latitude,spec,solar,planet,history,temperature,co2):     
         self.layers=[]
         self.planet=planet
         (n,dz)=spec[0]

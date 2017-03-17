@@ -76,8 +76,9 @@ def main(argv):
       mars = planet.create('Mars')
       solar_model = solar.Solar(mars)     
       
-      stableTemperatureSpecied = temperature<0
-      if stableTemperatureSpecied:
+      # If user doesn't specify starting temperature, use stable value
+      stableTemperatureSpecified = temperature<0
+      if stableTemperatureSpecified:
             temperature=thermalmodel.ThermalModel.stable_temperature(solar_model,mars)
            
       if outputfile=='': #if output file not specified, latitude determines 
@@ -86,7 +87,6 @@ def main(argv):
 
       with open(outputfile, 'w') as f:
             history = utilities.ExternalTemperatureLog(f)
-            display_and_record('Semimajor axes       = {0:10.7f} AU'.format(mars.a),history)
             display_and_record('Semimajor axes       = {0:10.7f} AU'.format(mars.a),history)
             display_and_record('Eccentricty          = {0:10.7f}'.format(mars.e),history)
             display_and_record('Obliquity            = {0:6.3f}'.format(mars.obliquity),history)
@@ -98,7 +98,7 @@ def main(argv):
             display_and_record('Density              = {0:6.3f} Kg/M3'.format(mars.rho),history)         
             display_and_record('Latitude             = {0:6.1f}'.format(latitude),history)
             display_and_record('Step                 = {0:6.1f}'.format(step),history)
-            if stableTemperatureSpecied:
+            if stableTemperatureSpecified:
                   display_and_record('Starting Temperature = {0:6.1f} K (stable temperature)'.format(temperature),history)
             else:
                   display_and_record('Starting Temperature = {0:6.1f} K'.format(temperature),history)
