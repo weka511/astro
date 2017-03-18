@@ -36,8 +36,8 @@ class Solar:
     
 if __name__=='__main__':
     import matplotlib.pyplot as plt, unittest
-    from scipy.integrate import quad
-    
+    from scipy.integrate import quad       
+
     class TestMarsMethods(unittest.TestCase):
         def setUp(self):
             self.mars = planet.Mars()
@@ -117,6 +117,10 @@ if __name__=='__main__':
         i0=ys.index(y0)
         plt.text (xs[i0],y0,'{0:.0f}'.format(y0))        
 
+    def plot_irradiance(areocentric_longitude=299,colour='r'):
+        (x,y)=generate_irradiance(mars,areocentric_longitude,22.3)
+        plt.plot(x,y,colour,label=r'${0}^\circ$'.format(areocentric_longitude)) 
+
     mars = planet.create('Mars')
     solar = Solar(mars)
     
@@ -176,13 +180,13 @@ if __name__=='__main__':
     plt.title('Diurnal Variation of Beam Irradience on a horizontal surface')
     plt.xlabel('Solar Time - Hours')
     plt.ylabel('Beam Irradiance - W/m2')
-    (x1,y1)=generate_irradiance(mars,69,22.3)
-    (x2,y2)=generate_irradiance(mars,120,22.3)
-    (x2,y2)=generate_irradiance(mars,120,22.3)
-    (x3,y3)=generate_irradiance(mars,153,22.3)
-    (x4,y4)=generate_irradiance(mars,249,22.3)
-    (x5,y5)=generate_irradiance(mars,299,22.3)
-    plt.plot(x1,y1,'r',x2,y2,'g',x3,y3,'b',x4,y4,'c',x5,y5,'m')
+    plot_irradiance(69,'r')
+    plot_irradiance(120,'g')
+    plot_irradiance(153,'b')
+    plot_irradiance(249,'c')
+    plot_irradiance(299,'m')
     plt.axis([12, 20, 0, 600])
-    plt.grid(True)    
+    plt.legend(loc='upper right',title=r'$L_S$')
+    plt.grid(True)
+    plt.savefig('solar')
     plt.show()    

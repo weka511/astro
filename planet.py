@@ -71,7 +71,8 @@ class Planet:
         sin_declination=self.sin_declination(areocentric_longitude)
         cos_declination=math.sqrt(1-sin_declination*sin_declination)
         return math.sin(math.radians(latitude))*sin_declination +            \
-            math.cos(math.radians(latitude))*cos_declination*math.cos(math.radians(self.hour_angle(T)))
+            math.cos(math.radians(latitude))*cos_declination *               \
+            math.cos(math.radians(self.hour_angle(T)))
 
     #   Hour angle
     #   Appelbaum & Flood equation (8) 
