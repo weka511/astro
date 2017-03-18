@@ -107,7 +107,8 @@ if __name__=='__main__':
     def generate_irradiance(planet,areocentric_longitude,latitude):
         x=[]
         y=[]
-        for T in range(12,22):
+        for TT in range(120,200):
+            T=TT/10
             irradiance=solar.surface_irradience(areocentric_longitude,latitude,T)
             x.append(T)
             y.append(irradiance)
@@ -117,18 +118,21 @@ if __name__=='__main__':
         i0=ys.index(y0)
         plt.text (xs[i0],y0,'{0:.0f}'.format(y0))        
 
+    # Plot irradiance at latitude of Viking Lander
     def plot_irradiance(areocentric_longitude=299,colour='r'):
         (x,y)=generate_irradiance(mars,areocentric_longitude,22.3)
         plt.plot(x,y,colour,label=r'${0}^\circ$'.format(areocentric_longitude)) 
 
     mars = planet.create('Mars')
     solar = Solar(mars)
-    
+ 
+    # Mean beam irradience at top of atmosphere   
     beam_irradience_top=solar.beam_irradience(mars.a)
     print ('Mean beam irradience at top of atmosphere = {0:6.2f} W/m2'.\
           format(beam_irradience_top))
     
 
+    # Instananeous beam irradience at top of atmosphere
     xs=[]
     ys=[]
     d0=-1
@@ -161,6 +165,8 @@ if __name__=='__main__':
     add_text(max(ys),xs,ys)
     plt.grid(True)
     plt.plot(xs,ys)
+
+    # Variation of solar declination angle  
     
     x=[]
     y=[]
@@ -175,6 +181,8 @@ if __name__=='__main__':
     plt.ylabel('Solar Declination Angle - degrees')
     plt.grid(True)     
     plt.plot(x,y)
+
+    # Diurnal Variation of Beam Irradience on a horizontal surface
 
     plt.subplot(223)
     plt.title('Diurnal Variation of Beam Irradience on a horizontal surface')
