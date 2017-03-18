@@ -13,6 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+# Used to convert between CGS and SI
+class Conversion:
+    cm_per_metre = 100
+    gm_per_Kg = 1000
+    cm3_per_meter3 = cm_per_metre*cm_per_metre*cm_per_metre
+    
 class CO2:
     condensation_temperature = 145
     latent_heat = 574               # http://www.engineeringtoolbox.com/fluids-evaporation-latent-heat-d_147.html    

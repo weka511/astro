@@ -74,6 +74,7 @@ def main(argv):
                                     sys.exit(2)
 
       mars = planet.create('Mars')
+      print (mars)
       solar_model = solar.Solar(mars)     
       
       # If user doesn't specify starting temperature, use stable value

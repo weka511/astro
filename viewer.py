@@ -24,9 +24,9 @@ def display(inputfile,figure=1):
       with open(inputfile, 'r') as f:
             history = utilities.ExternalTemperatureLog(f)
             plt.figure(figure)
-            plt.title("Diurnal variation in temperature for {0}".format(inputfile))
-            plt.xlabel("Time")
-            plt.ylabel("Temperature - Kelvin")
+            plt.title('Diurnal variation in temperature for {0}'.format(inputfile))
+            plt.xlabel('Time')
+            plt.ylabel('Temperature - Kelvin')
             plt.grid(True)
             x,y1=history.extract(1)
             _,y2=history.extract(2) 
@@ -36,19 +36,19 @@ def display(inputfile,figure=1):
             _,y10=history.extract(10)
             _,y20=history.extract(20)
             plt.plot(x,y1,'r-',x,y2,'g-',x,y3,'b-',x,y4,'c-',x,y5,'m-',x,y10,'y-',x,y20,'k-')
-            plt.savefig(os.path.splitext(inputfile)[0]+"-all")
+            plt.savefig(os.path.splitext(inputfile)[0]+'-all')
 
 def display_maxmin(inputfile,figure=1):
       with open(inputfile, 'r') as f:
             history = utilities.ExternalTemperatureLog(f)
             (xxx,ymin,ymax)=history.get_max_min(1)   
             plt.figure(figure)
-            plt.title("Diurnal variation in temperature for {0}".format(inputfile))
-            plt.xlabel("Time")
-            plt.ylabel("Temperature - Kelvin")
+            plt.title('Diurnal variation in temperature for {0}'.format(inputfile))
+            plt.xlabel('Time')
+            plt.ylabel('Temperature - Kelvin')
             plt.grid(True)            
             plt.plot(xxx,ymin,'b-',xxx,ymax,'r-')
-            plt.savefig(os.path.splitext(inputfile)[0]+"-minmax")
+            plt.savefig(os.path.splitext(inputfile)[0]+'-minmax')
 
 
 def display_daily_minima(inputfile,figure,colour):
@@ -58,7 +58,7 @@ def display_daily_minima(inputfile,figure,colour):
             (xxx,ymin,ymax)=history.get_max_min(1)
             plt.figure(figure)
             (NS,latitude)=utilities.format_latitude(latitude)        
-            plt.plot(xxx,ymin,colour,label="{0:5.1f}{1}".format(abs(latitude),NS)) 
+            plt.plot(xxx,ymin,colour,label='{0:5.1f}{1}'.format(abs(latitude),NS)) 
             
 
 def display_daily_minima_all_latitudes(figure):
@@ -67,12 +67,12 @@ def display_daily_minima_all_latitudes(figure):
             if re.search('[0-9]+[NS]?',name):       
                   display_daily_minima(name,figure,utilities.get_colour(index))
                   index+=1
-      plt.title("Minimum temperature for each Latitude")
-      plt.xlabel("Time")
-      plt.ylabel("Temperature - Kelvin")            
+      plt.title('Minimum temperature for each Latitude')
+      plt.xlabel('Time')
+      plt.ylabel('Temperature - Kelvin')            
       plt.legend(loc='lower left')
       plt.grid(True)        
-      plt.savefig("SurfaceTemperatureAllLatitudes")
+      plt.savefig('SurfaceTemperatureAllLatitudes')
       
 def main(argv):
       inputfile='output.txt'    
@@ -84,8 +84,8 @@ def main(argv):
             try:
                   opts, args = getopt.getopt( \
                         argv,\
-                        "hi:amd",\
-                        ["help","ifile=","allpoints","maxmin","daily"])
+                        'hi:amd',\
+                        ['help','ifile=','allpoints','maxmin','daily'])
                         
             except getopt.GetoptError:
                   help()
@@ -94,13 +94,13 @@ def main(argv):
                   if opt == '-h':
                         help()
                         sys.exit()
-                  elif opt in ("-i", "--ifile"):
+                  elif opt in ('-i', '--ifile'):
                         inputfile = arg
                   elif opt == '-a':
                         all=True
-                  elif opt == "-m":
+                  elif opt == '-m':
                         minmax=True
-                  elif opt == "-d":
+                  elif opt == '-d':
                         daily_minima=True
       
       if all:
@@ -119,5 +119,5 @@ def main(argv):
 #         -d    OK
 #         -a    OK
 
-if __name__=="__main__":
+if __name__=='__main__':
       main(sys.argv[1:])

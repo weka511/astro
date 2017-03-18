@@ -17,7 +17,7 @@ import string, time, math
 
 # slip_zip
 #
-# given a list, return a new list of triples, with the list "slipped", e.g.
+# given a list, return a new list of triples, with the list 'slipped', e.g.
 # [1,2,3,4,5] becomes
 # [(None, 1, 2), (1, 2, 3), (2, 3, 4), (3, 4, 5), (4, 5, None)]
 # This function is uses to iterate through the layers, with each layer being
@@ -31,9 +31,9 @@ def slip_zip(x):
 # Convert latitude to North/South form
 def format_latitude(latitude):
     if latitude>0:
-        NS="N"
+        NS='N'
     elif latitude<0:
-        NS="S"
+        NS='S'
     else: 
         NS=''
     return (NS,abs(latitude))
@@ -115,7 +115,7 @@ class TemperatureRecord:
 # needs to be implemented by descendents
 class TemperatureLog:
     def add(self,record):
-        raise NotImplementedError("TemperatureLog.add(...)")
+        raise NotImplementedError('TemperatureLog.add(...)')
     def write(line):
         pass
     def get_max_min(self,channel):
@@ -152,11 +152,11 @@ class ExternalTemperatureLog(TemperatureLog):
         
     def add(self,record):
         if self.skipping:
-            self.logfile.write("START\n")
+            self.logfile.write('START\n')
             self.skipping = False        
-        self.logfile.write("{0:f}".format(record.day))
+        self.logfile.write('{0:f}'.format(record.day))
         for temperature in record.temperatures:
-            self.logfile.write("{0} {1}".format(self.sep,temperature))
+            self.logfile.write('{0} {1}'.format(self.sep,temperature))
         self.logfile.write('\n')
 
     def write(self,line):
@@ -168,9 +168,9 @@ class ExternalTemperatureLog(TemperatureLog):
         x=[]
         y=[]
         for line in self.logfile:
-            if line[0:3]=="END": return (x,y)
+            if line[0:3]=='END': return (x,y)
             if self.skipping:
-                self.skipping = line[0:5]!="START"
+                self.skipping = line[0:5]!='START'
             else:
                 parts=line.split()
                 x.append(float(parts[0]))
@@ -190,7 +190,7 @@ class ExternalTemperatureLog(TemperatureLog):
         self.logfile.seek(0)
      
     def close(self):
-        self.logfile.write("END, Elapsed time = {0:.1f} seconds\n".format(time.time()-self.start))
+        self.logfile.write('END, Elapsed time = {0:.1f} seconds\n'.format(time.time()-self.start))
         
 # Used to store temperature values internally           
 class InternalTemperatureLog(TemperatureLog):
@@ -208,7 +208,7 @@ class InternalTemperatureLog(TemperatureLog):
             result.append(record.temperatures[layer_number])
         return (days,result)
 
-if __name__=="__main__":
+if __name__=='__main__':
     with open('output.txt', 'w') as f:
         log=ExternalTemperatureLog(f)
         r1=TemperatureRecord(0,1,24)

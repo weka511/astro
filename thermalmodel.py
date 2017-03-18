@@ -15,11 +15,11 @@
 
 import math, planet, solar, utilities, physics
 
-# The thermal model consists of a series of Layers, the top one being the
-# Surface
+# The thermal model consists of a series of Layers,
+# the top one being the Surface
 
 class Layer:
-    def __init__(self,name,latitude,thickness,planet,temperature=-1):
+    def __init__(self,name,latitude,thickness,planet,temperature):
         self.name = name
         self.latitude = latitude
         self.thickness = thickness
@@ -29,7 +29,7 @@ class Layer:
         self.heat_gain = 0
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
-        raise NotImplementedError("propagate_temperature")
+        raise NotImplementedError('propagate_temperature')
     
     # Calculate temperature gradient betwwn neighbour and this layer.
     # Gradient will be +ve (heat will flow to me) if noeighbout is hotter
@@ -61,10 +61,10 @@ class Layer:
         self.heat_gain = heat_gain_per_second*dT
         
     def __str__(self):
-        return (                                  \
-            "{0}: Latitude={1:6.1f},"            +\
-            "Thickness={2:6.3f}, "               +\
-            "Temperature = {3:6.1f},{4:6.1f}"  \
+        return ( 
+            '{0}: Latitude={1:6.1f},'  
+            'Thickness={2:6.3f}, '  
+            'Temperature = {3:6.1f},{4:6.1f}'
             ).format(self.name,
                      self.latitude,
                      self.thickness,
@@ -75,7 +75,7 @@ class Layer:
 class Surface(Layer):
     
     def __init__(self,latitude,thickness,solar,planet,temperature,co2):
-        Layer.__init__(self,"Surface",latitude,thickness,planet,temperature)
+        Layer.__init__(self,'Surface',latitude,thickness,planet,temperature)
         self.solar=solar
         self.co2=co2
         self.total_co2=0
@@ -135,7 +135,7 @@ class Surface(Layer):
 # Ordinary layers - excanges heat with Layers above and below
 class MedialLayer(Layer):
     def __init__(self,latitude,thickness,planet,temperature):
-        Layer.__init__(self,"Medial",latitude,thickness,planet,temperature)
+        Layer.__init__(self,'Medial',latitude,thickness,planet,temperature)
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above) + self.heat_flow(below)
@@ -146,7 +146,7 @@ class MedialLayer(Layer):
 # Bottom layer - exchanges heat with above only    
 class Bottom(Layer):
     def __init__(self,layer):
-        Layer.__init__(self,"Bottom",layer.latitude,layer.thickness,layer.planet,layer.temperature)
+        Layer.__init__(self,'Bottom',layer.latitude,layer.thickness,layer.planet,layer.temperature)
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above)
@@ -185,7 +185,7 @@ class ThermalModel:
         total__internal_inflow=0
         for above,layer,below in self.zipper_layers:
             total__internal_inflow+=layer.propagate_temperature(above,below,areocentric_longitude,T,dT,self.record)
-        if abs(total__internal_inflow)>1.0e-6: print ("Total Internal Inflow {0}".format(total__internal_inflow))
+        if abs(total__internal_inflow)>1.0e-6: print ('Total Internal Inflow {0}'.format(total__internal_inflow))
  
         for layer in self.layers:
             layer.temperature=layer.new_temperature
@@ -207,13 +207,13 @@ class ThermalModel:
                 self.history.add(self.record)
 
         
-if __name__=="__main__":
+if __name__=='__main__':
     import matplotlib.pyplot as plt
     
-    mars = planet.create("Mars")
+    mars = planet.create('Mars')
     solar = solar.Solar(mars)
     history = utilities.InternalTemperatureLog()    
-    thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,-1,False)
+    thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,225.9,False)
     
     thermal.runModel(0,1440,10) #1440,10
 
