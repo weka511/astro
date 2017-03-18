@@ -62,7 +62,7 @@ def display_daily_minima(inputfile,figure,colour):
             
 
 def display_daily_minima_all_latitudes(figure):
-      index=0;
+      index=0
       for name in glob.glob('*.txt'): 
             if re.search('[0-9]+[NS]?',name):       
                   display_daily_minima(name,figure,utilities.get_colour(index))

@@ -180,8 +180,8 @@ class ExternalTemperatureLog(TemperatureLog):
     def get(self,key):
         for record in self.logfile:
             pair = record.split(sep='=')
-            if len(pair)>0 and pair[0].lower()==key.lower():
-                result=float(pair[1])
+            if len(pair)>0 and pair[0].lower().strip()==key.lower():
+                result=float(pair[1].strip())
                 self.rewind()
                 return result
             
