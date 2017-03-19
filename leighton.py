@@ -99,15 +99,23 @@ def main(argv):
             display_and_record('Density              = {0:6.3f} Kg/M3'.format(mars.rho),history)         
             display_and_record('Latitude             = {0:6.1f}'.format(latitude),history)
             display_and_record('Step                 = {0:6.1f}'.format(step),history)
+            
             if stableTemperatureSpecified:
                   display_and_record('Starting Temperature = {0:6.1f} K (stable temperature)'.format(temperature),history)
             else:
                   display_and_record('Starting Temperature = {0:6.1f} K'.format(temperature),history)
+                  
+            if co2:
+                  display_and_record('Subliming and freezing CO2',history)
+            else:
+                  display_and_record('No CO2',history)
+                  
             display_and_record('Layering (from top down)',history)
             for n,thickness in spec:
                   display_and_record('{0:d} layers, thickness {1:5.2f} metres each.'.format(n,thickness),history)
+                  
             display_and_record('Albedo of snowcap    = {0:5.2f}'.format(physics.CO2.albedo),history)
-            
+           
             thermal=thermalmodel.ThermalModel(latitude,spec,solar_model,mars,history,temperature,co2)
             thermal.runModel(from_date,to_date,step)
             history.close()
