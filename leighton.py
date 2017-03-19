@@ -118,6 +118,7 @@ def main(argv):
            
             thermal=thermalmodel.ThermalModel(latitude,spec,solar_model,mars,history,temperature,co2)
             thermal.runModel(from_date,to_date,step)
+            
             history.close()
             
 if __name__ == '__main__':
