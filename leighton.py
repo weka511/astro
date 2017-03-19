@@ -25,7 +25,15 @@ def help():
 def display_and_record(message,history):
       print (message)
       history.write(message)
-      
+
+#if output file not specified, latitude determines
+
+def get_output_file_name(from_date,to_date,latitude,temperature,co2):
+      (ns,lat)=utilities.format_latitude(latitude)
+      co2s = 'co2' if co2 else 'noco2'
+      return '{0:d}-{1:d}-{2:d}-{3:s}-{4:.0f}{5:s}.txt'.format(
+            from_date,to_date,int(temperature),co2s,lat,ns).strip()      
+
 def main(argv):
       outputfile  = ''
       from_date   = 0
@@ -74,7 +82,7 @@ def main(argv):
                                     sys.exit(2)
 
       mars = planet.create('Mars')
-      print (mars)
+
       solar_model = solar.Solar(mars)     
       
       # If user doesn't specify starting temperature, use stable value
@@ -82,10 +90,11 @@ def main(argv):
       if stableTemperatureSpecified:
             temperature=thermalmodel.ThermalModel.stable_temperature(solar_model,mars)
            
-      if outputfile=='': #if output file not specified, latitude determines 
-            (lat,ns)=utilities.format_latitude(latitude)
-            outputfile='{1:3.0f}{0}.txt'.format(lat,ns).strip()
+      if outputfile=='': 
+            outputfile=get_output_file_name(from_date,to_date,latitude,temperature,co2)
 
+      print('Outputting to {0}'.format(outputfile))
+      
       with open(outputfile, 'w') as f:
             history = utilities.ExternalTemperatureLog(f)
             display_and_record('Semimajor axes       = {0:10.7f} AU'.format(mars.a),history)
