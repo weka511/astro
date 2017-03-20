@@ -19,13 +19,30 @@ import math, physics
 
 
     
-class Planet:     
+class Planet: 
+    '''Store information about a planet
+    
+    Attributes:
+                name
+                a             Semimajor axis
+                e             eccentricity
+                obliquity
+                hours_in_day
+                F                   absorption
+                E                   emissivity
+                K                   conductivity
+                C                   specific heat
+                rho                 Density
+                average_temperature
+    '''    
     def __init__(self,name):
+        '''Create planet and initialize'''
         self.name = name
         self.S = 1371   # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
                         # Appelbaum & Flood
 
     def __str__(self):
+        '''Convert planet to string'''
         return ('{0}\n'
                 'Semimajor axis      = {1:9.7f} AU\n'
                 'eccentricity        = {2:8.6f}\n' 
@@ -51,32 +68,34 @@ class Planet:
                     self.average_temperature
         )
   
-      
-#   Instantaneaous Distance from Sun in AU
-#   Appelbaum & Flood equations (2) & (3)
     def instantaneous_distance(self,areocentric_longitude):
+        '''Instantaneaous Distance from Sun in AU
+        Appelbaum & Flood equations (2) & (3)
+        '''
         theta = areocentric_longitude - 248 # True anomaly
         return (self.a*(1-self.e*self.e)/
                 (1 + self.e * math.cos(math.radians(theta))))
 
-    #   Sine of declination
-    #   Appelbaum & Flood equation (7)
     def sin_declination(self,areocentric_longitude):
+        '''Sine of declination
+        Appelbaum & Flood equation (7)'''
         return math.sin(math.radians(self.obliquity)) * \
                math.sin(math.radians(areocentric_longitude))
      
-    #   Cosine of zenith angle
-    #   Appelbaum & Flood equation (6)        
     def cos_zenith_angle(self,areocentric_longitude,latitude,T):
+        '''Cosine of zenith angle
+        Appelbaum & Flood equation (6)
+        '''
         sin_declination=self.sin_declination(areocentric_longitude)
         cos_declination=math.sqrt(1-sin_declination*sin_declination)
         return math.sin(math.radians(latitude))*sin_declination +            \
             math.cos(math.radians(latitude))*cos_declination *               \
             math.cos(math.radians(self.hour_angle(T)))
 
-    #   Hour angle
-    #   Appelbaum & Flood equation (8) 
     def hour_angle(self,T):
+        '''Hour angle
+        Appelbaum & Flood equation (8)
+        '''
         return 15*T-180
 
     def get_days_in_year(self):
@@ -86,20 +105,25 @@ class Planet:
         return 360*float(day)/self.get_days_in_year()
 
 class Mercury(Planet):
+    '''Data for the planet Mercury'''
     def __init__(self):
+        '''Create data for planet'''
         Planet.__init__(self,'Mercury')
         self.a = 0.387098  # Wikipedia Mercury page
         self.e = 0.205630  # Wikipedia Mercury page
         self.obliquity = 0 # Wikipedia Axial Tilt page
         
 class Venus(Planet):
+    '''Data for the planet Venus'''
     def __init__(self):
+        '''Create data for planet'''
         Planet.__init__(self,'Venus')
         self.a = 0.723327  # Wikipedia Venus page
         self.e = 0.0067  # Wikipedia Venus page
         self.obliquity = 177.36 # Wikipedia Axial Tilt pagee
         
 class Earth(Planet):
+    '''Data for the planet Earth'''
     earth = None
     @classmethod
     def get(cls):
@@ -107,6 +131,7 @@ class Earth(Planet):
             Earth.earth=Earth()
         return Earth.earth
     def __init__(self):
+        '''Create data for planet'''
         Planet.__init__(self,'Earth')
         self.a = 1.0 # the  semimajor axis in AU,
         self.e = 0.017 #  eccentricity
@@ -117,7 +142,9 @@ class Earth(Planet):
         return 365.256363004
     
 class Mars(Planet):
+    '''Data for the planet Mars'''
     def __init__(self):
+        '''Create data for planet'''
         Planet.__init__(self,'Mars')
         self.a = 1.523679  # Wikipedia Mars page
         self.e = 0.093377  # Appelbaum & Flood
@@ -131,34 +158,43 @@ class Mars(Planet):
         self.average_temperature = 210 #http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
         
 class Jupiter(Planet):
+    '''Data for the planet Jupiter'''
     def __init__(self):
+        '''Create data for planet'''
         Planet.__init__(self,'Jupiter')
         self.a = 5.204267  # Wikipedia Jupiter page
         self.e = 0.048775  # Wikipedia Jupiter page
         self.obliquity = 3.13 # Wikipedia Axial Tilt page
 
 class Saturn(Planet):
+    '''Data for the planet Saturn'''
     def __init__(self):
+        '''Create data for planet'''
         Planet.__init__(self,'Saturn')
         self.a = 9.5820172   # Wikipedia Saturn page
         self.e = 0.055723219  # Wikipedia Saturn page
         self.obliquity = 26.73 # Wikipedia Axial Tilt page
         
 class Uranus(Planet):
+    '''Data for the planet Uranus'''
     def __init__(self):
+        '''Create data for planet'''
         Planet.__init__(self,'Uranus')
         self.a = 19.189253   # Wikipedia Jupiter page
         self.e = 0.047220087  # Wikipedia Uranus page
         self.obliquity = 97.77 # Wikipedia Axial Tilt page
         
 class Neptune(Planet):
+    '''Data for the planet Neptune'''
     def __init__(self):
+        '''Create data for planet'''
         Planet.__init__(self,'Neptune')
         self.a = 30.070900  # Wikipedia Jupiter page
         self.e = 0.00867797  # Wikipedia Neptune page
         self.obliquity = 28.32 # Wikipedia Axial Tilt page
 
 def create(name):
+    '''Create a named Planet'''
     planets=[Mercury(),
              Venus(),
              Earth(),
