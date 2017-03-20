@@ -13,23 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+'''Some useful functions that don't fit anywhere else'''
+
 import string, time, math
 
-# slip_zip
-#
-# given a list, return a new list of triples, with the list 'slipped', e.g.
-# [1,2,3,4,5] becomes
-# [(None, 1, 2), (1, 2, 3), (2, 3, 4), (3, 4, 5), (4, 5, None)]
-# This function is uses to iterate through the layers, with each layer being
-# sanwiched between the layes immediately above and below.
 
 def slip_zip(x):
+    '''Given a list, return a new list of triples, with the list 'slipped', e.g.
+    [1,2,3,4,5] becomes
+    [(None, 1, 2), (1, 2, 3), (2, 3, 4), (3, 4, 5), (4, 5, None)]
+    This function is used to iterate through the layers, with each layer being
+    sandwiched between the layers immediately above and below.  ''' 
     return zip ([None]+x[:-1],x,x[1:]+[None])
 
-# format_latitude
-#
-# Convert latitude to North/South form
 def format_latitude(latitude):
+    '''Convert latitude to North/South form, e.g.
+    -69 becomes ('S',69)'''
     if latitude>0:
         NS='N'
     elif latitude<0:
@@ -49,25 +48,30 @@ colours=[
 ]
 
 def get_colour(index):
+    '''Used to ensure that each graph in a collection has a different colour'''
     return colours[index%len(colours)]
 
-# Find extremem, given that y0<y1>y2, or y0>y1<y2
-# Fit a parabola to (x0,y0, (x1,y1), and (x2,y2), and find its extremum
 
 def extremum(x0,x1,x2,y0,y1,y2):
+    '''Find extremem, given that y0<y1>y2, or y0>y1<y2
+    Fit a parabola to (x0,y0, (x1,y1), and (x2,y2), and find its extremum
+    '''
     return (0.5 * 
             ((x2-x1)*(x2+x1)*y0 + (x0-x2)*(x0+x2)*y1 + (x1-x0)*(x1+x0)*y2) /
             ((x2-x1)*y0 + (x0-x2)*y1 + (x1-x0)*y2))
 
 def signum(x):
+    '''Determine sign of its argument. Returne -1, 0, or +1.'''
     if x<0: return -1
     if x>0: return +1
     return 0
 
 def guarded_sqrt(x):
+    '''Calculate a square root of a positive number, otherwise return 0'''
     return math.sqrt(x) if x>0 else 0
 
 def newton_raphson(x,f,df,epsilon,N):
+    '''Solve an equation using the Newton-Raphson method.'''
     x0 = x
     for i in range(N):
         x1 = x0-f(x0)/df(x0)
@@ -99,21 +103,32 @@ def get_theta_dot(zdot,theta,r):
     [xdot,ydot]=zdot
     return (math.cos(theta)*ydot - math.sin(theta)*xdot)/r
 
-# Used to record temperaturs in a log
 class TemperatureRecord:
+    '''Used to record temperatures in a log
+ 
+    Attributes:
+       temperatures
+       day
+    '''
     def __init__(self,day,hour,hours_in_day):
+        '''Create TemperatureRecord and initialize attributes'''
         self.temperatures=[]
         self.day=day+hour/float(hours_in_day)
         
     def add(self,temperature):
+        '''Add temperature to log'''
         self.temperatures.append(temperature)
         
     def __str__(self):
+        '''Format for display'''
         return '{0} {1}'.format(self.day,self.temperatures)
 
-# Used to store temperature values (abstract class,
-# needs to be implemented by descendents
+
 class TemperatureLog:
+    '''Used to store temperature values
+    
+    Abstract class, needs to be implemented by descendents
+    '''
     def add(self,record):
         raise NotImplementedError('TemperatureLog.add(...)')
     def write(line):
@@ -141,10 +156,11 @@ class TemperatureLog:
         return (xxx,ymin,ymax)    
     def close(self):
         pass
-        
-# Used to store temperature values in an external file     
+           
 class ExternalTemperatureLog(TemperatureLog):
+    '''Used to store temperature values in an external file'''
     def __init__(self,logfile,sep=' '):
+        '''Create Temperature log based on file'''
         self.logfile=logfile
         self.sep=sep
         self.skipping=True
@@ -191,9 +207,9 @@ class ExternalTemperatureLog(TemperatureLog):
      
     def close(self):
         self.logfile.write('END, Elapsed time = {0:.1f} seconds\n'.format(time.time()-self.start))
-        
-# Used to store temperature values internally           
+               
 class InternalTemperatureLog(TemperatureLog):
+    '''Used to store temperature values internally'''
     def __init__(self):
         self.history=[]
         

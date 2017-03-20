@@ -51,21 +51,23 @@ def display_maxmin(inputfile,figure=1):
             plt.savefig(os.path.splitext(inputfile)[0]+'-minmax')
 
 
-def display_daily_minima(inputfile,figure,colour):
+def display_daily_minima(inputfile,figure,colour,style):
       with open(inputfile, 'r') as f:
             history = utilities.ExternalTemperatureLog(f)
             latitude=history.get('latitude')
             (xxx,ymin,ymax)=history.get_max_min(1)
             plt.figure(figure)
             (NS,latitude)=utilities.format_latitude(latitude)        
-            plt.plot(xxx,ymin,colour,label='{0:5.1f}{1}'.format(abs(latitude),NS)) 
+            plt.plot(xxx,ymin,colour+style,label='{0:5.1f}{1}'.format(abs(latitude),NS)) 
             
 
 def display_daily_minima_all_latitudes(figure):
       index=0
-      for name in glob.glob('*.txt'): 
-            if re.search('[0-9]+[NS]?',name):       
-                  display_daily_minima(name,figure,utilities.get_colour(index))
+      for name in glob.glob('*.txt'):
+            m=re.match('^[0-9]+-[0-9]+-[0-9]+-.*co2-[0-9]+([NS])?.txt',name)
+            if m:
+                  style='--' if m.group(1)=='S' else ''
+                  display_daily_minima(name,figure,utilities.get_colour(index),style)
                   index+=1
       plt.title('Minimum temperature for each Latitude')
       plt.xlabel('Time')

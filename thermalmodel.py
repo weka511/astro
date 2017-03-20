@@ -1,3 +1,6 @@
+'''This module carries out heat flow calculation for Mars.
+
+'''
 # Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
@@ -19,7 +22,9 @@ import math, planet, solar, utilities, physics
 # the top one being the Surface
 
 class Layer:
+    '''One Layer from Planet'''
     def __init__(self,name,latitude,thickness,planet,temperature):
+        '''Create a layer'''
         self.name = name
         self.latitude = latitude
         self.thickness = thickness
@@ -32,7 +37,7 @@ class Layer:
         raise NotImplementedError('propagate_temperature')
     
     # Calculate temperature gradient betwwn neighbour and this layer.
-    # Gradient will be +ve (heat will flow to me) if noeighbout is hotter
+    # Gradient will be +ve (heat will flow to me) if neighbour is hotter
     def temperature_gradient(self,neighbour):
         temperature_difference = neighbour.temperature - self.temperature
         distance = 0.5*(self.thickness + neighbour.thickness)
@@ -52,7 +57,7 @@ class Layer:
     #    heat_gain_per_second
     #    dT     Number of seconds
     #    planet
-    def update_temperature(self,heat_gain_per_second,dT,planet):    
+    def update_temperature(self,heat_gain_per_second,dT):    
         self.calculate_heat_gain(heat_gain_per_second,dT)
         delta_temperature= self.heat_gain / (self.planet.C * self.planet.rho * self.thickness)
         self.new_temperature += delta_temperature
@@ -76,28 +81,29 @@ class Surface(Layer):
     
     def __init__(self,latitude,thickness,solar,planet,temperature,co2):
         Layer.__init__(self,'Surface',latitude,thickness,planet,temperature)
-        self.solar=solar
-        self.co2=co2
-        self.total_co2=0
+        self.solar     = solar
+        self.co2       = co2
+        self.total_co2 = 0
     
-
+    def update_temperature_adjust_for_co2(self,total_inflow_before_latent_heat,dT):
+        if self.temperature>physics.CO2.condensation_temperature:
+            if self.total_co2>0 and total_inflow_before_latent_heat>0:
+                total_inflow_before_latent_heat=self.sublimate_co2(total_inflow_before_latent_heat)
+            self.update_temperature(total_inflow_before_latent_heat,dT)
+        else:
+            if self.co2_is_available() and total_inflow_before_latent_heat<0:
+                total_inflow_before_latent_heat=self.freeze_co2(total_inflow_before_latent_heat)           
+            self.update_temperature(total_inflow_before_latent_heat,dT) 
+            
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         irradiance=self.absorption()*self.solar.surface_irradience(areocentric_longitude,self.latitude,T)
         radiation_loss=self.bolzmann(self.temperature)
         internal_inflow=self.heat_flow(below)
         total_inflow_before_latent_heat = irradiance - radiation_loss + internal_inflow
         if self.co2:
-            if self.temperature>physics.CO2.condensation_temperature:
-                if self.total_co2>0 and total_inflow_before_latent_heat>0:
-                    total_inflow_before_latent_heat=self.sublimate_co2(total_inflow_before_latent_heat)
-                self.update_temperature(total_inflow_before_latent_heat,dT,planet)
-            else:
-                if self.co2_is_available() and total_inflow_before_latent_heat<0:
-                    total_inflow_before_latent_heat=self.freeze_co2(total_inflow_before_latent_heat)
-                
-                self.update_temperature(total_inflow_before_latent_heat,dT,planet)
+            self.update_temperature_adjust_for_co2(total_inflow_before_latent_heat,dT)
         else:
-            self.update_temperature(total_inflow_before_latent_heat,dT,planet)
+            self.update_temperature(total_inflow_before_latent_heat,dT)
         record.add(self.temperature)
         return internal_inflow
     
@@ -139,7 +145,7 @@ class MedialLayer(Layer):
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above) + self.heat_flow(below)
-        self.update_temperature(internal_inflow,dT,planet)
+        self.update_temperature(internal_inflow,dT)
         record.add(self.temperature)
         return internal_inflow
     
@@ -150,7 +156,7 @@ class Bottom(Layer):
         
     def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above)
-        self.update_temperature(internal_inflow,dT,planet)
+        self.update_temperature(internal_inflow,dT)
         record.add(self.temperature)
         return internal_inflow
 
