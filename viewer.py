@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+'''Display Martial temperature data'''
 import utilities, io, os,matplotlib.pyplot as plt, sys, getopt, glob, re
 
 def help():

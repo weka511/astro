@@ -1,6 +1,4 @@
-'''This module carries out heat flow calculation for Mars.
 
-'''
 # Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
@@ -16,10 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+'''This module carries out heat flow calculation for Mars.
+The thermal model consists of a series of Layers,
+he top one being the Surface
+'''
 import math, planet, solar, utilities, physics
 
-# The thermal model consists of a series of Layers,
-# the top one being the Surface
+
 
 class Layer:
     '''One Layer from Planet'''
@@ -76,9 +77,9 @@ class Layer:
                      self.temperature,
                      self.new_temperature)
 
-# Top Layer: gains and loses heat through radiation, and exchanges heat with Layer below
 class Surface(Layer):
-    
+    '''Top Layer: gains and loses heat through radiation, 
+    and exchanges heat with Layer below'''
     def __init__(self,latitude,thickness,solar,planet,temperature,co2):
         Layer.__init__(self,'Surface',latitude,thickness,planet,temperature)
         self.solar     = solar
@@ -138,8 +139,9 @@ class Surface(Layer):
         self.total_co2+=abs(total_inflow_before_latent_heat)/physics.CO2.latent_heat
         return 0
     
-# Ordinary layers - excanges heat with Layers above and below
+
 class MedialLayer(Layer):
+    '''Ordinary layers - excanges heat with Layers above and below'''
     def __init__(self,latitude,thickness,planet,temperature):
         Layer.__init__(self,'Medial',latitude,thickness,planet,temperature)
         
@@ -149,8 +151,9 @@ class MedialLayer(Layer):
         record.add(self.temperature)
         return internal_inflow
     
-# Bottom layer - exchanges heat with above only    
+    
 class Bottom(Layer):
+    '''Bottom layer - exchanges heat with layer above only '''
     def __init__(self,layer):
         Layer.__init__(self,'Bottom',layer.latitude,layer.thickness,layer.planet,layer.temperature)
         
@@ -160,10 +163,9 @@ class Bottom(Layer):
         record.add(self.temperature)
         return internal_inflow
 
-# The Thermal Model is a collection of Layers
 
 class ThermalModel:
-    
+    '''The Thermal Model is a collection of Layers'''
     @staticmethod
     # Estimate stable temperature
     def stable_temperature(solar,planet,proportion=0.25):

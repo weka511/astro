@@ -12,28 +12,33 @@
 
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
+'''This module keeps track of useful fragments of physics'''
 
-# Used to convert between CGS and SI
 class Conversion:
+    '''Used to convert between CGS and SI'''
     cm_per_metre = 100
     gm_per_Kg = 1000
     cm3_per_meter3 = cm_per_metre*cm_per_metre*cm_per_metre
     
 class CO2:
+    '''Properties of carbon dioxide'''
     condensation_temperature = 145
     latent_heat = 574               # http://www.engineeringtoolbox.com/fluids-evaporation-latent-heat-d_147.html    
     albedo = 0.6
     
 class Radiation:
+    '''Stefan Bolzmann law'''
     stefan_bolzmann = 5.670374e-8
     
     @staticmethod
     def bolzmann(t):
+        '''Use Stefan Bolzmann to calculate radiation from temperature'''
         t2=t*t    # we call this function often, so don't use exponentiation
         return Radiation.stefan_bolzmann*t2*t2 
     
     @staticmethod
     def reverse_bolzmann(radiation):
+        '''Use Stefan Bolzmann to calculate  temperature from radiation'''
         return (radiation/Radiation.stefan_bolzmann)**0.25
     
 if __name__=='__main__':

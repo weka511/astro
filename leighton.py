@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+'''Driver program for Leighton & Murray simulation'''
 import thermalmodel, planet, solar, utilities, sys,getopt, string, physics
 
 def help():

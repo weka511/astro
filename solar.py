@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-# Model for solar irradiation, based on Solar Radiation on Mars, 
-# Joseph Appelbaum & Dennis Flood, Lewis Research Center, NASA 
+''' Model for solar irradiation, based on Solar Radiation on Mars, 
+ Joseph Appelbaum & Dennis Flood, Lewis Research Center, NASA '''
 
 import math, planet,utilities
 
