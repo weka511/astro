@@ -17,6 +17,7 @@
 import thermalmodel, planet, solar, utilities, sys,getopt, string, physics
 
 def help():
+      '''Generate help text for user'''
       print (
             ('python leighton.py -o <outputfile> -f <hour from> '
              '-t <hour to> -l <latitude> -s <steps per hour> '
@@ -24,18 +25,21 @@ def help():
       )
 
 def display_and_record(message,history):
+      '''Display a message and log it'''
       print (message)
       history.write(message)
 
-#if output file not specified, latitude determines
 
 def get_output_file_name(from_date,to_date,latitude,temperature,co2):
+      '''if output file not specified, choose name
+      based on command line paremeters'''
       (ns,lat)=utilities.format_latitude(latitude)
       co2s = 'co2' if co2 else 'noco2'
       return '{0:d}-{1:d}-{2:d}-{3:s}-{4:.0f}{5:s}.txt'.format(
             from_date,to_date,int(temperature),co2s,lat,ns).strip()      
 
 def main(argv):
+      '''Execute the model'''
       outputfile  = ''
       from_date   = 0
       to_date     = 720
