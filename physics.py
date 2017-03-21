@@ -19,8 +19,30 @@ class Conversion:
     cm_per_metre = 100
     gm_per_Kg = 1000
     cm3_per_meter3 = cm_per_metre*cm_per_metre*cm_per_metre
-    
+    metres_per_au=149597870700.0 #http://neo.jpl.nasa.gov/glossary/au.html
+    seconds_per_day=24*60*60
+     
+    @staticmethod
+    def au2meters(au):
+        '''
+        Convert a distance from Astronomical Units to Metres
+         
+        Arguments
+        au -- distance in Astronomical Units
+        '''
+        return Conversion.metres_per_au*au
+     
+    @staticmethod 
+    def meters2au(meters):
+        '''
+        Convert a distance from Metres to Astronomical Units
+        
+        Arguments
+        meters -- distance in Astronomical Units
+        '''        
+        return meters/Conversion.metres_per_au    
 class CO2:
+    
     '''Properties of carbon dioxide'''
     condensation_temperature = 145
     latent_heat = 574               # http://www.engineeringtoolbox.com/fluids-evaporation-latent-heat-d_147.html    
