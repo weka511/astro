@@ -15,7 +15,7 @@ I have revisited [Leighton and Murray's Behavior of Carbon Dioside and Other Vol
 | utilities.py | Utility functions for log files, zipping lists, choosing colours for plots |
 | viewer.py | Used to plot data files from leighton.py |
 | physics.py | Repository for physical laws and constants |
-| kepler2 | Responsible for determining distance of planet from Sun at a specified time |
+| kepler2.py | Responsible for determining distance of planet from Sun at a specified time |
 ## Orbital calculations
 
 I have started working on some code for orbital calculatione, based on [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084)
