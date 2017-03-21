@@ -36,7 +36,11 @@ class Planet:
                 average_temperature
     '''    
     def __init__(self,name):
-        '''Create planet and initialize'''
+        '''
+        Create planet and initialize
+        Parameters:
+             name    Name of planet
+        '''
         self.name = name
         self.S = 1371   # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
                         # Appelbaum & Flood
@@ -69,16 +73,23 @@ class Planet:
         )
   
     def instantaneous_distance(self,areocentric_longitude):
-        '''Instantaneaous Distance from Sun in AU
+        '''
+        Instantaneaous Distance from Sun in AU
         Appelbaum & Flood equations (2) & (3)
+        Parameters:
+             areocentric_longitude
         '''
         theta = areocentric_longitude - 248 # True anomaly
         return (self.a*(1-self.e*self.e)/
                 (1 + self.e * math.cos(math.radians(theta))))
 
     def sin_declination(self,areocentric_longitude):
-        '''Sine of declination
-        Appelbaum & Flood equation (7)'''
+        '''
+        Sine of declination
+        Appelbaum & Flood equation (7)
+        Parameters:
+             areocentric_longitude        
+        '''
         return math.sin(math.radians(self.obliquity)) * \
                math.sin(math.radians(areocentric_longitude))
      
@@ -93,15 +104,22 @@ class Planet:
             math.cos(math.radians(self.hour_angle(T)))
 
     def hour_angle(self,T):
-        '''Hour angle
+        '''
+        Hour angle
         Appelbaum & Flood equation (8)
+        Parameters:
+             T     Time in Planetary hours
         '''
         return 15*T-180
 
     def get_days_in_year(self):
+        '''
+        Number of Earth days in year Plenetray Year
+        Use Kepler's 2nd law
+        '''
         return Earth.get().earth.get_days_in_year()*math.sqrt(self.a*self.a*self.a)
          
-    def get_areocentric_longitude(self,day,hour):
+    def get_areocentric_longitude(self,day,hour):  #FIXME
         return 360*float(day)/self.get_days_in_year()
 
 class Mercury(Planet):
