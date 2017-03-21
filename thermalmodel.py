@@ -213,7 +213,7 @@ class ThermalModel:
                     hour_ext=hour+step/number_of_steps_in_hour
                     day_ext = day + hour_ext/24
                     i=day*360/days_in_year
-                    print(day, hour, step, hour_ext, day_ext,i)
+
                     M = k.get_mean_anomaly(1,math.radians(i))
                     E = k.get_eccentric_anomaly(M,self.planet.e)
                     nu = k.get_true_anomaly(E,self.planet.e)
@@ -223,16 +223,6 @@ class ThermalModel:
                     self.record = utilities.TemperatureRecord(day,hour,hours_in_day)
                     self.propagate_temperature(areocentric_longitude,hour,step_size)
                 self.history.add(self.record)
-                
-        #step_size = 3600/float(number_of_steps_in_hour)
-        #hours_in_day = self.planet.hours_in_day
-        #for day in range(start_day,start_day+number_of_days):
-            #for hour in range(hours_in_day):
-                #areocentric_longitude=self.planet.get_areocentric_longitude(day,hour)
-                #for step in range(number_of_steps_in_hour):
-                    #self.record = utilities.TemperatureRecord(day,hour,hours_in_day)
-                    #self.propagate_temperature(areocentric_longitude,hour,step_size)
-                #self.history.add(self.record)
 
         
 if __name__=='__main__':

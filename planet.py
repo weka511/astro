@@ -127,9 +127,6 @@ class Planet:
         earth_days=self.get_earth_days_in_year()
         return earth_days*24/self.hours_in_day
     
-    #def get_areocentric_longitude(self,day,hour):  #FIXME
-        #return 360*float(day)/self.get_days_in_year()
-
 class Mercury(Planet):
     '''Data for the planet Mercury'''
     def __init__(self):
