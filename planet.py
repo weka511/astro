@@ -112,15 +112,23 @@ class Planet:
         '''
         return 15*T-180
 
-    def get_days_in_year(self):
+    def get_earth_days_in_year(self):
         '''
-        Number of Earth days in year Plenetray Year
+        Number of Earth days in year Planetary Year
         Use Kepler's 2nd law
         '''
         return Earth.get().earth.get_days_in_year()*math.sqrt(self.a*self.a*self.a)
-         
-    def get_areocentric_longitude(self,day,hour):  #FIXME
-        return 360*float(day)/self.get_days_in_year()
+
+    def get_my_days_in_year(self):
+        '''
+        Number of Earth days in year Planetary Year
+        Use Kepler's 2nd law
+        ''' 
+        earth_days=self.get_earth_days_in_year()
+        return earth_days*24/self.hours_in_day
+    
+    #def get_areocentric_longitude(self,day,hour):  #FIXME
+        #return 360*float(day)/self.get_days_in_year()
 
 class Mercury(Planet):
     '''Data for the planet Mercury'''
@@ -167,7 +175,7 @@ class Mars(Planet):
         self.a = 1.523679  # Wikipedia Mars page
         self.e = 0.093377  # Appelbaum & Flood
         self.obliquity = 24.936 # Appelbaum & Flood
-        self.hours_in_day = 24 # should be 24.6597 http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
+        self.hours_in_day = 24.6597 #  http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
         self.F = 0.85 # absorption fraction - Leighton & Murray
         self.E = 0.85 # Emissivity - Leighton & Murray
         self.K = 6e-5 * physics.Conversion.cm_per_metre # soil conductivity - Leighton & Murray
@@ -234,8 +242,8 @@ if __name__=='__main__':
             self.mars = create('mars')
             print(self.mars)
         def test_get_days_in_year(self):
-            self.assertAlmostEqual(687,self.mars.get_days_in_year(),places=1)
-            
+            self.assertAlmostEqual(687,self.mars.get_earth_days_in_year(),places=1)
+            self.assertAlmostEqual(668.6,self.mars.get_my_days_in_year(),places=1)
     try:
         unittest.main()
     except SystemExit as inst:

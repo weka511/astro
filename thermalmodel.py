@@ -18,7 +18,7 @@
 The thermal model consists of a series of Layers,
 he top one being the Surface
 '''
-import math, planet, solar, utilities, physics
+import math, planet, solar, utilities, physics, kepler2 as k
 
 
 
@@ -204,15 +204,35 @@ class ThermalModel:
     #    number_of_days
     #    number_of_steps_in_hour
     def runModel(self,start_day,number_of_days,number_of_steps_in_hour):
-        step_size = 3600/float(number_of_steps_in_hour)
-        hours_in_day = self.planet.hours_in_day
+        days_in_year=self.planet.get_my_days_in_year()
+        hours_in_day=24
+        step_size = 3600/float(number_of_steps_in_hour)        
         for day in range(start_day,start_day+number_of_days):
-            for hour in range(hours_in_day):
-                areocentric_longitude=self.planet.get_areocentric_longitude(day,hour)
+            for hour in range(24):
                 for step in range(number_of_steps_in_hour):
+                    hour_ext=hour+step/number_of_steps_in_hour
+                    day_ext = day + hour_ext/24
+                    i=day*360/days_in_year
+                    print(day, hour, step, hour_ext, day_ext,i)
+                    M = k.get_mean_anomaly(1,math.radians(i))
+                    E = k.get_eccentric_anomaly(M,self.planet.e)
+                    nu = k.get_true_anomaly(E,self.planet.e)
+                    r = k.get_distance_from_focus(nu,self.planet.a,self.planet.e)
+                    areocentric_longitude= k.true_longitude_from_true_anomaly(nu,PERH=102.04)
+
                     self.record = utilities.TemperatureRecord(day,hour,hours_in_day)
                     self.propagate_temperature(areocentric_longitude,hour,step_size)
                 self.history.add(self.record)
+                
+        #step_size = 3600/float(number_of_steps_in_hour)
+        #hours_in_day = self.planet.hours_in_day
+        #for day in range(start_day,start_day+number_of_days):
+            #for hour in range(hours_in_day):
+                #areocentric_longitude=self.planet.get_areocentric_longitude(day,hour)
+                #for step in range(number_of_steps_in_hour):
+                    #self.record = utilities.TemperatureRecord(day,hour,hours_in_day)
+                    #self.propagate_temperature(areocentric_longitude,hour,step_size)
+                #self.history.add(self.record)
 
         
 if __name__=='__main__':
