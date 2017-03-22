@@ -1,4 +1,3 @@
-
 # Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
@@ -204,28 +203,34 @@ class ThermalModel:
     #    number_of_days
     #    number_of_steps_in_hour
     def runModel(self,start_day,number_of_days,number_of_steps_in_hour):
-        days_in_year=self.planet.get_my_days_in_year()
         hours_in_day=24
-        step_size = 3600/float(number_of_steps_in_hour)        
-        for day in range(start_day,start_day+number_of_days):
-            for hour in range(24):
-                for step in range(number_of_steps_in_hour):
-                    hour_ext=hour+step/number_of_steps_in_hour
-                    day_ext = day + hour_ext/24
-                    i=day*360/days_in_year
-
-                    M = k.get_mean_anomaly(1,math.radians(i))
-                    E = k.get_eccentric_anomaly(M,self.planet.e)
-                    nu = k.get_true_anomaly(E,self.planet.e)
-                    r = k.get_distance_from_focus(nu,self.planet.a,self.planet.e)
-                    areocentric_longitude= k.true_longitude_from_true_anomaly(nu,PERH=102.04)
-
-                    self.record = utilities.TemperatureRecord(day,hour,hours_in_day)
-                    self.propagate_temperature(areocentric_longitude,hour,step_size)
+        step_size = 3600/float(number_of_steps_in_hour) 
+        for day,hour,hour_ext,step,areocentric_longitude in steps(0,2440,10,mars):
+            self.record = utilities.TemperatureRecord(day,hour,hours_in_day,areocentric_longitude)
+            self.propagate_temperature(areocentric_longitude,hour,step_size)
+            if step==0:
                 self.history.add(self.record)
 
-        
+def steps(start_day,number_of_days,number_of_steps_in_hour,planet):
+    '''Generator for iterating over time steps'''
+    days_in_year=planet.get_my_days_in_year()
+    hours_in_day=24
+    step_size = 3600/float(number_of_steps_in_hour)        
+    for day in range(start_day,start_day+number_of_days):
+        for hour in range(24):
+            for step in range(number_of_steps_in_hour):
+                hour_ext=hour+step/number_of_steps_in_hour
+                day_ext = day + hour_ext/24
+                i=day_ext*360/days_in_year
+                M = k.get_mean_anomaly(1,math.radians(i))
+                E = k.get_eccentric_anomaly(M,planet.e)
+                nu = k.get_true_anomaly(E,planet.e)
+                r = k.get_distance_from_focus(nu,planet.a,planet.e)
+                areocentric_longitude= math.degrees(k.true_longitude_from_true_anomaly(nu,PERH=102.04))               
+                yield (day,hour,hour_ext,step,areocentric_longitude)
+                
 if __name__=='__main__':
+        
     import matplotlib.pyplot as plt
     
     mars = planet.create('Mars')
@@ -233,7 +238,7 @@ if __name__=='__main__':
     history = utilities.InternalTemperatureLog()    
     thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,225.9,False)
     
-    thermal.runModel(0,1440,10) #1440,10
+    thermal.runModel(0,1440,10)
 
     (days,surface_temp) = history.extract(0)
     print (days,surface_temp)
