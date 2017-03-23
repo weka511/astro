@@ -102,7 +102,7 @@ class Planet:
         sin_declination=self.sin_declination(areocentric_longitude)
         cos_declination=math.sqrt(1-sin_declination*sin_declination)
         return math.sin(latitude)*sin_declination +            \
-            math.cos(latitude)*cos_declination *  math.cos(math.radians(self.hour_angle(T)))
+            math.cos(latitude)*cos_declination *  math.cos(self.hour_angle(T))
 
     def hour_angle(self,T):
         '''
@@ -111,7 +111,7 @@ class Planet:
         Parameters:
              T     Time in Planetary hours
         '''
-        return 15*T-180
+        return math.radians(15*T-180)
 
     def get_earth_days_in_year(self):
         '''
