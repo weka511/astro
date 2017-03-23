@@ -30,7 +30,7 @@ class Solar:
 #   Beam irradience on a horizonal surface
 #   Appelbaum & Flood equations (5) & (6)
     def surface_irradience(self,areocentric_longitude,latitude,T):
-        cos_zenith_angle = self.planet.cos_zenith_angle(areocentric_longitude,latitude,T)
+        cos_zenith_angle = self.planet.cos_zenith_angle(areocentric_longitude,latitude,T) 
         beam_irradience = self.beam_irradience(self.planet.instantaneous_distance(areocentric_longitude))
         return max(0,cos_zenith_angle*beam_irradience)
     

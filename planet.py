@@ -81,7 +81,7 @@ class Planet:
         '''
         theta = areocentric_longitude - 248 # True anomaly
         return (self.a*(1-self.e*self.e)/
-                (1 + self.e * math.cos(math.radians(theta))))
+                (1 + self.e * math.cos(theta)))
 
     def sin_declination(self,areocentric_longitude):
         '''
@@ -91,7 +91,7 @@ class Planet:
              areocentric_longitude        
         '''
         return math.sin(math.radians(self.obliquity)) * \
-               math.sin(math.radians(areocentric_longitude))
+               math.sin(areocentric_longitude)
      
     def cos_zenith_angle(self,areocentric_longitude,latitude,T):
         '''Cosine of zenith angle

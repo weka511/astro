@@ -226,7 +226,7 @@ def steps(start_day,number_of_days,number_of_steps_in_hour,planet):
                 E = k.get_eccentric_anomaly(M,planet.e)
                 nu = k.get_true_anomaly(E,planet.e)
                 r = k.get_distance_from_focus(nu,planet.a,planet.e)
-                areocentric_longitude= math.degrees(k.true_longitude_from_true_anomaly(nu,PERH=102.04))               
+                areocentric_longitude= k.true_longitude_from_true_anomaly(nu,PERH=102.04)              
                 yield (day,hour,hour_ext,step,areocentric_longitude)
                 
 if __name__=='__main__':
