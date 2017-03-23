@@ -14,7 +14,7 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 '''Driver program for Leighton & Murray simulation'''
-import thermalmodel, planet, solar, utilities, sys,getopt, string, physics
+import thermalmodel, planet, solar, utilities, sys,getopt, string, physics, math
 
 def help():
       '''Generate help text for user'''
@@ -130,7 +130,13 @@ def main(argv):
                   
             display_and_record('Albedo of snowcap    = {0:5.2f}'.format(physics.CO2.albedo),history)
            
-            thermal=thermalmodel.ThermalModel(latitude,spec,solar_model,mars,history,temperature,co2)
+            thermal=thermalmodel.ThermalModel(math.radians(latitude),
+                                              spec,
+                                              solar_model,
+                                              mars,
+                                              history,
+                                              temperature,
+                                              co2)
             thermal.runModel(from_date,to_date,step)
             
             history.close()

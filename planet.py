@@ -35,7 +35,7 @@ class Planet:
                 rho                 Density
                 average_temperature
     '''    
-    def __init__(self,name):
+    def __init__(self,name,a,e,obliquity):
         '''
         Create planet and initialize
         Parameters:
@@ -44,7 +44,10 @@ class Planet:
         self.name = name
         self.S = 1371   # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
                         # Appelbaum & Flood
-
+        self.a = a
+        self.e = e
+        self.obliquity = math.radians(obliquity)  
+        
     def __str__(self):
         '''Convert planet to string'''
         return ('{0}\n'
@@ -62,7 +65,7 @@ class Planet:
                     self.name,
                     self.a,
                     self.e,
-                    self.obliquity,
+                    math.radians(self.obliquity),
                     self.hours_in_day,
                     self.F,
                     self.E,
@@ -79,7 +82,7 @@ class Planet:
         Parameters:
              areocentric_longitude
         '''
-        theta = areocentric_longitude - 248 # True anomaly
+        theta = areocentric_longitude - math.degrees(248) # True anomaly
         return (self.a*(1-self.e*self.e)/
                 (1 + self.e * math.cos(theta)))
 
@@ -90,8 +93,7 @@ class Planet:
         Parameters:
              areocentric_longitude        
         '''
-        return math.sin(math.radians(self.obliquity)) * \
-               math.sin(areocentric_longitude)
+        return math.sin(self.obliquity) * math.sin(areocentric_longitude)
      
     def cos_zenith_angle(self,areocentric_longitude,latitude,T):
         '''Cosine of zenith angle
@@ -99,9 +101,8 @@ class Planet:
         '''
         sin_declination=self.sin_declination(areocentric_longitude)
         cos_declination=math.sqrt(1-sin_declination*sin_declination)
-        return math.sin(math.radians(latitude))*sin_declination +            \
-            math.cos(math.radians(latitude))*cos_declination *               \
-            math.cos(math.radians(self.hour_angle(T)))
+        return math.sin(latitude)*sin_declination +            \
+            math.cos(latitude)*cos_declination *  math.cos(math.radians(self.hour_angle(T)))
 
     def hour_angle(self,T):
         '''
@@ -131,19 +132,20 @@ class Mercury(Planet):
     '''Data for the planet Mercury'''
     def __init__(self):
         '''Create data for planet'''
-        Planet.__init__(self,'Mercury')
-        self.a = 0.387098  # Wikipedia Mercury page
-        self.e = 0.205630  # Wikipedia Mercury page
-        self.obliquity = 0 # Wikipedia Axial Tilt page
+        Planet.__init__(self,
+                        'Mercury',
+                        0.387098,  # Wikipedia Mercury page
+                        0.205630,  # Wikipedia Mercury page
+                        0)  # Wikipedia Axial Tilt page
         
 class Venus(Planet):
     '''Data for the planet Venus'''
     def __init__(self):
         '''Create data for planet'''
-        Planet.__init__(self,'Venus')
-        self.a = 0.723327  # Wikipedia Venus page
-        self.e = 0.0067  # Wikipedia Venus page
-        self.obliquity = 177.36 # Wikipedia Axial Tilt pagee
+        Planet.__init__(self,'Venus',
+                        0.723327,  # Wikipedia Venus page
+                        0.0067,  # Wikipedia Venus page
+                        177.36) # Wikipedia Axial Tilt pagee
         
 class Earth(Planet):
     '''Data for the planet Earth'''
@@ -155,10 +157,10 @@ class Earth(Planet):
         return Earth.earth
     def __init__(self):
         '''Create data for planet'''
-        Planet.__init__(self,'Earth')
-        self.a = 1.0 # the  semimajor axis in AU,
-        self.e = 0.017 #  eccentricity
-        self.obliquity = 23.4 # Wikipedia Axial Tilt page
+        Planet.__init__(self,'Earth',
+                        1.0, # the  semimajor axis in AU,
+                        0.017, #  eccentricity
+                        23.4)   # Wikipedia Axial Tilt page
         self.hours_in_day = 24
         self.average_temperature = 300        
     def get_days_in_year(self):
@@ -168,10 +170,10 @@ class Mars(Planet):
     '''Data for the planet Mars'''
     def __init__(self):
         '''Create data for planet'''
-        Planet.__init__(self,'Mars')
-        self.a = 1.523679  # Wikipedia Mars page
-        self.e = 0.093377  # Appelbaum & Flood
-        self.obliquity = 24.936 # Appelbaum & Flood
+        Planet.__init__(self,'Mars',
+                        1.523679,  # Wikipedia Mars page
+                        0.093377,  # Appelbaum & Flood
+                        24.936) # Appelbaum & Flood
         self.hours_in_day = 24.6597 #  http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
         self.F = 0.85 # absorption fraction - Leighton & Murray
         self.E = 0.85 # Emissivity - Leighton & Murray
@@ -184,37 +186,37 @@ class Jupiter(Planet):
     '''Data for the planet Jupiter'''
     def __init__(self):
         '''Create data for planet'''
-        Planet.__init__(self,'Jupiter')
-        self.a = 5.204267  # Wikipedia Jupiter page
-        self.e = 0.048775  # Wikipedia Jupiter page
-        self.obliquity = 3.13 # Wikipedia Axial Tilt page
+        Planet.__init__(self,'Jupiter',
+                        5.204267,  # Wikipedia Jupiter page
+                        0.048775,  # Wikipedia Jupiter page
+                        3.13) # Wikipedia Axial Tilt page
 
 class Saturn(Planet):
     '''Data for the planet Saturn'''
     def __init__(self):
         '''Create data for planet'''
-        Planet.__init__(self,'Saturn')
-        self.a = 9.5820172   # Wikipedia Saturn page
-        self.e = 0.055723219  # Wikipedia Saturn page
-        self.obliquity = 26.73 # Wikipedia Axial Tilt page
+        Planet.__init__(self,'Saturn',
+                        9.5820172,   # Wikipedia Saturn page
+                        0.055723219,  # Wikipedia Saturn page
+                        26.73) # Wikipedia Axial Tilt page
         
 class Uranus(Planet):
     '''Data for the planet Uranus'''
     def __init__(self):
         '''Create data for planet'''
-        Planet.__init__(self,'Uranus')
-        self.a = 19.189253   # Wikipedia Jupiter page
-        self.e = 0.047220087  # Wikipedia Uranus page
-        self.obliquity = 97.77 # Wikipedia Axial Tilt page
+        Planet.__init__(self,'Uranus',
+                        19.189253,   # Wikipedia Jupiter page
+                        0.047220087,  # Wikipedia Uranus page
+                        97.77) # Wikipedia Axial Tilt page
         
 class Neptune(Planet):
     '''Data for the planet Neptune'''
     def __init__(self):
         '''Create data for planet'''
-        Planet.__init__(self,'Neptune')
-        self.a = 30.070900  # Wikipedia Jupiter page
-        self.e = 0.00867797  # Wikipedia Neptune page
-        self.obliquity = 28.32 # Wikipedia Axial Tilt page
+        Planet.__init__(self,'Neptune',
+                        30.070900,  # Wikipedia Jupiter page
+                        0.00867797,  # Wikipedia Neptune page
+                        28.32)   # Wikipedia Axial Tilt page
 
 def create(name):
     '''Create a named Planet'''
