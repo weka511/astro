@@ -35,7 +35,7 @@ import math,physics
 
 
 def get_mean_anomaly(n,t,tau=0):
-    '''Calculate True Anomaly using Murray & Dermott (2.39)
+    '''Calculate Mean Anomaly using Murray & Dermott (2.39)
     Argumants: n     Mean Motion
                t     Time
                tau   Time of pericentre passage

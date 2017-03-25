@@ -33,7 +33,7 @@ class Layer:
         self.planet = planet
         self.heat_gain = 0
         
-    def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
+    def propagate_temperature(self,above,below,true_longitude,T,dT,record):
         raise NotImplementedError('propagate_temperature')
     
     # Calculate temperature gradient betwwn neighbour and this layer.
@@ -95,8 +95,8 @@ class Surface(Layer):
                 total_inflow_before_latent_heat=self.freeze_co2(total_inflow_before_latent_heat)           
             self.update_temperature(total_inflow_before_latent_heat,dT) 
             
-    def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
-        irradiance=self.absorption()*self.solar.surface_irradience(areocentric_longitude,self.latitude,T)
+    def propagate_temperature(self,above,below,true_longitude,T,dT,record):
+        irradiance=self.absorption()*self.solar.surface_irradience(true_longitude,self.latitude,T)
         radiation_loss=self.bolzmann(self.temperature)
         internal_inflow=self.heat_flow(below)
         total_inflow_before_latent_heat = irradiance - radiation_loss + internal_inflow
@@ -144,7 +144,7 @@ class MedialLayer(Layer):
     def __init__(self,latitude,thickness,planet,temperature):
         Layer.__init__(self,'Medial',latitude,thickness,planet,temperature)
         
-    def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
+    def propagate_temperature(self,above,below,true_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above) + self.heat_flow(below)
         self.update_temperature(internal_inflow,dT)
         record.add(self.temperature)
@@ -156,7 +156,7 @@ class Bottom(Layer):
     def __init__(self,layer):
         Layer.__init__(self,'Bottom',layer.latitude,layer.thickness,layer.planet,layer.temperature)
         
-    def propagate_temperature(self,above,below,areocentric_longitude,T,dT,record):
+    def propagate_temperature(self,above,below,true_longitude,T,dT,record):
         internal_inflow = self.heat_flow(above)
         self.update_temperature(internal_inflow,dT)
         record.add(self.temperature)
@@ -188,10 +188,10 @@ class ThermalModel:
     # Calculate heat transfer during one time step
     # Don't change temperatures until every Layer has been processed
     # otherwise energy won't be conserved, which would be a Very Bad Thing
-    def propagate_temperature(self,areocentric_longitude,T,dT):
+    def propagate_temperature(self,true_longitude,T,dT):
         total__internal_inflow=0
         for above,layer,below in self.zipper_layers:
-            total__internal_inflow+=layer.propagate_temperature(above,below,areocentric_longitude,T,dT,self.record)
+            total__internal_inflow+=layer.propagate_temperature(above,below,true_longitude,T,dT,self.record)
         if abs(total__internal_inflow)>1.0e-6: print ('Total Internal Inflow {0}'.format(total__internal_inflow))
  
         for layer in self.layers:
@@ -205,9 +205,9 @@ class ThermalModel:
     def runModel(self,start_day,number_of_days,number_of_steps_in_hour):
         hours_in_day=24
         step_size = 3600/float(number_of_steps_in_hour) 
-        for day,hour,hour_ext,step,areocentric_longitude in steps(0,2440,10,self.planet):
-            self.record = utilities.TemperatureRecord(day,hour,hours_in_day,areocentric_longitude)
-            self.propagate_temperature(areocentric_longitude,hour,step_size)
+        for day,hour,_,step,_,_,_,_,_,true_longitude in steps(0,2440,10,self.planet):
+            self.record = utilities.TemperatureRecord(day,hour,hours_in_day,true_longitude)
+            self.propagate_temperature(true_longitude,hour,step_size)
             if step==0:
                 self.history.add(self.record)
 
@@ -219,15 +219,15 @@ def steps(start_day,number_of_days,number_of_steps_in_hour,planet):
     for day in range(start_day,start_day+number_of_days):
         for hour in range(24):
             for step in range(number_of_steps_in_hour):
-                hour_ext=hour+step/number_of_steps_in_hour
-                day_ext = day + hour_ext/24
-                i=day_ext*360/days_in_year
-                M = k.get_mean_anomaly(1,math.radians(i))
+                hour_with_step=hour+step/number_of_steps_in_hour
+                day_with_hour_and_step = day + hour_with_step/24
+                time=day_with_hour_and_step*360/days_in_year
+                M = k.get_mean_anomaly(1,math.radians(time))
                 E = k.get_eccentric_anomaly(M,planet.e)
                 nu = k.get_true_anomaly(E,planet.e)
                 r = k.get_distance_from_focus(nu,planet.a,planet.e)
-                areocentric_longitude= k.true_longitude_from_true_anomaly(nu,PERH=102.04)              
-                yield (day,hour,hour_ext,step,areocentric_longitude)
+                true_longitude= k.true_longitude_from_true_anomaly(nu,PERH=102.04)              
+                yield (day,hour,hour_with_step,step,time,M,E,nu,r,true_longitude)
                 
 if __name__=='__main__':
         
@@ -235,6 +235,9 @@ if __name__=='__main__':
     
     mars = planet.create('Mars')
     solar = solar.Solar(mars)
+    #for day,hour,hour_with_step,step,time,M,E,nu,r,true_longitude in steps(0,669,10,mars):
+        #print (day,hour,hour_with_step,step,time,M,E,nu,r,true_longitude)
+        
     history = utilities.InternalTemperatureLog()    
     thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,225.9,False)
     

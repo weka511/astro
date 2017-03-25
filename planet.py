@@ -24,16 +24,16 @@ class Planet:
     
     Attributes:
                 name
-                a             Semimajor axis
-                e             eccentricity
-                obliquity
-                hours_in_day
-                F                   absorption
-                E                   emissivity
-                K                   conductivity
-                C                   specific heat
-                rho                 Density
-                average_temperature
+                a                    Semimajor axis in AU
+                e                    eccentricity
+                obliquity            obliquity
+                hours_in_day         Length of planetary day in Earth hours
+                F                    absorption
+                E                    emissivity
+                K                    conductivity
+                C                    specific heat
+                rho                  Density
+                average_temperature  Average Temperature Kelvin
     '''    
     def __init__(self,name,a,e,obliquity):
         '''
@@ -65,7 +65,7 @@ class Planet:
                     self.name,
                     self.a,
                     self.e,
-                    math.radians(self.obliquity),
+                    math.degrees(self.obliquity),
                     self.hours_in_day,
                     self.F,
                     self.E,
