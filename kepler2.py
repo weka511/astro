@@ -1,14 +1,4 @@
-'''This module looks after orbital calculations. It is responsible for
-determining the distance of a planet from the Sun at a particular time.
-'''
-import re
-__version__ = re.sub('[^0-9]','','$LastChangedRevision: 1119 $')
-
-# $HeadURL: https://server/svn/sandbox/trunk/climate/kepler.py $
-# $LastChangedDate: 2016-11-27 17:40:14 +1300 (Sun, 27 Nov 2016) $
-# $LastChangedRevision: 1119 $
-
-# Copyright (C) 2016 Greenweaves Software Pty Ltd
+# Copyright (C) 2016-2017 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,13 +13,16 @@ __version__ = re.sub('[^0-9]','','$LastChangedRevision: 1119 $')
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-#
-# References:
-# MD Murray & Dermott, Solar System Dynamics
-# GA Goosse H., P.Y. Barriat, W. Lefebvre, M.F. Loutre and V. Zunz, (2008-2010).
-#    Introduction to climate dynamics and climate modeling.
-#    Online textbook available at http://www.climate.be/textbook.
 
+'''This module looks after orbital calculations. It is responsible for
+determining the distance of a planet from the Sun at a particular time.
+
+ References:
+ MD Murray & Dermott, Solar System Dynamics
+ GA Goosse H., P.Y. Barriat, W. Lefebvre, M.F. Loutre and V. Zunz, (2008-2010).
+    Introduction to climate dynamics and climate modeling.
+    Online textbook available at http://www.climate.be/textbook.
+'''
 
 import math,physics
 
@@ -42,15 +35,15 @@ def get_mean_anomaly(n,t,tau=0):
     '''
     return n*(t-tau)
 
-def get_true_anomaly(E,eccentricity):
+def get_true_anomaly(E,e):
     '''Calculate True Anomaly using Murray & Dermott (2.46)
-    Arguments: E             Eccentric anomaly
-               eccentricity  Eccentricty of orbit
+    Arguments: E  Eccentric anomaly
+               e  Eccentricty of orbit
     '''
     def reflect(theta):
         return 2*math.pi-theta
     def get_true_anomaly_upper_hemisphere(E):
-        return 2.0*math.atan( math.sqrt((1+eccentricity)/(1-eccentricity))*math.tan(0.5*E) )
+        return 2.0*math.atan( math.sqrt((1+e)/(1-e))*math.tan(0.5*E) )
     if E<math.pi:
         return get_true_anomaly_upper_hemisphere(E)
     else:
@@ -72,14 +65,14 @@ def get_eccentric_anomaly(M,eccentricity,tolerance=1.0e-9,k=0.85):
     return E
 
 
-def get_distance_from_focus(true_anomaly,semi_major_axis,eccentricity=0.0167):
+def get_distance_from_focus(f,a,e=0.0167):
     '''Calculate distance from focus using Goosse et al 2.15 and Murray & Dermott 2.19
     
-    Arguments: true_anomaly
-               semi_major_axis
-               eccentricity
+    Arguments: f  true_anomaly
+               a  semi_major_axis
+               e  eccentricity
     '''
-    return semi_major_axis*(1-eccentricity*eccentricity)/(1+eccentricity*math.cos(true_anomaly))
+    return a*(1-e*e)/(1+e*math.cos(f))
 
 def get_mean_distance_from_focus(semi_major_axis,eccentricity=0.0167):
     '''Calculate mean distance of planet from the focus that is is orbiting

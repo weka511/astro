@@ -13,16 +13,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-'''This module carries out heat flow calculation for Mars.
+'''
+This module carries out heat flow calculation for Mars.
 The thermal model consists of a series of Layers,
-he top one being the Surface
+the top one being the Surface
 '''
 import math, planet, solar, utilities, physics, kepler2 as k
 
 
 
 class Layer:
-    '''One Layer from Planet'''
+    '''
+    One Layer from Planet.
+    
+    Layer is an abstact class, which is implemented by Surface, Medial,
+    and Bottom.
+    '''
     def __init__(self,name,latitude,thickness,planet,temperature):
         '''Create a layer'''
         self.name = name
@@ -36,28 +42,35 @@ class Layer:
     def propagate_temperature(self,above,below,true_longitude,T,dT,record):
         raise NotImplementedError('propagate_temperature')
     
-    # Calculate temperature gradient betwwn neighbour and this layer.
-    # Gradient will be +ve (heat will flow to me) if neighbour is hotter
     def temperature_gradient(self,neighbour):
+        '''
+        Calculate temperature gradient betwwn neighbour and this layer.
+        Gradient will be +ve (heat will flow to me) if neighbour is hotter
+        '''
         temperature_difference = neighbour.temperature - self.temperature
         distance = 0.5*(self.thickness + neighbour.thickness)
         return (temperature_difference / distance)
         
-    # heat flow to me from neighbour
-    # parameters:
-    #    neighbour
     def heat_flow(self,neighbour):
+        '''
+        heat flow to me from neighbour
+        parameters:
+            neighbour
+        '''
         return(self.planet.K * self.temperature_gradient(neighbour))
 
-    # Calculate new temperature given heat flow
-    # Don't change temperatures until every Layer has been processed
-    # otherwise energy won't be conserved, which would be a Very Bad Thing,
-    # just cache result
-    # parameters:
-    #    heat_gain_per_second
-    #    dT     Number of seconds
-    #    planet
-    def update_temperature(self,heat_gain_per_second,dT):    
+
+    def update_temperature(self,heat_gain_per_second,dT):
+        '''
+        Calculate new temperature given heat flow
+        Don't change temperatures until every Layer has been processed
+        otherwise energy won't be conserved, which would be a Very Bad Thing,
+        just cache result
+        parameters:
+           heat_gain_per_second
+           dT     Number of seconds
+           planet
+        '''
         self.calculate_heat_gain(heat_gain_per_second,dT)
         delta_temperature= self.heat_gain / (self.planet.C * self.planet.rho * self.thickness)
         self.new_temperature += delta_temperature

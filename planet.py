@@ -122,11 +122,11 @@ class Planet:
 
     def get_my_days_in_year(self):
         '''
-        Number of Earth days in year Planetary Year
+        Number of Planetary days in Planetary Year
         Use Kepler's 2nd law
         ''' 
         earth_days=self.get_earth_days_in_year()
-        return earth_days*24/self.hours_in_day
+        return earth_days*Earth.get().hours_in_day/self.hours_in_day
     
 class Mercury(Planet):
     '''Data for the planet Mercury'''
