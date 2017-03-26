@@ -64,7 +64,7 @@ class Layer:
         '''
         Calculate new temperature given heat flow
         Don't change temperatures until every Layer has been processed
-        otherwise energy won't be conserved, which would be a Very Bad Thing,
+        otherwise energy won't be conserved, which would be a Very Bad Thing;
         just cache result
         parameters:
            heat_gain_per_second

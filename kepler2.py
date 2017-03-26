@@ -108,6 +108,9 @@ def true_anomaly_from_true_longitude(true_longitude,PERH=102.04):
     '''
     return true_longitude-math.radians(180+PERH)    # FIXME
 
+def get_areocentric_longitude(true_longitude):
+    true_anomaly=true_anomaly_from_true_longitude(true_longitude)
+    return true_anomaly + math.radians(248)
 
 if __name__=='__main__':
     import pylab
