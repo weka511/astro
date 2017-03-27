@@ -42,8 +42,7 @@ class Planet:
              name    Name of planet
         '''
         self.name = name
-        self.S = 1371   # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
-                        # Appelbaum & Flood
+
         self.a = a
         self.e = e
         self.obliquity = math.radians(obliquity)  

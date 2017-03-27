@@ -20,13 +20,22 @@ import math, planet,utilities, kepler2 as k
 
 
 class Solar:
-    def __init__(self,planet):
+    '''
+    Model so;ar irradiation.
+    
+    Attributes:
+       planet  The planet that we are processing
+       S       Solar constant at the mean Sun-Earth distance of l AU, in N/m2
+    '''
+    def __init__(self,planet,S = 1371):
         self.planet=planet
+        self.S = S   # Solar constant at the mean Sun-Earth distance of l AU, in N/m2
+                     # Appelbaum & Flood        
         
 #   Beam Irradience in W/m2
 #   Appelbaum & Flood equation (1)
     def beam_irradience(self,r):
-        return self.planet.S/(r*r)
+        return self.S/(r*r)
  
 #   Beam irradience on a horizonal surface
 #   Appelbaum & Flood equations (5) & (6)
