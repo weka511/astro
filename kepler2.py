@@ -24,7 +24,7 @@ determining the distance of a planet from the Sun at a particular time.
     Online textbook available at http://www.climate.be/textbook.
 '''
 
-import math,physics
+import math,physics,utilities
 
 
 def get_mean_anomaly(n,t,tau=0):
@@ -92,13 +92,8 @@ def true_longitude_from_true_anomaly(true_anomaly,PERH=102.04):
     Argumenbts: true_anomaly
                 PERH
     '''
-    def clip_angle(angle):
-        while angle>2*math.pi:
-            angle-=2*math.pi
-        while angle<0:
-            angle+=2*math.pi        
-        return angle    
-    return clip_angle(math.radians(180+PERH)+true_anomaly)
+
+    return utilities.clip_angle(math.radians(180+PERH)+true_anomaly)
 
 def true_anomaly_from_true_longitude(true_longitude,PERH=102.04):
     '''

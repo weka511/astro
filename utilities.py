@@ -103,6 +103,14 @@ def get_theta_dot(zdot,theta,r):
     [xdot,ydot]=zdot
     return (math.cos(theta)*ydot - math.sin(theta)*xdot)/r
 
+def clip_angle(angle,min=0,max=2*math.pi):
+    length=max-min
+    while angle>max:
+        angle-=length
+    while angle<min:
+        angle+=length        
+    return angle    
+
 class TemperatureRecord:
     '''Used to record temperatures in a log
  
@@ -228,12 +236,12 @@ class InternalTemperatureLog(TemperatureLog):
 if __name__=='__main__':
     with open('output.txt', 'w') as f:
         log=ExternalTemperatureLog(f)
-        r1=TemperatureRecord(0,1,24)
+        r1=TemperatureRecord(0,1,24,0)
         r1.add(1)
         r1.add(1.345)
         r1.add(99)
         log.add(r1)
-        r2=TemperatureRecord(1,1,24)
+        r2=TemperatureRecord(1,1,24,0)
         r2.add(2)
         r2.add(2.345678)
         r2.add(99)
@@ -243,12 +251,12 @@ if __name__=='__main__':
         print (a,b,c)
         
     log=InternalTemperatureLog()
-    r1=TemperatureRecord(0,1,24)
+    r1=TemperatureRecord(0,1,24,0)
     r1.add(1)
     r1.add(1.345)
     r1.add(99)
     log.add(r1)
-    r2=TemperatureRecord(1,1,24)
+    r2=TemperatureRecord(1,1,24,0)
     r2.add(2)
     r2.add(2.345678)
     r2.add(99)
