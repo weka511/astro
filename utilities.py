@@ -70,7 +70,7 @@ def guarded_sqrt(x):
     '''Calculate a square root of a positive number, otherwise return 0'''
     return math.sqrt(x) if x>0 else 0
 
-def newton_raphson(x,f,df,epsilon,N):
+def newton_raphson(x,f,df,epsilon,N=50):
     '''Solve an equation using the Newton-Raphson method.'''
     x0 = x
     for i in range(N):

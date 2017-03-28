@@ -24,7 +24,7 @@ determining the distance of a planet from the Sun at a particular time.
     Online textbook available at http://www.climate.be/textbook.
 '''
 
-import math,physics,utilities
+import math,physics,utilities as u
 
 
 def get_mean_anomaly(n,t,tau=0):
@@ -58,11 +58,10 @@ def get_eccentric_anomaly(M,eccentricity,tolerance=1.0e-9,k=0.85):
                   k              Correction for starting value Murray & Dermott 2.64
     '''
     E = M + math.copysign(k*eccentricity,math.sin(M)) # MD 2.64
-    delta = 2*tolerance*E
-    while abs(delta)>tolerance*E:
-        delta = (E-eccentricity*math.sin(E)-M)/(1-eccentricity*math.cos(E)) # MD (2.58
-        E-=delta
-    return E
+    return u.newton_raphson(E,
+                            lambda x:x-eccentricity*math.sin(x)-M,
+                            lambda x:1-eccentricity*math.cos(x),
+                            2*tolerance*E)
 
 
 def get_distance_from_focus(f,a,e=0.0167):
@@ -93,7 +92,7 @@ def true_longitude_from_true_anomaly(true_anomaly,PERH=102.04):
                 PERH
     '''
 
-    return utilities.clip_angle(math.radians(180+PERH)+true_anomaly)
+    return u.clip_angle(math.radians(180+PERH)+true_anomaly)
 
 def true_anomaly_from_true_longitude(true_longitude,PERH=102.04):
     '''
@@ -108,7 +107,29 @@ def get_areocentric_longitude(true_longitude):
     return true_anomaly + math.radians(248)
 
 if __name__=='__main__':
-    import pylab
+    import pylab,unittest
+    
+    class TestKeplerMethods(unittest.TestCase):
+        def setUp(self):
+            pass
+        def test_get_days_in_year(self):
+            #print(get_eccentric_anomaly(0,0.2))
+            #print(get_eccentric_anomaly(math.pi/8,0.2))
+            #print(get_eccentric_anomaly(math.pi/4,0.2))
+            #print(get_eccentric_anomaly(math.pi/2,0.2))
+            #print(get_eccentric_anomaly(3*math.pi/4,0.2))
+            self.assertAlmostEqual(0.0,get_eccentric_anomaly(0,0.2),places=1)
+            self.assertAlmostEqual(0.4861429141492005,get_eccentric_anomaly(math.pi/8,0.2),places=4)
+            self.assertAlmostEqual(0.9478282237995902,get_eccentric_anomaly(math.pi/4,0.2),places=4)
+            self.assertAlmostEqual(1.7669606079827387,get_eccentric_anomaly(math.pi/2,0.2),places=4)
+            self.assertAlmostEqual(2.4791961516769594,get_eccentric_anomaly(3*math.pi/4,0.2),places=4)
+    
+    try:
+        unittest.main()
+    except SystemExit as inst:
+        if inst.args[0] is True: # raised by sys.exit(True) when tests failed
+            raise            
+
     semi_major_axis = physics.Conversion.au2meters(39.2851)  #Pluto
     eccentricity = 0.246682  #Pluto    
     
