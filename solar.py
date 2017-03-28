@@ -42,7 +42,8 @@ class Solar:
     def surface_irradience(self,true_longitude,latitude,T):
         areocentric_longitude=k.get_areocentric_longitude(true_longitude)
         cos_zenith_angle = self.planet.cos_zenith_angle(areocentric_longitude,latitude,T) #FIXME - should be areocentric longitude
-        beam_irradience = self.beam_irradience(self.planet.instantaneous_distance(true_longitude))
+        r=self.planet.instantaneous_distance(true_longitude)
+        beam_irradience = self.beam_irradience(r)
         return max(0,cos_zenith_angle*beam_irradience)
     
 if __name__=='__main__':

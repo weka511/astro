@@ -15,7 +15,7 @@
 
 '''Repository for basic data about planets'''
 
-import math, physics
+import math, physics, kepler2 as k
 
 
     
@@ -34,8 +34,9 @@ class Planet:
                 C                    specific heat
                 rho                  Density
                 average_temperature  Average Temperature Kelvin
+                longitude_of_perihelion
     '''    
-    def __init__(self,name,a,e,obliquity):
+    def __init__(self,name,a,e,obliquity,longitude_of_perihelion=-999):
         '''
         Create planet and initialize
         Parameters:
@@ -43,27 +44,29 @@ class Planet:
         '''
         self.name = name
 
-        self.a = a
-        self.e = e
-        self.obliquity = math.radians(obliquity)  
-        
+        self.a                       = a
+        self.e                       = e
+        self.obliquity               = math.radians(obliquity)  
+        self.longitude_of_perihelion = math.radians(longitude_of_perihelion)
     def __str__(self):
         '''Convert planet to string'''
         return ('{0}\n'
-                'Semimajor axis      = {1:9.7f} AU\n'
-                'eccentricity        = {2:8.6f}\n' 
-                'obliquity           = {3:6.3f}\n' 
-                'hours in day        = {4:6.4f}\n' 
-                'absorption          = {5:4.2f}\n'
-                'emissivity          = {6:4.2f}\n' 
-                'conductivity        = {7:5.2g}\n'
-                'specific heat       = {8:6.1f}\n'
-                'rho                 = {9:6.1f}\n' 
-                'average temperature = {10:5.1f}'
+                'Semimajor axis          = {1:9.7f} AU\n'
+                'eccentricity            = {2:8.6f}\n' 
+                'longitude_of_perihelion = {3:6.3f}\n'
+                'obliquity               = {4:6.3f}\n' 
+                'hours in day            = {5:6.4f}\n' 
+                'absorption              = {6:4.2f}\n'
+                'emissivity              = {7:4.2f}\n' 
+                'conductivity            = {8:5.2g}\n'
+                'specific heat           = {9:6.1f}\n'
+                'rho                     = {10:6.1f}\n' 
+                'average temperature     = {11:5.1f}'
                 ).format(
                     self.name,
                     self.a,
                     self.e,
+                    self.longitude_of_perihelion,
                     math.degrees(self.obliquity),
                     self.hours_in_day,
                     self.F,
@@ -74,16 +77,16 @@ class Planet:
                     self.average_temperature
         )
   
-    def instantaneous_distance(self,areocentric_longitude):
+    def instantaneous_distance(self,true_longitude):
         '''
         Instantaneaous Distance from Sun in AU
         Appelbaum & Flood equations (2) & (3)
         Parameters:
              areocentric_longitude
         '''
-        theta = areocentric_longitude - math.degrees(248) # True anomaly
-        return (self.a*(1-self.e*self.e)/
-                (1 + self.e * math.cos(theta)))
+        f = k.true_anomaly_from_true_longitude(true_longitude,PERH=self.longitude_of_perihelion)
+        #theta = areocentric_longitude - math.degrees(248) # True anomaly
+        return k.get_distance_from_focus(f,self.a,e=self.e)
 
     def sin_declination(self,areocentric_longitude):
         '''
@@ -135,7 +138,8 @@ class Mercury(Planet):
                         'Mercury',
                         0.387098,  # Wikipedia Mercury page
                         0.205630,  # Wikipedia Mercury page
-                        0)  # Wikipedia Axial Tilt page
+                        0,  # Wikipedia Axial Tilt page
+                        longitude_of_perihelion=77.45645) # Murray & Dermott
         
 class Venus(Planet):
     '''Data for the planet Venus'''
@@ -144,7 +148,8 @@ class Venus(Planet):
         Planet.__init__(self,'Venus',
                         0.723327,  # Wikipedia Venus page
                         0.0067,  # Wikipedia Venus page
-                        177.36) # Wikipedia Axial Tilt pagee
+                        177.36, # Wikipedia Axial Tilt pagee
+                        longitude_of_perihelion=131.53298)
         
 class Earth(Planet):
     '''Data for the planet Earth'''
@@ -159,7 +164,8 @@ class Earth(Planet):
         Planet.__init__(self,'Earth',
                         1.0, # the  semimajor axis in AU,
                         0.017, #  eccentricity
-                        23.4)   # Wikipedia Axial Tilt page
+                        23.4,   # Wikipedia Axial Tilt page
+                        longitude_of_perihelion=102.94719)
         self.hours_in_day = 24
         self.average_temperature = 300        
     def get_days_in_year(self):
@@ -172,7 +178,9 @@ class Mars(Planet):
         Planet.__init__(self,'Mars',
                         1.523679,  # Wikipedia Mars page
                         0.093377,  # Appelbaum & Flood
-                        24.936) # Appelbaum & Flood
+                        24.936, # Appelbaum & Flood
+                        longitude_of_perihelion=336.04084)
+        
         self.hours_in_day = 24.6597 #  http://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html
         self.F = 0.85 # absorption fraction - Leighton & Murray
         self.E = 0.85 # Emissivity - Leighton & Murray
@@ -188,7 +196,8 @@ class Jupiter(Planet):
         Planet.__init__(self,'Jupiter',
                         5.204267,  # Wikipedia Jupiter page
                         0.048775,  # Wikipedia Jupiter page
-                        3.13) # Wikipedia Axial Tilt page
+                        3.13, # Wikipedia Axial Tilt page
+                        longitude_of_perihelion=14.75385)
 
 class Saturn(Planet):
     '''Data for the planet Saturn'''
@@ -197,7 +206,8 @@ class Saturn(Planet):
         Planet.__init__(self,'Saturn',
                         9.5820172,   # Wikipedia Saturn page
                         0.055723219,  # Wikipedia Saturn page
-                        26.73) # Wikipedia Axial Tilt page
+                        26.73, # Wikipedia Axial Tilt page
+                        longitude_of_perihelion=92.43194)
         
 class Uranus(Planet):
     '''Data for the planet Uranus'''
@@ -206,7 +216,8 @@ class Uranus(Planet):
         Planet.__init__(self,'Uranus',
                         19.189253,   # Wikipedia Jupiter page
                         0.047220087,  # Wikipedia Uranus page
-                        97.77) # Wikipedia Axial Tilt page
+                        97.77, # Wikipedia Axial Tilt page
+                        longitude_of_perihelion=170.96424)
         
 class Neptune(Planet):
     '''Data for the planet Neptune'''
@@ -215,7 +226,8 @@ class Neptune(Planet):
         Planet.__init__(self,'Neptune',
                         30.070900,  # Wikipedia Jupiter page
                         0.00867797,  # Wikipedia Neptune page
-                        28.32)   # Wikipedia Axial Tilt page
+                        28.32,   # Wikipedia Axial Tilt page
+                        longitude_of_perihelion=44.97135)
 
 def create(name):
     '''Create a named Planet'''

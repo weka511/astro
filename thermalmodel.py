@@ -239,7 +239,7 @@ def steps(start_day,number_of_days,number_of_steps_in_hour,planet):
                 E = k.get_eccentric_anomaly(M,planet.e)
                 nu = k.get_true_anomaly(E,planet.e)
                 r = k.get_distance_from_focus(nu,planet.a,planet.e)
-                true_longitude= k.true_longitude_from_true_anomaly(nu,PERH=102.04)              
+                true_longitude= k.true_longitude_from_true_anomaly(nu,PERH=planet.longitude_of_perihelion)              
                 yield (day,hour,hour_with_step,step,time,M,E,nu,r,true_longitude)
                 
 if __name__=='__main__':
@@ -248,8 +248,6 @@ if __name__=='__main__':
     
     mars = planet.create('Mars')
     solar = solar.Solar(mars)
-    #for day,hour,hour_with_step,step,time,M,E,nu,r,true_longitude in steps(0,669,10,mars):
-        #print (day,hour,hour_with_step,step,time,M,E,nu,r,true_longitude)
         
     history = utilities.InternalTemperatureLog()    
     thermal=ThermalModel(10,[(9,0.015),(10,0.3)],solar,mars,history,225.9,False)
