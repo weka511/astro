@@ -118,11 +118,11 @@ class TemperatureRecord:
        temperatures
        day
     '''
-    def __init__(self,day,hour,hours_in_day,areocentric_longitude):
+    def __init__(self,day,hour,hours_in_day,true_longitude):
         '''Create TemperatureRecord and initialize attributes'''
         self.temperatures=[]
         self.day=day+hour/float(hours_in_day)
-        self.areocentric_longitude = areocentric_longitude
+        self.true_longitude = true_longitude
         
     def add(self,temperature):
         '''Add temperature to log'''
@@ -130,7 +130,7 @@ class TemperatureRecord:
         
     def __str__(self):
         '''Format for display'''
-        return '{0} {1} {2}'.format(self.day,self.areocentric_longitude,self.temperatures)
+        return '{0} {1} {2}'.format(self.day,self.true_longitude,self.temperatures)
 
 
 class TemperatureLog:
@@ -179,7 +179,7 @@ class ExternalTemperatureLog(TemperatureLog):
         if self.skipping:
             self.logfile.write('START\n')
             self.skipping = False        
-        self.logfile.write('{0:f} {1:f}'.format(record.day,record.areocentric_longitude))
+        self.logfile.write('{0:f} {1:f}'.format(record.day,record.true_longitude))
         for temperature in record.temperatures:
             self.logfile.write('{0} {1}'.format(self.sep,temperature))
         self.logfile.write('\n')

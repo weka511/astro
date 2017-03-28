@@ -225,7 +225,12 @@ class ThermalModel:
                 self.history.add(self.record)
 
 def steps(start_day,number_of_days,number_of_steps_in_hour,planet):
-    '''Generator for iterating over time steps'''
+    '''
+    Generator for iterating over time steps
+    
+    for day,hour,hour_with_step,step,time,M,E,nu,r,true_longitude in steps(...):
+    
+    '''
     days_in_year=planet.get_my_days_in_year()
     hours_in_day=24
     step_size = 3600/float(number_of_steps_in_hour)        
