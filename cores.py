@@ -15,7 +15,7 @@
 
 # snarfed from http://stackoverflow.com/questions/19086106/how-to-utilize-all-cores-with-python-multiprocessing
 
-import multiprocessing as mp, leighton
+import multiprocessing as mp, leighton, time
 
 def init_worker(mps, fps, cut):
     global memorizedPaths, filepaths, cutoff
@@ -32,6 +32,8 @@ def work(item):
 
 
 if __name__ == "__main__":
+    start_time = time.time()
+    main()    
     m = mp.Manager()
     memorizedPaths = m.dict()
     filepaths = m.dict()
@@ -58,3 +60,4 @@ if __name__ == "__main__":
         pass
     p.close()
     p.join()
+    print("--- %s seconds ---" % (time.time() - start_time))
