@@ -39,12 +39,12 @@ class Layer:
         self.planet = planet
         self.heat_gain = 0
         
-    def propagate_temperature(self,above,below,true_longitude,T,dT,record):
+    def propagate_temperature(self,above,below,true_longitude,T,dT,record,model):
         raise NotImplementedError('propagate_temperature')
     
     def temperature_gradient(self,neighbour):
         '''
-        Calculate temperature gradient betwwn neighbour and this layer.
+        Calculate temperature gradient between neighbour and this layer.
         Gradient will be +ve (heat will flow to me) if neighbour is hotter
         '''
         temperature_difference = neighbour.temperature - self.temperature
@@ -108,10 +108,20 @@ class Surface(Layer):
                 total_inflow_before_latent_heat=self.freeze_co2(total_inflow_before_latent_heat)           
             self.update_temperature(total_inflow_before_latent_heat,dT) 
             
-    def propagate_temperature(self,above,below,true_longitude,T,dT,record):
+    def propagate_temperature(self,above,below,true_longitude,T,dT,record,model):
+        temperature_2 = model.temperature(1)
+        temperature_3 = model.temperature(2)
+        temperature = 3*temperature_2/2 - temperature_3/2
+        #print(temperature_2,temperature_3,temperature)
         irradiance=self.absorption()*self.solar.surface_irradience(true_longitude,self.latitude,T)
-        radiation_loss=self.bolzmann(self.temperature)
-        internal_inflow=self.heat_flow(below)
+        radiation_loss=self.bolzmann(temperature)
+        #internal_inflow=self.heat_flow(below)
+        temperature_difference = temperature_2 - temperature
+        distance = 0.5* below.thickness
+        #print  (self.thickness ,below.thickness)
+        temperature_gradient= (temperature_difference / distance)        
+        internal_inflow=self.planet.K * temperature_gradient
+        #print(temperature_2,temperature_3,temperature,temperature_difference,distance,temperature_gradient,internal_inflow)
         total_inflow_before_latent_heat = irradiance - radiation_loss + internal_inflow
         if self.co2:
             self.update_temperature_adjust_for_co2(total_inflow_before_latent_heat,dT)
@@ -157,7 +167,7 @@ class MedialLayer(Layer):
     def __init__(self,latitude,thickness,planet,temperature):
         Layer.__init__(self,'Medial',latitude,thickness,planet,temperature)
         
-    def propagate_temperature(self,above,below,true_longitude,T,dT,record):
+    def propagate_temperature(self,above,below,true_longitude,T,dT,record,model):
         internal_inflow = self.heat_flow(above) + self.heat_flow(below)
         self.update_temperature(internal_inflow,dT)
         record.add(self.temperature)
@@ -169,7 +179,7 @@ class Bottom(Layer):
     def __init__(self,layer):
         Layer.__init__(self,'Bottom',layer.latitude,layer.thickness,layer.planet,layer.temperature)
         
-    def propagate_temperature(self,above,below,true_longitude,T,dT,record):
+    def propagate_temperature(self,above,below,true_longitude,T,dT,record,model):
         internal_inflow = self.heat_flow(above)
         self.update_temperature(internal_inflow,dT)
         record.add(self.temperature)
@@ -198,14 +208,17 @@ class ThermalModel:
         self.record=None
         self.zipper_layers = list(utilities.slip_zip(self.layers))
  
+    def temperature(self,index):
+        return self.layers[index].temperature
+    
     # Calculate heat transfer during one time step
     # Don't change temperatures until every Layer has been processed
     # otherwise energy won't be conserved, which would be a Very Bad Thing
     def propagate_temperature(self,true_longitude,T,dT):
         total__internal_inflow=0
         for above,layer,below in self.zipper_layers:
-            total__internal_inflow+=layer.propagate_temperature(above,below,true_longitude,T,dT,self.record)
-        if abs(total__internal_inflow)>1.0e-6: print ('Total Internal Inflow {0}'.format(total__internal_inflow))
+            total__internal_inflow+=layer.propagate_temperature(above,below,true_longitude,T,dT,self.record,self)
+        #if abs(total__internal_inflow)>1.0e-6: print ('Total Internal Inflow {0}'.format(total__internal_inflow))
  
         for layer in self.layers:
             layer.temperature=layer.new_temperature

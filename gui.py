@@ -27,6 +27,8 @@ import fnmatch,os,tkinter as tk,viewer,matplotlib.pyplot as plt,multiprocessing 
 from tkinter import *
 
 # The next few methods need to be declared before multiprocessing calls
+# as they run as separate processes.
+
 def exec_display_ext(inputfile,figure): 
     print('Display {0} as figure {1}'.format(inputfile,figure))
     viewer.display(inputfile,figure=figure)         
@@ -55,6 +57,7 @@ class Viewer(tk.Frame):
         self.createWidgets()
         self.figure=1
         self.tasks=[]
+
         
     def createWidgets(self):
         scrollbar = tk.Scrollbar(root, orient="vertical")
@@ -108,7 +111,7 @@ class Viewer(tk.Frame):
         
     def exec_daily_minima(self):
         inputfile=self.file_list.get(self.file_list.curselection())
-        self.tasks.append( mp.Process(target=exec_display_daily_minima_ext,
+        self.tasks.append(mp.Process(target=exec_display_daily_minima_ext,
                                       args=(inputfile,self.figure)))
         self.tasks[-1].start()
         self.figure+=1  
@@ -117,6 +120,7 @@ class Viewer(tk.Frame):
 if __name__=='__main__':   
     mp.freeze_support() # Need this for MS Windows
     root = tk.Tk()
+    root.title('Leighton and Murray Viewer')
     app = Viewer(master=root)
     app.mainloop()
 
