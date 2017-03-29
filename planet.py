@@ -82,10 +82,9 @@ class Planet:
         Instantaneaous Distance from Sun in AU
         Appelbaum & Flood equations (2) & (3)
         Parameters:
-             areocentric_longitude
+             true_longitude
         '''
         f = k.true_anomaly_from_true_longitude(true_longitude,PERH=self.longitude_of_perihelion)
-        #theta = areocentric_longitude - math.degrees(248) # True anomaly
         return k.get_distance_from_focus(f,self.a,e=self.e)
 
     def sin_declination(self,areocentric_longitude):

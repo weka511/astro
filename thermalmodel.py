@@ -109,19 +109,22 @@ class Surface(Layer):
             self.update_temperature(total_inflow_before_latent_heat,dT) 
             
     def propagate_temperature(self,above,below,true_longitude,T,dT,record,model):
+        irradiance=self.absorption()*self.solar.surface_irradience(true_longitude,self.latitude,T)
+        
+        #Use formula from Leighton & Murray for surface temperature
         temperature_2 = model.temperature(1)
         temperature_3 = model.temperature(2)
         temperature = 3*temperature_2/2 - temperature_3/2
-        #print(temperature_2,temperature_3,temperature)
-        irradiance=self.absorption()*self.solar.surface_irradience(true_longitude,self.latitude,T)
+
         radiation_loss=self.bolzmann(temperature)
-        #internal_inflow=self.heat_flow(below)
+ 
+        #Use formula from Leighton & Murray for surface heat flow
         temperature_difference = temperature_2 - temperature
-        distance = 0.5* below.thickness
-        #print  (self.thickness ,below.thickness)
+        distance = below.thickness#0.5* 
+        
         temperature_gradient= (temperature_difference / distance)        
         internal_inflow=self.planet.K * temperature_gradient
-        #print(temperature_2,temperature_3,temperature,temperature_difference,distance,temperature_gradient,internal_inflow)
+
         total_inflow_before_latent_heat = irradiance - radiation_loss + internal_inflow
         if self.co2:
             self.update_temperature_adjust_for_co2(total_inflow_before_latent_heat,dT)
