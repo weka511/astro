@@ -14,12 +14,13 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 
-'''This module looks after orbital calculations. It is responsible for
+'''
+This module looks after orbital calculations. It is responsible for
 determining the distance of a planet from the Sun at a particular time.
 
- References:
- MD Murray & Dermott, Solar System Dynamics
- GA Goosse H., P.Y. Barriat, W. Lefebvre, M.F. Loutre and V. Zunz, (2008-2010).
+References:
+  MD Murray & Dermott, Solar System Dynamics
+  GA Goosse H., P.Y. Barriat, W. Lefebvre, M.F. Loutre and V. Zunz, (2008-2010).
     Introduction to climate dynamics and climate modeling.
     Online textbook available at http://www.climate.be/textbook.
 '''
@@ -36,7 +37,8 @@ def get_mean_anomaly(n,t,tau=0):
     return n*(t-tau)
 
 def get_true_anomaly(E,e):
-    '''Calculate True Anomaly using Murray & Dermott (2.46)
+    '''
+    Calculate True Anomaly using Murray & Dermott (2.46)
     Arguments: E  Eccentric anomaly
                e  Eccentricty of orbit
     '''
@@ -50,22 +52,26 @@ def get_true_anomaly(E,e):
         return reflect(get_true_anomaly_upper_hemisphere(reflect(E)))
 
 def get_eccentric_anomaly(M,eccentricity,tolerance=1.0e-9,k=0.85):
-    '''Calculate Eccentric Anomaly using Murray & Dermott (2.52).
-       Solve using Newton Raphson
-       Arguments: M              Mean anomaly
-                  eccentricity   Eccentricity of orbit
-                  tolerance      Maximum error allowed in Newton Raphson step
-                  k              Correction for starting value Murray & Dermott 2.64
+    '''
+    Calculate Eccentric Anomaly using Murray & Dermott (2.52).
+    
+    Solve using Newton Raphson
+    Arguments: M              Mean anomaly
+               eccentricity   Eccentricity of orbit
+               tolerance      Maximum error allowed in Newton Raphson step
+               k              Correction for starting value Murray & Dermott 2.64
     '''
     E = M + math.copysign(k*eccentricity,math.sin(M)) # MD 2.64
-    return u.newton_raphson(E,
-                            lambda x:x-eccentricity*math.sin(x)-M,
-                            lambda x:1-eccentricity*math.cos(x),
-                            2*tolerance*E)
+    return u.newton_raphson(
+        E,
+        lambda x:x-eccentricity*math.sin(x)-M,
+        lambda x:1-eccentricity*math.cos(x),
+        2*tolerance*E)
 
 
 def get_distance_from_focus(f,a,e=0.0167):
-    '''Calculate distance from focus using Goosse et al 2.15 and Murray & Dermott 2.19
+    '''
+    Calculate distance from focus using Goosse et al 2.15 and Murray & Dermott 2.19
     
     Arguments: f  true_anomaly
                a  semi_major_axis
@@ -74,7 +80,8 @@ def get_distance_from_focus(f,a,e=0.0167):
     return a*(1-e*e)/(1+e*math.cos(f))
 
 def get_mean_distance_from_focus(semi_major_axis,eccentricity=0.0167):
-    '''Calculate mean distance of planet from the focus that is is orbiting
+    '''
+    Calculate mean distance of planet from the focus that is is orbiting
     around using Goosse et al 2.16
     
     Arguments: semi_major_axis
@@ -110,55 +117,47 @@ if __name__=='__main__':
     import pylab,unittest
     
     class TestKeplerMethods(unittest.TestCase):
-        def setUp(self):
-            pass
-        def test_get_days_in_year(self):
-            #print(get_eccentric_anomaly(0,0.2))
-            #print(get_eccentric_anomaly(math.pi/8,0.2))
-            #print(get_eccentric_anomaly(math.pi/4,0.2))
-            #print(get_eccentric_anomaly(math.pi/2,0.2))
-            #print(get_eccentric_anomaly(3*math.pi/4,0.2))
+        def test_get_eccentric_anomaly(self):
             self.assertAlmostEqual(0.0,get_eccentric_anomaly(0,0.2),places=1)
-            self.assertAlmostEqual(0.4861429141492005,get_eccentric_anomaly(math.pi/8,0.2),places=4)
-            self.assertAlmostEqual(0.9478282237995902,get_eccentric_anomaly(math.pi/4,0.2),places=4)
-            self.assertAlmostEqual(1.7669606079827387,get_eccentric_anomaly(math.pi/2,0.2),places=4)
-            self.assertAlmostEqual(2.4791961516769594,get_eccentric_anomaly(3*math.pi/4,0.2),places=4)
+            self.assertAlmostEqual(0.4861429141492005,get_eccentric_anomaly(math.pi/8,0.2),places=8)
+            self.assertAlmostEqual(0.9478282237995902,get_eccentric_anomaly(math.pi/4,0.2),places=8)
+            self.assertAlmostEqual(1.7669606079827387,get_eccentric_anomaly(math.pi/2,0.2),places=8)
+            self.assertAlmostEqual(2.4791961516769594,get_eccentric_anomaly(3*math.pi/4,0.2),places=8)
     
     try:
         unittest.main()
+        semi_major_axis = physics.Conversion.au2meters(39.2851)  #Pluto
+        eccentricity = 0.246682  #Pluto    
+        
+        figure = 1
+        pylab.figure(figure,figsize=(10,10))
+        xs = []
+        ys = []
+        areas = []
+    
+        r0 = -1
+        nu = -1
+        for i in range(360):
+            M = get_mean_anomaly(1,math.radians(i))
+            E = get_eccentric_anomaly(M,eccentricity)
+            nu = get_true_anomaly(E,eccentricity)
+            r = get_distance_from_focus(nu,semi_major_axis,eccentricity)
+            xs.append(r*math.cos(nu))
+            ys.append(r*math.sin(nu))
+            if r0>0:
+                areas.append(0.5*math.sin(nu-nu0)*r*r0)
+            r0 = r
+            nu0 = nu
+        print ('Relative difference between maximum and minimum area: {0:.2g}'.format(2.0*(max(areas)-min(areas))/(min(areas)+max(areas))))
+        pylab.plot(xs,ys,'b.')
+        pylab.plot([0],[0],'rs')
+        pylab.title(r'$\mathrm{Show\ that}\ \mathit{get\_distance\_from\_focus}\ \mathrm{produces\ an\ ellipse}$')
+        lim0=min(min(xs),min(ys))
+        lim1=max(max(xs),max(ys))         
+        pylab.xlim(lim0,lim1)
+        pylab.ylim(lim0,lim1)
+        pylab.show()        
     except SystemExit as inst:
         if inst.args[0] is True: # raised by sys.exit(True) when tests failed
             raise            
-
-    semi_major_axis = physics.Conversion.au2meters(39.2851)  #Pluto
-    eccentricity = 0.246682  #Pluto    
-    
-    figure = 1
-    pylab.figure(figure,figsize=(10,10))
-    xs = []
-    ys = []
-    areas = []
-
-    r0 = -1
-    nu = -1
-    for i in range(360):
-        M = get_mean_anomaly(1,math.radians(i))
-        E = get_eccentric_anomaly(M,eccentricity)
-        nu = get_true_anomaly(E,eccentricity)
-        r = get_distance_from_focus(nu,semi_major_axis,eccentricity)
-        xs.append(r*math.cos(nu))
-        ys.append(r*math.sin(nu))
-        if r0>0:
-            areas.append(0.5*math.sin(nu-nu0)*r*r0)
-        r0 = r
-        nu0 = nu
-    print ('Relative difference between maximum and minimum area: {0:.2g}'.format(2.0*(max(areas)-min(areas))/(min(areas)+max(areas))))
-    pylab.plot(xs,ys,'b.')
-    pylab.plot([0],[0],'rs')
-    pylab.title(r'$\mathrm{Show\ that}\ \mathit{get\_distance\_from\_focus}\ \mathrm{produces\ an\ ellipse}$')
-    lim0=min(min(xs),min(ys))
-    lim1=max(max(xs),max(ys))         
-    pylab.xlim(lim0,lim1)
-    pylab.ylim(lim0,lim1)
-    pylab.show()
-    
+ 

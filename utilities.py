@@ -71,7 +71,16 @@ def guarded_sqrt(x):
     return math.sqrt(x) if x>0 else 0
 
 def newton_raphson(x,f,df,epsilon,N=50):
-    '''Solve an equation using the Newton-Raphson method.'''
+    '''
+    Solve an equation using the Newton-Raphson method.
+    
+    ParametersL
+       x       Starting value
+       f       Function for equation: f(x)=0
+       df      Derivative of f
+       epsilon Maximum acceptable error
+       N       Maximum number of iterations
+    '''
     x0 = x
     for i in range(N):
         x1 = x0-f(x0)/df(x0)
