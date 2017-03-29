@@ -1,8 +1,42 @@
-import fnmatch,os,tkinter as tk,viewer
+# Copyright (C) 2016-2017 Greenweaves Software Pty Ltd
+
+# This is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+
+# This software is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this software.  If not, see <http://www.gnu.org/licenses/>
+
+'''
+User interface for Viewer
+
+Do not try to run this under the IDE, as it fights with multiprocessing
+'''
+
+import fnmatch,os,tkinter as tk,viewer,matplotlib.pyplot as plt,multiprocessing as mp
 from tkinter import *
 
-
-        
+def exec_display_ext(inputfile,figure):
+    print(inputfile,figure)
+    viewer.display(inputfile,figure=figure)         
+    plt.show()
+    
+def exec_display_maxmin_ext(inputfile,figure):
+    print(inputfile,figure)
+    viewer.display_maxmin(inputfile,figure=figure)         
+    plt.show() 
+    
+def exec_display_daily_minima_ext(inputfile,figure):
+    print(inputfile,figure)
+    viewer.display_daily_minima_all_latitudes(figure=figure)         
+    plt.show()     
+    
 class Viewer(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
@@ -41,22 +75,29 @@ class Viewer(tk.Frame):
     def exec_all(self):
         inputfile=self.file_list.get(self.file_list.curselection())
         print (inputfile)
-        viewer.display(inputfile,figure=self.figure)
+        job_for_another_core = mp.Process(target=exec_display_ext,args=(inputfile,self.figure))
+        job_for_another_core.start()  
         self.figure+=1
+ 
         
     def exec_maxmin(self):
         inputfile=self.file_list.get(self.file_list.curselection())
         print (inputfile)
-        viewer.display_maxmin(inputfile,figure=self.figure)
+        job_for_another_core = mp.Process(target=exec_display_maxmin_ext,args=(inputfile,self.figure))
+        job_for_another_core.start() 
         self.figure+=1
         
     def exec_daily_minima(self):
         inputfile=self.file_list.get(self.file_list.curselection())
         print (inputfile)
-        viewer.display_daily_minima(inputfile,figure=self.figure)
-        self.figure+=1
+        job_for_another_core = mp.Process(target=exec_display_daily_minima_ext,args=(inputfile,self.figure))
+        job_for_another_core.start() 
+        self.figure+=1  
         
-root = tk.Tk()
-app = Viewer(master=root)
-app.mainloop()
+
+if __name__=='__main__':   
+    mp.freeze_support()
+    root = tk.Tk()
+    app = Viewer(master=root)
+    app.mainloop()
 
