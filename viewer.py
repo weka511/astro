@@ -62,10 +62,10 @@ def display_daily_minima(inputfile,figure,colour,style):
             plt.plot(xxx,ymin,colour+style,label='{0:5.1f}{1}'.format(abs(latitude),NS)) 
             
 
-def display_daily_minima_all_latitudes(figure):
+def display_daily_minima_all_latitudes(figure,pattern='^[0-9]+-[0-9]+-[0-9]+-.*co2-[0-9]+([NS])?.txt'):
       index=0
       for name in glob.glob('*.txt'):
-            m=re.match('^[0-9]+-[0-9]+-[0-9]+-.*co2-[0-9]+([NS])?.txt',name)
+            m=re.match(pattern,name)
             if m:
                   style='--' if m.group(1)=='S' else ''
                   display_daily_minima(name,figure,utilities.get_colour(index),style)

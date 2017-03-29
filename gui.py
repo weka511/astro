@@ -20,7 +20,7 @@ Do not try to run this under the IDE, as it fights with multiprocessing
 
 '''
 
-import fnmatch,os,tkinter as tk,viewer,matplotlib.pyplot as plt,multiprocessing as mp
+import fnmatch,os,tkinter as tk,viewer,matplotlib.pyplot as plt,multiprocessing as mp,re
 from tkinter import *
 
 # The next few methods need to be declared before multiprocessing calls
@@ -36,7 +36,10 @@ def exec_display_maxmin_ext(inputfile,figure):
     
 def exec_display_daily_minima_ext(inputfile,figure):
     print('Display Daily {0} as figure {1}'.format(inputfile,figure))
-    viewer.display_daily_minima_all_latitudes(figure=figure)         
+    m=re.match('(^[0-9]+-[0-9]+-[0-9]+-.*co2-)([0-9]+[NS])?(.txt)',inputfile)  
+    pattern='{0}[0-9]+([NS])?.txt'.format(m.group(1))
+    print (m.group(1),m.group(2),m.group(3),pattern)
+    viewer.display_daily_minima_all_latitudes(figure=figure,pattern=pattern)         
     plt.show()     
     
 class Viewer(tk.Frame):
@@ -72,7 +75,7 @@ class Viewer(tk.Frame):
         self.daily_button['command'] = self.exec_daily_minima
         self.daily_button.grid(row=1,column=2)         
 
-        self.QUIT = tk.Button(self, text='QUIT', fg="red", command=self.close_all)
+        self.QUIT = tk.Button(self, text='QUIT', command=self.close_all)
         self.QUIT.grid(row=2,column=1) 
 
     def close_all(self):
