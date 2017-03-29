@@ -18,6 +18,9 @@ User interface for Viewer
 
 Do not try to run this under the IDE, as it fights with multiprocessing
 
+Allows user to select text files from previous runs of leighton.py and
+diplay them graphically.
+
 '''
 
 import fnmatch,os,tkinter as tk,viewer,matplotlib.pyplot as plt,multiprocessing as mp,re
@@ -36,12 +39,15 @@ def exec_display_maxmin_ext(inputfile,figure):
     
 def exec_display_daily_minima_ext(inputfile,figure):
     print('Display Daily {0} as figure {1}'.format(inputfile,figure))
-    m=re.match('(^[0-9]+-[0-9]+-[0-9]+-.*co2-)([0-9]+[NS])?(.txt)',inputfile)  
-    pattern='{0}[0-9]+([NS])?.txt'.format(m.group(1))
+    m=re.match('(^[0-9]+-[0-9]+-[0-9]+-.*co2-)([0-9]+[NS]?)(.txt)',inputfile)  
+    pattern='{0}[0-9]+([NS])?{1}'.format(m.group(1),m.group(3))
     print (m.group(1),m.group(2),m.group(3),pattern)
     viewer.display_daily_minima_all_latitudes(figure=figure,pattern=pattern)         
     plt.show()     
-    
+
+'''
+This class represents to Frame and UI elements
+'''
 class Viewer(tk.Frame):
     def __init__(self, master=None):
         tk.Frame.__init__(self, master)
@@ -87,26 +93,29 @@ class Viewer(tk.Frame):
         
     def exec_all(self):
         inputfile=self.file_list.get(self.file_list.curselection())
-        self.tasks.append(mp.Process(target=exec_display_ext,args=(inputfile,self.figure)))
+        self.tasks.append(mp.Process(target=exec_display_ext,
+                                     args=(inputfile,self.figure)))
         self.tasks[-1].start()  
         self.figure+=1
  
         
     def exec_maxmin(self):
         inputfile=self.file_list.get(self.file_list.curselection())
-        self.tasks.append(mp.Process(target=exec_display_maxmin_ext,args=(inputfile,self.figure)))
+        self.tasks.append(mp.Process(target=exec_display_maxmin_ext,
+                                     args=(inputfile,self.figure)))
         self.tasks[-1].start() 
         self.figure+=1
         
     def exec_daily_minima(self):
         inputfile=self.file_list.get(self.file_list.curselection())
-        self.tasks.append( mp.Process(target=exec_display_daily_minima_ext,args=(inputfile,self.figure)))
+        self.tasks.append( mp.Process(target=exec_display_daily_minima_ext,
+                                      args=(inputfile,self.figure)))
         self.tasks[-1].start()
         self.figure+=1  
         
 
 if __name__=='__main__':   
-    mp.freeze_support()
+    mp.freeze_support() # Need this for MS Windows
     root = tk.Tk()
     app = Viewer(master=root)
     app.mainloop()

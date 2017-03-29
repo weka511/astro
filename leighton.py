@@ -126,7 +126,7 @@ def main(argv):
                   
             display_and_record('Layering (from top down)',history)
             for n,thickness in spec:
-                  display_and_record('{0:d} layers, thickness {1:5.2f} metres each.'.format(n,thickness),history)
+                  display_and_record('{0:d} layers, thickness {1:6.3f} metres each.'.format(n,thickness),history)
                   
             display_and_record('Albedo of snowcap    = {0:5.2f}'.format(physics.CO2.albedo),history)
            
