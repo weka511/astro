@@ -28,10 +28,10 @@ def init_worker(mps, fps, cut):
 
     print ('process initializing', mp.current_process())
     memorizedPaths, filepaths, cutoff = mps, fps, cut
-    DG = 1##nx.read_gml('KeggComplete.gml', relabel = True)
+    DG = 1
 
 def work(item):
-    print (item)
+    print ('Processing {0}'.format(item))
     leighton.main(item.split())
 
 def help():
@@ -52,23 +52,22 @@ def parse_command_line(argv):
 
 if __name__ == '__main__':
     start_time = time.time() 
-    m = mp.Manager()
-    memorizedPaths = m.dict()
-    filepaths = m.dict()
-    cutoff = 1 ##
-    # use all available CPUs
-    p = mp.Pool(initializer=init_worker, 
-                initargs=(memorizedPaths,
-                          filepaths,
-                          cutoff))
+    manager = mp.Manager()
+    memorizedPaths = manager.dict()
+    filepaths = manager.dict()
+    cutoff = 1
+
+    pool = mp.Pool(initializer=init_worker, 
+                   initargs=(memorizedPaths,
+                             filepaths,
+                             cutoff))
     input_file = parse_command_line(sys.argv[1:])
     print ('Opening {0}'.format(input_file))
-    with open(input_file) as f:
-        parameters_list = [x.strip() for x in  f.readlines() if len(x.strip())>0] 
-        for _ in p.imap_unordered(work, parameters_list, chunksize=1):
+    with open(input_file) as file:
+        for _ in pool.imap_unordered(work,
+                                     [line.strip() for line in  file.readlines() if len(line.strip())>0],
+                                     chunksize=1):
             pass
-        p.close()
-        p.join()
+        pool.close()
+        pool.join()
         print('--- %s seconds ---' % (time.time() - start_time))            
-
-   
