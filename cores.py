@@ -15,15 +15,20 @@
 
 # snarfed from http://stackoverflow.com/questions/19086106/how-to-utilize-all-cores-with-python-multiprocessing
 
+'''
+Execute leighton.py on multiple cores.
+
+Do not try to run this under the IDE, as it fights with multiprocessing!
+'''
 import multiprocessing as mp, leighton, time
 
 def init_worker(mps, fps, cut):
     global memorizedPaths, filepaths, cutoff
     global DG
 
-    print ("process initializing", mp.current_process())
+    print ('process initializing', mp.current_process())
     memorizedPaths, filepaths, cutoff = mps, fps, cut
-    DG = 1##nx.read_gml("KeggComplete.gml", relabel = True)
+    DG = 1##nx.read_gml('KeggComplete.gml', relabel = True)
 
 def work(item):
     print (item)
@@ -31,9 +36,8 @@ def work(item):
 
 
 
-if __name__ == "__main__":
-    start_time = time.time()
-    main()    
+if __name__ == '__main__':
+    start_time = time.time()    
     m = mp.Manager()
     memorizedPaths = m.dict()
     filepaths = m.dict()
@@ -60,4 +64,4 @@ if __name__ == "__main__":
         pass
     p.close()
     p.join()
-    print("--- %s seconds ---" % (time.time() - start_time))
+    print('--- %s seconds ---' % (time.time() - start_time))
