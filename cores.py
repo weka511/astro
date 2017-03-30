@@ -20,7 +20,7 @@ Execute leighton.py on multiple cores.
 
 Do not try to run this under the IDE, as it fights with multiprocessing!
 '''
-import multiprocessing as mp, leighton, time
+import multiprocessing as mp, leighton, time, getopt,sys
 
 def init_worker(mps, fps, cut):
     global memorizedPaths, filepaths, cutoff
@@ -37,31 +37,32 @@ def work(item):
 
 
 if __name__ == '__main__':
-    start_time = time.time()    
-    m = mp.Manager()
-    memorizedPaths = m.dict()
-    filepaths = m.dict()
-    cutoff = 1 ##
-    # use all available CPUs
-    p = mp.Pool(initializer=init_worker, 
-                initargs=(memorizedPaths,
-                          filepaths,
-                          cutoff))
-    parameters_list=[
-        '-f 0 -t 2880 -s 1 -l -80 -c',
-         '-f 0 -t 2880 -s 1 -l -70 -c',
-         '-f 0 -t 2880 -s 1 -l -50 -c',
-         '-f 0 -t 2880 -s 1 -l -30 -c',
-         '-f 0 -t 2880 -s 1 -l -10 -c',
-         '-f 0 -t 2880 -s 1 -l 0 -c',
-         '-f 0 -t 2880 -s 1 -l 10 -c',
-         '-f 0 -t 2880 -s 1 -l 30  -c',
-         '-f 0 -t 2880 -s 1 -l 50 -c',
-         '-f 0 -t 2880 -s 1 -l 70 -c',
-         '-f 0 -t 2880 -s 1 -l 90 -c'       
-    ] 
-    for _ in p.imap_unordered(work, parameters_list, chunksize=1):
-        pass
-    p.close()
-    p.join()
-    print('--- %s seconds ---' % (time.time() - start_time))
+    start_time = time.time() 
+    input_file  = 'cores.dat'
+    if len(sys.argv[1:])>0:
+        try:
+            opts, args = getopt.getopt(sys.argv[1:],'',[])
+            for opt, arg in opts: 
+                pass
+            input_file = args[0]
+            m = mp.Manager()
+            memorizedPaths = m.dict()
+            filepaths = m.dict()
+            cutoff = 1 ##
+            # use all available CPUs
+            p = mp.Pool(initializer=init_worker, 
+                        initargs=(memorizedPaths,
+                                  filepaths,
+                                  cutoff))
+            print ('Opening {0}'.format(input_file))
+            with open(input_file) as f:
+                parameters_list = [x.strip() for x in  f.readlines() if len(x.strip())>0] 
+                for _ in p.imap_unordered(work, parameters_list, chunksize=1):
+                    pass
+                p.close()
+                p.join()
+                print('--- %s seconds ---' % (time.time() - start_time))            
+        except getopt.GetoptError:
+            help()
+            sys.exit(2)
+   
