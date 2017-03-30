@@ -9,6 +9,7 @@ I have revisited [Leighton and Murray's Behavior of Carbon Dioside and Other Vol
 | File | Purpose |
 | ------------------------- | ------------------------------------------------------------|
 | gui.py | GUI for viewer.py |
+| cores.py | Process model via leighton.py, but run across all available cores |
 | leighton.py | Driver for executing model |
 | planet.py |  Repository for basic data about planets |
 | solar.py |  Model for solar irradiation, based on [Solar Radiation on Mars, Joseph Appelbaum & Dennis Flood, Lewis Research Center, NASA](http://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19890018252.pdf) |
