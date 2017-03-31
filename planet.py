@@ -97,14 +97,13 @@ class Planet:
         return math.sin(self.obliquity) * math.sin(areocentric_longitude)
      
     def cos_zenith_angle(self,areocentric_longitude,latitude,T):
-        '''Cosine of zenith angle
+        '''
+        Cosine of zenith angle
         Appelbaum & Flood equation (6)
-        
-        This equation is derived in "Derivation of the solar geometric 
-        relationships using vector analysis" by Alistair Sproul
-        Renewable Energy 32 (2007) 1187–1205
-        
-        http://www.physics.arizona.edu/~cronin/Solar/References/Irradiance%20Models%20and%20Data/SPR07.pdf
+        See also Derivation of the solar geometric 
+        relationships using vector analysis by Alistair Sproul
+
+        Renewable Energy 32 (2007) 1187-1205
         '''
         sin_declination=self.sin_declination(areocentric_longitude)
         cos_declination=math.sqrt(1-sin_declination*sin_declination)
