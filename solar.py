@@ -40,8 +40,7 @@ class Solar:
 #   Beam irradience on a horizonal surface
 #   Appelbaum & Flood equations (5) & (6)
     def surface_irradience(self,true_longitude,latitude,T):
-        areocentric_longitude=k.get_areocentric_longitude(true_longitude)
-        cos_zenith_angle = self.planet.cos_zenith_angle(areocentric_longitude,latitude,T) #FIXME - should be areocentric longitude
+        cos_zenith_angle = self.planet.cos_zenith_angle(true_longitude,latitude,T) #FIXME - should be areocentric longitude
         r=self.planet.instantaneous_distance(true_longitude)
         beam_irradience = self.beam_irradience(r)
         return max(0,cos_zenith_angle*beam_irradience)
@@ -61,7 +60,7 @@ if __name__=='__main__':
     #   the perihelion is stated to be at 248 degrees. The aphelion is 180 degrees
     #   before or after the perihelion, so this has also been shifted.
     
-        def test_beam_irradience_as_function_areocentric_longitude(self):
+        def test_beam_irradience_as_function_true_longitude(self):
             d0=-1
             d1=-1
             for i in range(360):
@@ -116,12 +115,12 @@ if __name__=='__main__':
         pass    
     
     
-    def generate_irradiance(planet,areocentric_longitude,latitude):
+    def generate_irradiance(planet,true_longitude,latitude):
         x=[]
         y=[]
         for TT in range(120,200):
             T=TT/10
-            irradiance=solar.surface_irradience(areocentric_longitude,latitude,T)
+            irradiance=solar.surface_irradience(true_longitude,latitude,T)
             x.append(T)
             y.append(irradiance)
         return (x,y)
@@ -131,9 +130,9 @@ if __name__=='__main__':
         plt.text (xs[i0],y0,'{0:.0f}'.format(y0))        
 
     # Plot irradiance at latitude of Viking Lander
-    def plot_irradiance(areocentric_longitude=299,colour='r'):
-        (x,y)=generate_irradiance(mars,areocentric_longitude,22.3)
-        plt.plot(x,y,colour,label=r'${0}^\circ$'.format(areocentric_longitude)) 
+    def plot_irradiance(true_longitude=299,colour='r'):
+        (x,y)=generate_irradiance(mars,true_longitude,22.3)
+        plt.plot(x,y,colour,label=r'${0}^\circ$'.format(true_longitude)) 
 
     mars = planet.create('Mars')
     solar = Solar(mars)

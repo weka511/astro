@@ -87,16 +87,16 @@ class Planet:
         f = k.true_anomaly_from_true_longitude(true_longitude,PERH=self.longitude_of_perihelion)
         return k.get_distance_from_focus(f,self.a,e=self.e)
 
-    def sin_declination(self,areocentric_longitude):
+    def sin_declination(self,true_longitude):
         '''
         Sine of declination
         Appelbaum & Flood equation (7)
         Parameters:
-             areocentric_longitude        
+             true_longitude        
         '''
-        return math.sin(self.obliquity) * math.sin(areocentric_longitude)
+        return math.sin(self.obliquity) * math.sin(true_longitude)
      
-    def cos_zenith_angle(self,areocentric_longitude,latitude,T):
+    def cos_zenith_angle(self,true_longitude,latitude,T):
         '''
         Cosine of zenith angle
         Appelbaum & Flood equation (6)
@@ -105,7 +105,7 @@ class Planet:
 
         Renewable Energy 32 (2007) 1187-1205
         '''
-        sin_declination=self.sin_declination(areocentric_longitude)
+        sin_declination=self.sin_declination(true_longitude)
         cos_declination=math.sqrt(1-sin_declination*sin_declination)
         return math.sin(latitude)*sin_declination +            \
             math.cos(latitude)*cos_declination *  math.cos(self.hour_angle(T))
