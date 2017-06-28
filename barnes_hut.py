@@ -1,3 +1,4 @@
+# -*- coding: latin-1 -*-
 # Simple Python implementation of a Barnes-Hut galaxy simulator.
 # This file is part of the exercise series of the University of Geneva's
 # MOOC "Simulation and Modeling of Natural Processes".
@@ -7,9 +8,9 @@
 # Important: don't send questions about this code to the above e-mail address.
 # They will remain unanswered. Instead, use the resources of the MOOC.
 # 
-# Copyright (C) 2016 University of Geneva
-# 24 rue du GÃ©nÃ©ral-Dufour
-# CH - 1211 GenÃ¨ve 4
+# Copyright (C) 2016 Université de Genève
+# 24 rue du Général-Dufour
+# CH - 1211 Genève 4
 # Switzerland
 #
 # This code is free software: you can redistribute it and/or
