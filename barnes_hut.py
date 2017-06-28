@@ -26,6 +26,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Generalize the two-dimensional Barnes-Hut galaxy simulator provided in the 
+# course into a three-dimensional Barnes-Hut galaxy simulator.
+
+
+#In order to be consistent between the various possible generalizations, take into account the following constraints:
+
+#1) Do not change the simulation parameters of the main program, such as the random seed, theta, mass, ini_radius, etc.;
+
+#2) The x-, y- and z-pos should be initialized within a cube with side-length 2*ini_radius;
+
+#3) Keep only the bodies inside a sphere of radius ini_radius;
+
+#4) [deleted]
+
 from copy import deepcopy
 from numpy import array
 from numpy.linalg import norm
@@ -165,7 +179,18 @@ def plot_bodies(bodies, i,image_dir='./images'):
     ax.set_ylim([0., 1.0])
     plt.gcf().savefig(os.path.join(image_dir,'bodies_{0:06}.png'.format(i)))
 
-
+def plot_bodies3(bodies, i):
+# Write an image representing the current position of the bodies.
+# To create a movie with avconv or ffmpeg use the following command:
+# ffmpeg -r 15 -i bodies3D_%06d.png -q:v 0 bodies3D.avi
+    ax = plt.gcf().add_subplot(111, aspect='equal', projection='3d')
+    ax.scatter([b.pos()[0] for b in bodies], \
+    [b.pos()[1] for b in bodies], [b.pos()[2] for b in bodies])
+    ax.set_xlim([0., 1.0])
+    ax.set_ylim([0., 1.0])
+    ax.set_zlim([0., 1.0])    
+    plt.gcf().savefig('bodies3D_{0:06}.png'.format(i))
+    
 ######### MAIN PROGRAM ########################################################
 
 if __name__=='__main__':
@@ -217,5 +242,5 @@ if __name__=='__main__':
                
         if i%img_iter==0:
             print("Writing images at iteration {0}".format(i))
-            plot_bodies(bodies, i//img_ite,image_dir= image_dir)
+            plot_bodies(bodies, i,image_dir= image_dir)
 
