@@ -32,6 +32,7 @@ from numpy.linalg import norm
 from numpy import random
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+import os
 
 class Node:
 # A node represents a body if it is an endnote (i.e. if node.child is None)
@@ -90,9 +91,11 @@ class Node:
 
 
 def add(body, node):
-# Barnes-Hut algorithm: Creation of the quad-tree. This function adds
-# a new body into a quad-tree node. Returns an updated version of the node.
-    # 1. If node n does not contain a body, put the new body b here.
+    '''
+    Barnes-Hut algorithm: Creation of the quad-tree. This function adds
+    a new body into a quad-tree node. Returns an updated version of the node.
+    1. If node n does not contain a body, put the new body b here.
+    '''
     new_node = body if node is None else None
     # To limit the recursion depth, set a lower limit for the size of quadrant.
     smallest_quadrant = 1.e-4
@@ -141,14 +144,17 @@ def force_on(body, node, theta):
 
 
 def verlet(bodies, root, theta, G, dt):
-# Execute a time iteration according to the Verlet algorithm.
+    '''
+    Execute a time iteration according to the Verlet algorithm.
+    '''  
     for body in bodies:
         force = G * force_on(body, root, theta)
         body.momentum += dt * force
         body.m_pos += dt * body.momentum 
 
 
-def plot_bodies(bodies, i):
+
+def plot_bodies(bodies, i,image_dir='./images'):
 # Write an image representing the current position of the bodies.
 # To create a movie with avconv or ffmpeg use the following command:
 # ffmpeg -r 15 -i bodies_%06d.png -q:v 0 bodies.avi
@@ -157,61 +163,59 @@ def plot_bodies(bodies, i):
     ax.scatter([b.pos()[0] for b in bodies], [b.pos()[1] for b in bodies], 1)
     ax.set_xlim([0., 1.0])
     ax.set_ylim([0., 1.0])
-    plt.gcf().savefig('bodies_{0:06}.png'.format(i))
+    plt.gcf().savefig(os.path.join(image_dir,'bodies_{0:06}.png'.format(i)))
 
 
 ######### MAIN PROGRAM ########################################################
 
-# Theta-criterion of the Barnes-Hut algorithm.
-theta = 0.5
-# Mass of a body.
-mass = 1.0
-# Initially, the bodies are distributed inside a circle of radius ini_radius.
-ini_radius = 0.1
-# Initial maximum velocity of the bodies.
-inivel = 0.1
-# The "gravitational constant" is chosen so as to get a pleasant output.
-G = 4.e-6
-# Discrete time step.
-dt = 1.e-3
-# Number of bodies (the actual number is smaller, because all bodies
-# outside the initial radius are removed).
-numbodies = 1000
-# Number of time-iterations executed by the program.
-max_iter = 10000
-# Frequency at which PNG images are written.
-img_iter = 20
-
-# The pseudo-random number generator is initialized at a deterministic # value, for proper validation of the output for the exercise series.  random.seed(1)
-# x- and y-pos are initialized to a square with side-length 2*ini_radius.
-random.seed(1)
-posx = random.random(numbodies) *2.*ini_radius + 0.5-ini_radius
-posy = random.random(numbodies) *2.*ini_radius + 0.5-ini_radius
-# We only keep the bodies inside a circle of radius ini_radius.
-bodies = [ Node(mass, px, py) for (px,py) in zip(posx, posy) \
-               if (px-0.5)**2 + (py-0.5)**2 < ini_radius**2 ]
-
-#input("Press the <ENTER> key to continue...")
-#print ("here")
-# Initially, the bodies have a radial velocity of an amplitude proportional to
-# the distance from the center. This induces a rotational motion creating a
-# "galaxy-like" impression.
-for body in bodies:
-    r = body.pos() - array([0.5,0.5])
-    body.momentum = array([-r[1], r[0]]) * mass*inivel*norm(r)/ini_radius
-
-# Principal loop over time iterations.
-for i in range(max_iter):
-    # The quad-tree is recomputed at each iteration.
-    root = None
+if __name__=='__main__':
+    image_dir='./images'
+    theta = 0.5 # Theta-criterion of the Barnes-Hut algorithm.
+    mass = 1.0 # Mass of a body.
+    ini_radius = 0.1  # Initially, the bodies are distributed inside a circle of radius ini_radius.
+    inivel = 0.1 # Initial maximum velocity of the bodies.
+    G = 4.e-6 # The "gravitational constant" is chosen so as to get a pleasant output.
+    dt = 1.e-3 # Discrete time step.
+    numbodies = 1000    # Number of bodies (the actual number is smaller, because all bodies
+                        # outside the initial radius are removed).
+    
+    max_iter = 10000 # Number of time-iterations executed by the program.
+    img_iter = 20  # Frequency at which PNG images are written.
+    
+    if not os.path.isdir(image_dir): # If there is no image directory
+        os.mkdir(image_dir)          # create one
+        
+    # The pseudo-random number generator is initialized at a deterministic
+    # value, for proper validation of the output for the exercise series.  random.seed(1)
+    # x- and y-pos are initialized to a square with side-length 2*ini_radius.
+    random.seed(1)
+    posx = random.random(numbodies) *2.*ini_radius + 0.5-ini_radius
+    posy = random.random(numbodies) *2.*ini_radius + 0.5-ini_radius
+    # We only keep the bodies inside a circle of radius ini_radius.
+    bodies = [ Node(mass, px, py) for (px,py) in zip(posx, posy) \
+                   if (px-0.5)**2 + (py-0.5)**2 < ini_radius**2 ]
+    
+    #input("Press the <ENTER> key to continue...")
+    #print ("here")
+    # Initially, the bodies have a radial velocity of an amplitude proportional to
+    # the distance from the center. This induces a rotational motion creating a
+    # "galaxy-like" impression.
     for body in bodies:
-        body.reset_to_0th_quadrant()
-        root = add(body, root)
-    # Computation of forces, and advancment of bodies.
-    verlet(bodies, root, theta, G, dt)
-    # Output
-           
-    if i%img_iter==0:
-        print("Writing images at iteration {0}".format(i))
-        plot_bodies(bodies, i//img_iter)
+        r = body.pos() - array([0.5,0.5])
+        body.momentum = array([-r[1], r[0]]) * mass*inivel*norm(r)/ini_radius
+    
+    # Principal loop over time iterations.
+    for i in range(max_iter):
+        # The quad-tree is recomputed at each iteration.
+        root = None
+        for body in bodies:
+            body.reset_to_0th_quadrant()
+            root = add(body, root)
+        # Computation of forces, and advancment of bodies.
+        verlet(bodies, root, theta, G, dt)
+        # Output
+               
+        if i%img_iter==0:
+            print("Writing images at iteration {0}".format(i))
+            plot_bodies(bodies, i//img_ite,image_dir= image_dir)
 
