@@ -195,7 +195,21 @@ def ensure_directory_exists(directory):
     if not os.path.isdir(directory):
         os.mkdir(directory) 
         
-######### MAIN PROGRAM ########################################################
+def save_configuration(i,pickle_dir,bodies):
+    f = open( os.path.join(pickle_dir,'bodies_{0:06}.p'.format(i)), "wb" )
+    pickle.dump( bodies, f )
+    f.close() 
+    
+def load_configuration(pickle_dir,bodies,start=0):
+    configuration_files = os.listdir(pickle_dir)
+    if len(configuration_files)>0:
+        m = re.search('[0-9]+',configuration_files[-1])
+        start = int(m.group(0))+1        
+        print ('Opening configuration {0}, starting at {1}'.format(configuration_files[-1],start))
+        f = open(os.path.join(pickle_dir,configuration_files[-1]),'rb')
+        bodies =  pickle.load(f) 
+        f.close()    
+    return start,bodies
 
 if __name__=='__main__':
     image_dir='./images'
@@ -232,18 +246,10 @@ if __name__=='__main__':
         r = body.pos() - array([0.5,0.5])
         body.momentum = array([-r[1], r[0]]) * mass*inivel*norm(r)/ini_radius
         
-    seq = 0
-    configuration_files = os.listdir(pickle_dir)
-    if len(configuration_files)>0:
-        print ('Opening configuration {0}'.format(configuration_files[-1]))
-        f = open(os.path.join(pickle_dir,configuration_files[-1]),'rb')
-        bodies =  pickle.load(f) 
-        f.close()
-        m = re.search('[0-9]+',configuration_files[-1])
-        print (m.group(0))
-        seq = int(m.group(0))+1
+    start,bodies = load_configuration(pickle_dir,bodies)
+        
     # Principal loop over time iterations.
-    for i in range(seq,max_iter):
+    for i in range(start,max_iter):
         # The quad-tree is recomputed at each iteration.
         root = None
         for body in bodies:
@@ -251,13 +257,9 @@ if __name__=='__main__':
             root = add(body, root)
         # Computation of forces, and advancment of bodies.
         verlet(bodies, root, theta, G, dt)
-        # Output
                
-        if i%img_iter==0:
+        if i%img_iter==0:         # Output
             print("Writing images at iteration {0}".format(i))
             plot_bodies(bodies, i,image_dir= image_dir)
-            f = open( os.path.join(pickle_dir,'bodies_{0:06}.p'.format(i)), "wb" )
-            pickle.dump( bodies, f )
-            f.close()
-            #new_bodies = pickle.load( open( "bodies.p", "rb" ))            
+            save_configuration(i,pickle_dir,bodies)
 
