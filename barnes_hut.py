@@ -26,20 +26,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Generalize the two-dimensional Barnes-Hut galaxy simulator provided in the 
-# course into a three-dimensional Barnes-Hut galaxy simulator.
 
-
-#In order to be consistent between the various possible generalizations, take into account the following constraints:
-
-#1) Do not change the simulation parameters of the main program, such as the random seed, theta, mass, ini_radius, etc.;
-
-#2) The x-, y- and z-pos should be initialized within a cube with side-length 2*ini_radius;
-
-#3) Keep only the bodies inside a sphere of radius ini_radius;
-
-#4) [deleted]
-
+    
 from copy import deepcopy
 from numpy import array
 from numpy.linalg import norm
@@ -49,18 +37,30 @@ from mpl_toolkits.mplot3d import Axes3D
 import os, pickle, re
 
 class Node:
-# A node represents a body if it is an endnote (i.e. if node.child is None)
-# or an abstract node of the quad-tree if it has child.
+    '''
+    A node represents a body if it is an endnote (i.e. if node.child is None)
+    or an abstract node of the quad-tree if it has child.
+    '''
 
-    def __init__(self, m, x, y):
-    # The initializer creates a child-less node (an actual body).
+    def __init__(self, m, x, y,z):
+        '''
+        The initializer creates a child-less node (an actual body).
+        Instead of storing the position of a node, we store the mass times
+        position, m_pos. This makes it easier to update the center-of-mass.
+        '''
         self.m = m
-        # Instead of storing the position of a node, we store the mass times
-        # position, m_pos. This makes it easier to update the center-of-mass.
-        self.m_pos = m * array([x, y])
-        self.momentum = array([0., 0.])
+        self.m_pos = m * array([x, y,z])
+        self.momentum = array([0., 0.,0.])
         self.child = None
 
+    def __str__(self):
+        return '(({0},{1},{2})({3},{4},{5}))'.format(self.m_pos[0],
+                                                     self.m_pos[1],
+                                                     self.m_pos[2],
+                                                     self.momentum[0],
+                                                     self.momentum[1],
+                                                     self.momentum[2])
+    
     def into_next_quadrant(self):
     # Places node into next-level quadrant and returns the quadrant number.
         self.s = 0.5 * self.s   # s: side-length of current quadrant.
@@ -78,16 +78,20 @@ class Node:
         self.relpos = self.pos().copy()
 
     def dist(self, other):
-    # Distance between present node and another node.
+        '''
+        Distance between present node and another node.
+        '''
         return norm(other.pos() - self.pos())
 
     def force_on(self, other):
-    # Force which the present node is exerting on a given body.
-        # To avoid numerical instabilities, introduce a short-distance cutoff.
+        '''
+        Force which the present node is exerting on a given body.
+        to avoid numerical instabilities, introduce a short-distance cutoff.
+        '''
         cutoff_dist = 0.002
         d = self.dist(other)
         if d < cutoff_dist:
-            return array([0., 0.])
+            return array([0., 0.,0.])
         else:
             # Gravitational force goes like 1/r**2.
             return (self.pos() - other.pos()) * (self.m*other.m / d**3)
@@ -235,17 +239,17 @@ if __name__=='__main__':
     random.seed(1)
     posx = random.random(numbodies) *2.*ini_radius + 0.5-ini_radius
     posy = random.random(numbodies) *2.*ini_radius + 0.5-ini_radius
+    posz = random.random(numbodies) *2.*ini_radius + 0.5-ini_radius
     # We only keep the bodies inside a circle of radius ini_radius.
-    bodies = [ Node(mass, px, py) for (px,py) in zip(posx, posy) \
-                   if (px-0.5)**2 + (py-0.5)**2 < ini_radius**2 ]
+    bodies = [ Node(mass, px, py, pz) for (px,py, pz) in zip(posx, posy,posz) \
+                   if (px-0.5)**2 + (py-0.5)**2 + (pz-0.5)**2< ini_radius**2 ]
     
-    # Initially, the bodies have a radial velocity of an amplitude proportional to
-    # the distance from the center. This induces a rotational motion creating a
-    # "galaxy-like" impression.
-    for body in bodies:
-        r = body.pos() - array([0.5,0.5])
-        body.momentum = array([-r[1], r[0]]) * mass*inivel*norm(r)/ini_radius
-        
+    # For simplicity, keep the angular momentum in the x-y-plane,
+    # but assume a null initial z-momentum for all the bodies. 
+    for body in bodies: 
+        r = body.pos() - array([0.5, 0.5, body.pos()[2] ])
+        body.momentum = array([-r[1], r[0], 0.]) * mass*inivel*norm(r)/ini_radius
+    
     start,bodies = load_configuration(pickle_dir,bodies)
         
     # Principal loop over time iterations.
