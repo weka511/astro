@@ -46,7 +46,7 @@ from numpy.linalg import norm
 from numpy import random
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-import os
+import os, pickle, re
 
 class Node:
 # A node represents a body if it is an endnote (i.e. if node.child is None)
@@ -190,11 +190,16 @@ def plot_bodies3(bodies, i):
     ax.set_ylim([0., 1.0])
     ax.set_zlim([0., 1.0])    
     plt.gcf().savefig('bodies3D_{0:06}.png'.format(i))
-    
+
+def ensure_directory_exists(directory):
+    if not os.path.isdir(directory):
+        os.mkdir(directory) 
+        
 ######### MAIN PROGRAM ########################################################
 
 if __name__=='__main__':
     image_dir='./images'
+    pickle_dir='./configurations'
     theta = 0.5 # Theta-criterion of the Barnes-Hut algorithm.
     mass = 1.0 # Mass of a body.
     ini_radius = 0.1  # Initially, the bodies are distributed inside a circle of radius ini_radius.
@@ -207,8 +212,8 @@ if __name__=='__main__':
     max_iter = 10000 # Number of time-iterations executed by the program.
     img_iter = 20  # Frequency at which PNG images are written.
     
-    if not os.path.isdir(image_dir): # If there is no image directory
-        os.mkdir(image_dir)          # create one
+    ensure_directory_exists(image_dir)  
+    ensure_directory_exists(pickle_dir)
         
     # The pseudo-random number generator is initialized at a deterministic
     # value, for proper validation of the output for the exercise series.  random.seed(1)
@@ -220,17 +225,25 @@ if __name__=='__main__':
     bodies = [ Node(mass, px, py) for (px,py) in zip(posx, posy) \
                    if (px-0.5)**2 + (py-0.5)**2 < ini_radius**2 ]
     
-    #input("Press the <ENTER> key to continue...")
-    #print ("here")
     # Initially, the bodies have a radial velocity of an amplitude proportional to
     # the distance from the center. This induces a rotational motion creating a
     # "galaxy-like" impression.
     for body in bodies:
         r = body.pos() - array([0.5,0.5])
         body.momentum = array([-r[1], r[0]]) * mass*inivel*norm(r)/ini_radius
-    
+        
+    seq = 0
+    configuration_files = os.listdir(pickle_dir)
+    if len(configuration_files)>0:
+        print ('Opening configuration {0}'.format(configuration_files[-1]))
+        f = open(os.path.join(pickle_dir,configuration_files[-1]),'rb')
+        bodies =  pickle.load(f) 
+        f.close()
+        m = re.search('[0-9]+',configuration_files[-1])
+        print (m.group(0))
+        seq = int(m.group(0))+1
     # Principal loop over time iterations.
-    for i in range(max_iter):
+    for i in range(seq,max_iter):
         # The quad-tree is recomputed at each iteration.
         root = None
         for body in bodies:
@@ -243,4 +256,8 @@ if __name__=='__main__':
         if i%img_iter==0:
             print("Writing images at iteration {0}".format(i))
             plot_bodies(bodies, i,image_dir= image_dir)
+            f = open( os.path.join(pickle_dir,'bodies_{0:06}.p'.format(i)), "wb" )
+            pickle.dump( bodies, f )
+            f.close()
+            #new_bodies = pickle.load( open( "bodies.p", "rb" ))            
 
