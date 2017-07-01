@@ -37,15 +37,23 @@ class Node:
 # A node represents a body if it is an endnote (i.e. if node.child is None)
 # or an abstract node of the quad-tree if it has child.
 
-    def __init__(self, m, x, y):
+    def __init__(self, m, x, y, z=0):
     # The initializer creates a child-less node (an actual body).
         self.m = m
         # Instead of storing the position of a node, we store the mass times
         # position, m_pos. This makes it easier to update the center-of-mass.
-        self.m_pos = m * array([x, y])
-        self.momentum = array([0., 0.])
-        self.child = None
+        self.m_pos = m * array([x, y, z])
+        self.momentum = array([0., 0., 0.])
+        self.children = None
 
+    def __str__(self):
+        return '(({0},{1},{2})({3},{4},{5}))'.format(self.m_pos[0],
+                                                     self.m_pos[1],
+                                                     self.m_pos[2],
+                                                     self.momentum[0],
+                                                     self.momentum[1],
+                                                     self.momentum[2])
+       
     def into_next_quadrant(self):
     # Places node into next-level quadrant and returns the quadrant number.
         self.s = 0.5 * self.s   # s: side-length of current quadrant.
@@ -72,7 +80,7 @@ class Node:
         cutoff_dist = 0.002
         d = self.dist(other)
         if d < cutoff_dist:
-            return array([0., 0.])
+            return array([0., 0.,0.])
         else:
             # Gravitational force goes like 1/r**2.
             return (self.pos() - other.pos()) * (self.m*other.m / d**3)
@@ -99,14 +107,14 @@ def add(body, node):
     if node is not None and node.s > smallest_quadrant:
         # 3. If node n is an external node, then the new body b is in conflict
         #    with a body already present in this region. ...
-        if node.child is None:
+        if node.children is None:
             new_node = deepcopy(node)
         #    ... Subdivide the region further by creating four children
-            new_node.child = [None for i in range(4)]
+            new_node.children = [None for i in range(4)]
         #    ... And to start with, insert the already present body recursively
         #        into the appropriate quadrant.
             quadrant = node.into_next_quadrant()
-            new_node.child[quadrant] = node
+            new_node.children[quadrant] = node
         # 2. If node n is an internal node, we don't to modify its child.
         else:
             new_node = node
@@ -117,7 +125,7 @@ def add(body, node):
         new_node.m_pos += body.m_pos
         # ... and recursively add the new body into the appropriate quadrant.
         quadrant = body.into_next_quadrant()
-        new_node.child[quadrant] = add(body, new_node.child[quadrant])
+        new_node.children[quadrant] = add(body, new_node.children[quadrant])
     return new_node
 
 
@@ -128,7 +136,7 @@ def force_on(body, node, theta):
 # description of the algorithm.
     # 1. If the current node is an external node, 
     #    calculate the force exerted by the current node on b.
-    if node.child is None:
+    if node.children is None:
         return node.force_on(body)
 
     # 2. Otherwise, calculate the ratio s/d. If s/d < θ, treat this internal
@@ -137,7 +145,7 @@ def force_on(body, node, theta):
         return node.force_on(body)
 
     # 3. Otherwise, run the procedure recursively on each child.
-    return sum(force_on(body, c, theta) for c in node.child if c is not None)
+    return sum(force_on(body, c, theta) for c in node.children if c is not None)
 
 
 def verlet(bodies, root, theta, G, dt):
@@ -187,19 +195,23 @@ img_iter = 20
 random.seed(1)
 posx = random.random(numbodies) *2.*ini_radius + 0.5-ini_radius
 posy = random.random(numbodies) *2.*ini_radius + 0.5-ini_radius
+posz = random.random(numbodies) *2.*ini_radius + 0.5-ini_radius
 # We only keep the bodies inside a circle of radius ini_radius.
-bodies = [ Node(mass, px, py) for (px,py) in zip(posx, posy) \
-               if (px-0.5)**2 + (py-0.5)**2 < ini_radius**2 ]
+bodies = [ Node(mass, px, py,pz) for (px,py,pz) in zip(posx, posy,posz) \
+               if (px-0.5)**2 + (py-0.5)**2 + (pz-0.5)**2 < ini_radius**2 ]
 
 #input("Press the <ENTER> key to continue...")
 #print ("here")
 # Initially, the bodies have a radial velocity of an amplitude proportional to
 # the distance from the center. This induces a rotational motion creating a
 # "galaxy-like" impression.
-for body in bodies:
-    r = body.pos() - array([0.5,0.5])
-    body.momentum = array([-r[1], r[0]]) * mass*inivel*norm(r)/ini_radius
-
+#for body in bodies:
+    #r = body.pos() - array([0.5,0.5])
+    #body.momentum = array([-r[1], r[0]]) * mass*inivel*norm(r)/ini_radius
+for body in bodies: 
+    r = body.pos() - array([0.5, 0.5, body.pos()[2] ])
+    body.momentum = array([-r[1], r[0], 0.]) * \
+    mass*inivel*norm(r)/ini_radius
 # Principal loop over time iterations.
 for i in range(max_iter):
     # The quad-tree is recomputed at each iteration.
