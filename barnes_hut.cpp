@@ -377,15 +377,15 @@ void verlet( std::vector<Body*>& bodies, Node* root,
     }
 }
 
+std::string path = ".\\configs\\";
 // Write the position of all bodies into a text file.
 // The text file can be converted into an image with the
 // Python script make_img.py
 // Batch-processing of all text files is achieved with the
 // shell script dat2img.
-void save_bodies( std::vector<Body*>& bodies, int i)
-{
+void save_bodies( std::vector<Body*>& bodies, int i){
     std::stringstream fNameStream;
-    fNameStream << "body_" << std::setfill('0') << std::setw(6) << i << ".dat";
+    fNameStream << path<< "body_" << std::setfill('0') << std::setw(6) << i << ".dat";
     std::ofstream ofile(fNameStream.str().c_str());
     for (unsigned i=0; i<bodies.size(); ++i) {
         double px, py;

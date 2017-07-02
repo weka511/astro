@@ -29,11 +29,13 @@ def plot(fname_in,fname_out):
     plt.gcf().savefig(fname_out)
     plt.close()
     
-if __name__=='__main__':    
-    for file_name in os.listdir('.'):
+if __name__=='__main__':
+    config_path = './configs/'
+    out_path = './imgs/'
+    for file_name in os.listdir(config_path):
         m = re.search('body_[0-9]+.dat',file_name)
         if m:
             print (m.group(0))
-            fname_in = m.group(0)
-            fname_out = fname_in.replace('dat','png')
+            plot(os.path.join(config_path,m.group(0)),
+                             os.path.join(out_path,m.group(0).replace('dat','png')))
         
