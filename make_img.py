@@ -1,13 +1,39 @@
-import sys
-import numpy as np
-import matplotlib.pyplot as plt
+'''
+ Copyright (C) 2017 Greenweaves Software Pty Ltd
 
-fname_in = sys.argv[1]
-fname_out = sys.argv[2]
-pos = np.loadtxt(fname_in)
-ax = plt.gcf().add_subplot(111, aspect='equal')
-ax.cla()
-ax.scatter(pos[:,0], pos[:,1], 1)
-ax.set_xlim([0., 1.0])
-ax.set_ylim([0., 1.0])
-plt.gcf().savefig(fname_out)
+ This is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This software is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with this software.  If not, see <http://www.gnu.org/licenses/>
+
+ Investigation of simulated annealing for clustering
+
+'''
+import os, re, sys, numpy as np, matplotlib.pyplot as plt
+
+def plot(fname_in,fname_out):
+    pos = np.loadtxt(fname_in)
+    ax = plt.gcf().add_subplot(111, aspect='equal')
+    ax.cla()
+    ax.scatter(pos[:,0], pos[:,1], 1)
+    ax.set_xlim([0., 1.0])
+    ax.set_ylim([0., 1.0])
+    plt.gcf().savefig(fname_out)
+    plt.close()
+    
+if __name__=='__main__':    
+    for file_name in os.listdir('.'):
+        m = re.search('body_[0-9]+.dat',file_name)
+        if m:
+            print (m.group(0))
+            fname_in = m.group(0)
+            fname_out = fname_in.replace('dat','png')
+        
