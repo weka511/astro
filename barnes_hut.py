@@ -35,11 +35,14 @@ from mpl_toolkits.mplot3d import Axes3D
 import os, pickle, re
 
 class Node:
-# A node represents a body if it is an endnote (i.e. if node.child is None)
-# or an abstract node of the quad-tree if it has child.
-
+    '''
+    A node represents a body if it is an endnote (i.e. if node.children is None)
+    # or an abstract node of the oct-tree if it has children.
+    '''
     def __init__(self, m, x, y, z=0):
-    # The initializer creates a child-less node (an actual body).
+        '''
+        The initializer creates a child-less node (an actual body).
+        '''
         self.m = m
         # Instead of storing the position of a node, we store the mass times
         # position, m_pos. This makes it easier to update the center-of-mass.
@@ -56,39 +59,50 @@ class Node:
                                                      self.momentum[2])
        
     def into_next_octant(self):
-    # Places node into next-level quadrant and returns the quadrant number.
+        '''
+        Places node into next-level octant and returns the octant number.
+        '''
         self.s = 0.5 * self.s   # s: side-length of current quadrant.
         return self._subdivide(2) + 2*(self._subdivide(1)+2*self._subdivide(0))
 
     def pos(self):
-    # Physical position of node, independent of currently active quadrant.
+        '''
+        Physical position of node, independent of currently active quadrant.
+        '''
         return self.m_pos / self.m
 
     def reset_to_0th_quadrant(self):
-    # Re-positions the node to the level-0 quadrant (full domain).
-        # Side-length of the level-0 quadrant is 1.
+        '''
+        Re-positions the node to the level-0 quadrant (full domain).
+        Side-length of the level-0 quadrant is 1.
+        '''
         self.s = 1.0
         # Relative position inside the quadrant is equal to physical position.
         self.relpos = self.pos().copy()
 
     def dist(self, other):
-    # Distance between present node and another node.
+        '''
+        Distance between present node and another node.
+        '''
         return norm(other.pos() - self.pos())
 
     def force_on(self, other):
-    # Force which the present node is exerting on a given body.
-        # To avoid numerical instabilities, introduce a short-distance cutoff.
+        '''
+        Force which the present node is exerting on a given body.
+        to avoid numerical instabilities, introduce a short-distance cutoff.
+        '''
         cutoff_dist = 0.002
         d = self.dist(other)
         if d < cutoff_dist:
             return array([0., 0.,0.])
-        else:
-            # Gravitational force goes like 1/r**2.
+        else: # Gravitational force goes like 1/r**2.         
             return (self.pos() - other.pos()) * (self.m*other.m / d**3)
 
     def _subdivide(self, i):
-    # Places node into next-level quadrant along direction i and recomputes
-    # the relative position relpos of the node inside this quadrant.
+        '''
+        Places node into next-level quadrant along direction i and recomputes
+        the relative position relpos of the node inside this quadrant.
+        '''
         self.relpos[i] *= 2.0
         if self.relpos[i] < 1.0:
             quadrant = 0
@@ -99,8 +113,10 @@ class Node:
 
 
 def add(body, node):
-# Barnes-Hut algorithm: Creation of the quad-tree. This function adds
-# a new body into a quad-tree node. Returns an updated version of the node.
+    '''
+    Barnes-Hut algorithm: Creation of the quad-tree. This function adds
+    a new body into a quad-tree node. Returns an updated version of the node.
+    '''
     # 1. If node n does not contain a body, put the new body b here.
     new_node = body if node is None else None
     # To limit the recursion depth, set a lower limit for the size of quadrant.
@@ -131,10 +147,12 @@ def add(body, node):
 
 
 def force_on(body, node, theta):
-# Barnes-Hut algorithm: usage of the quad-tree. This function computes
-# the net force on a body exerted by all bodies in node "node".
-# Note how the code is shorter and more expressive than the human-language
-# description of the algorithm.
+    '''
+    Barnes-Hut algorithm: usage of the oct-tree. This function computes
+    the net force on a body exerted by all bodies in node "node".
+    Note how the code is shorter and more expressive than the human-language
+    description of the algorithm.
+    '''
     # 1. If the current node is an external node, 
     #    calculate the force exerted by the current node on b.
     if node.children is None:
@@ -150,7 +168,9 @@ def force_on(body, node, theta):
 
 
 def verlet(bodies, root, theta, G, dt):
-# Execute a time iteration according to the Verlet algorithm.
+    '''
+    Execute a time iteration according to the Verlet algorithm.
+    '''
     for body in bodies:
         force = G * force_on(body, root, theta)
         body.momentum += dt * force
@@ -158,9 +178,11 @@ def verlet(bodies, root, theta, G, dt):
 
 
 def plot_bodies(bodies, i,image_dir='./images'):
-# Write an image representing the current position of the bodies.
-# To create a movie with avconv or ffmpeg use the following command:
-# ffmpeg -r 15 -i bodies_%06d.png -q:v 0 bodies.avi
+    '''
+    Write an image representing the current position of the bodies.
+    To create a movie with avconv or ffmpeg use the following command:
+    ffmpeg -r 15 -i bodies_%06d.png -q:v 0 bodies.avi
+    '''
     ax = plt.gcf().add_subplot(111, aspect='equal')
     ax.cla()
     ax.scatter([b.pos()[0] for b in bodies], [b.pos()[1] for b in bodies], 1)
@@ -168,28 +190,40 @@ def plot_bodies(bodies, i,image_dir='./images'):
     ax.set_ylim([0., 1.0])
     plt.gcf().savefig(os.path.join(image_dir,'bodies_{0:06}.png'.format(i)))
 
-def plot_bodies3D(bodies, i,image_dir='./images'):
-# Write an image representing the current position of the bodies.
-# To create a movie with avconv or ffmpeg use the following command:
-# ffmpeg -r 15 -i bodies3D_%06d.png -q:v 0 bodies3D.avi
+def plot_bodies3D(bodies, i,image_dir='./images',s=5):
+    '''
+    Write an image representing the current position of the bodies.
+    To create a movie with avconv or ffmpeg use the following command:
+    ffmpeg -r 15 -i bodies3D_%06d.png -q:v 0 bodies3D.avi
+    '''
     ax = plt.gcf().add_subplot(111, aspect='equal', projection='3d')
     ax.scatter([b.pos()[0] for b in bodies], \
                [b.pos()[1] for b in bodies], \
-               [b.pos()[2] for b in bodies])
+               [b.pos()[2] for b in bodies], \
+               s=s)
     ax.set_xlim([0., 1.0])
     ax.set_ylim([0., 1.0])
     ax.set_zlim([0., 1.0])    
     plt.gcf().savefig(os.path.join(image_dir,'bodies3D_{0:06}.png'.format(i)))
 
 def ensure_directory_exists(directory):
+    '''
+    Make sure directories exist for plots and positions
+    '''
     if not os.path.isdir(directory):
         os.mkdir(directory) 
         
 def save_configuration(i,pickle_dir,bodies):
+    '''
+    Save current configurion of bodies
+    '''
     with  open( os.path.join(pickle_dir,'bodies_{0:06}.p'.format(i)), "wb" ) as f:
         pickle.dump( bodies, f )
     
 def load_configuration(config_dir,bodies,start=0):
+    '''
+    Restore previous configuration.
+    '''
     configuration_files = os.listdir(config_dir)
     if len(configuration_files)>0:
         m = re.search('[0-9]+',configuration_files[-1])
@@ -226,33 +260,22 @@ if __name__=='__main__':
     bodies = [ Node(mass, px, py,pz) for (px,py,pz) in zip(posx, posy,posz) \
                    if (px-0.5)**2 + (py-0.5)**2 + (pz-0.5)**2 < ini_radius**2 ]
     
-    #input("Press the <ENTER> key to continue...")
-    #print ("here")
-    # Initially, the bodies have a radial velocity of an amplitude proportional to
-    # the distance from the center. This induces a rotational motion creating a
-    # "galaxy-like" impression.
-    #for body in bodies:
-        #r = body.pos() - array([0.5,0.5])
-        #body.momentum = array([-r[1], r[0]]) * mass*inivel*norm(r)/ini_radius
     for body in bodies: 
         r = body.pos() - array([0.5, 0.5, body.pos()[2] ])
         body.momentum = array([-r[1], r[0], 0.]) * \
         mass*inivel*norm(r)/ini_radius
         
     start,bodies = load_configuration(config_dir,bodies)
-    for i in range(start,max_iter):
-        # The quad-tree is recomputed at each iteration.
-        root = None
+    for i in range(start,max_iter):    
+        root = None  # The quad-tree is recomputed at each iteration.
         for body in bodies:
             body.reset_to_0th_quadrant()
             root = add(body, root)
-        # Computation of forces, and advancment of bodies.
-        verlet(bodies, root, theta, G, dt)
-        # Output
+       
+        verlet(bodies, root, theta, G, dt)  # Computation of forces, and advancment of bodies.
            
         if i%img_iter==0:
             print("Writing images at iteration {0}".format(i))
             plot_bodies(bodies, i//img_iter,image_dir= image_dir)
             plot_bodies3D(bodies, i//img_iter,image_dir= image_dir)
             save_configuration(i,config_dir,bodies)
-
