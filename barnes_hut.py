@@ -55,19 +55,19 @@ class Node:
                                                      self.momentum[2])
        
     def into_next_octant(self):
-    # Places node into next-level octant and returns the octant number.
-        self.s = 0.5 * self.s   # s: side-length of current octant.
+    # Places node into next-level quadrant and returns the quadrant number.
+        self.s = 0.5 * self.s   # s: side-length of current quadrant.
         return self._subdivide(2) + 2*(self._subdivide(1)+2*self._subdivide(0))
 
     def pos(self):
-    # Physical position of node, independent of currently active octant.
+    # Physical position of node, independent of currently active quadrant.
         return self.m_pos / self.m
 
-    def reset_to_0th_octant(self):
-    # Re-positions the node to the level-0 octant (full domain).
-        # Side-length of the level-0 octant is 1.
+    def reset_to_0th_quadrant(self):
+    # Re-positions the node to the level-0 quadrant (full domain).
+        # Side-length of the level-0 quadrant is 1.
         self.s = 1.0
-        # Relative position inside the octant is equal to physical position.
+        # Relative position inside the quadrant is equal to physical position.
         self.relpos = self.pos().copy()
 
     def dist(self, other):
@@ -86,15 +86,15 @@ class Node:
             return (self.pos() - other.pos()) * (self.m*other.m / d**3)
 
     def _subdivide(self, i):
-    # Places node into next-level octant along direction i and recomputes
-    # the relative position relpos of the node inside this octant.
+    # Places node into next-level quadrant along direction i and recomputes
+    # the relative position relpos of the node inside this quadrant.
         self.relpos[i] *= 2.0
         if self.relpos[i] < 1.0:
-            octant = 0
+            quadrant = 0
         else:
-            octant = 1
+            quadrant = 1
             self.relpos[i] -= 1.0
-        return octant
+        return quadrant
 
 
 def add(body, node):
@@ -102,7 +102,7 @@ def add(body, node):
 # a new body into a quad-tree node. Returns an updated version of the node.
     # 1. If node n does not contain a body, put the new body b here.
     new_node = body if node is None else None
-    # To limit the recursion depth, set a lower limit for the size of octant.
+    # To limit the recursion depth, set a lower limit for the size of quadrant.
     smallest_octant = 1.e-4
     if node is not None and node.s > smallest_octant:
         # 3. If node n is an external node, then the new body b is in conflict
@@ -112,7 +112,7 @@ def add(body, node):
         #    ... Subdivide the region further by creating eight children
             new_node.children = [None for i in range(8)]
         #    ... And to start with, insert the already present body recursively
-        #        into the appropriate octant.
+        #        into the appropriate quadrant.
             octant = node.into_next_octant()
             new_node.children[octant] = node
         # 2. If node n is an internal node, we don't to modify its child.
@@ -123,7 +123,7 @@ def add(body, node):
         #           ... update its mass and "center-of-mass times mass".
         new_node.m += body.m
         new_node.m_pos += body.m_pos
-        # ... and recursively add the new body into the appropriate octant.
+        # ... and recursively add the new body into the appropriate quadrant.
         octant = body.into_next_octant()
         new_node.children[octant] = add(body, new_node.children[octant])
     return new_node
@@ -167,7 +167,19 @@ def plot_bodies(bodies, i):
     ax.set_ylim([0., 1.0])
     plt.gcf().savefig('bodies_{0:06}.png'.format(i))
 
-
+def plot_bodies3D(bodies, i):
+# Write an image representing the current position of the bodies.
+# To create a movie with avconv or ffmpeg use the following command:
+# ffmpeg -r 15 -i bodies3D_%06d.png -q:v 0 bodies3D.avi
+    ax = plt.gcf().add_subplot(111, aspect='equal', projection='3d')
+    ax.scatter([b.pos()[0] for b in bodies], \
+               [b.pos()[1] for b in bodies], \
+               [b.pos()[2] for b in bodies])
+    ax.set_xlim([0., 1.0])
+    ax.set_ylim([0., 1.0])
+    ax.set_zlim([0., 1.0])    
+    plt.gcf().savefig('bodies3D_{0:06}.png'.format(i))
+    
 ######### MAIN PROGRAM ########################################################
 
 # Theta-criterion of the Barnes-Hut algorithm.
@@ -217,15 +229,16 @@ for i in range(max_iter):
     # The quad-tree is recomputed at each iteration.
     root = None
     for body in bodies:
-        body.reset_to_0th_octant()
+        body.reset_to_0th_quadrant()
         root = add(body, root)
     # Computation of forces, and advancment of bodies.
     verlet(bodies, root, theta, G, dt)
     # Output
-           
+    
+    print (i, bodies[0])       
     if i%img_iter==0:
         print("Writing images at iteration {0}".format(i))
         plot_bodies(bodies, i//img_iter)
-
+        plot_bodies3D(bodies, i//img_iter)
 
 
