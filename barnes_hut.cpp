@@ -39,9 +39,6 @@
 #include "tree.h"
 
 
-
-
-
 // Barnes-Hut algorithm: Creation of the quad-tree. This function adds
 // a new body into a quad-tree node. Returns an updated version of the node.
 Node* add(Body* body, Node* node) {
@@ -129,13 +126,13 @@ void verlet( std::vector<Body*>& bodies, Node* root,
     }
 }
 
-std::string path = ".\\configs\\";
+
 // Write the position of all bodies into a text file.
 // The text file can be converted into an image with the
 // Python script make_img.py
 // Batch-processing of all text files is achieved with the
 // shell script dat2img.
-void save_bodies( std::vector<Body*>& bodies, int i){
+void save_bodies( std::vector<Body*>& bodies, int i, std::string path){
     std::stringstream fNameStream;
     fNameStream << path<< "body_" << std::setfill('0') << std::setw(6) << i << ".dat";
     std::ofstream ofile(fNameStream.str().c_str());
@@ -169,6 +166,8 @@ int main() {
     // Frequency at which PNG images are written.
     const int img_iter = 20;
 
+    std::string path = ".\\configs\\";
+    
     // The pseudo-random number generator is initialized at a deterministic
     // value, for proper validation of the output for the exercise series.
     std::srand(1);
@@ -214,7 +213,7 @@ int main() {
         // Output.
         if (iter%img_iter==0) {
             std::cout << "Writing images at iteration " << iter << std::endl;
-            save_bodies(bodies, iter/img_iter);
+            save_bodies(bodies, iter/img_iter,path);
         }
     }
 }

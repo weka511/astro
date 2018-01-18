@@ -34,3 +34,4 @@ Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.
 | barnes_hut.cpp | Barnes Hut simulation |
 | Makefile | Build Barnes Hut simulation |
 | make_img.py | Plot output from barnes_hut |
+| tree.h | Treecode for Barnes Hut |
