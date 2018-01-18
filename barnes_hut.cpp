@@ -59,18 +59,17 @@ Node* add(Body* body, Node* node) {
       new_node = new InternalNode(node);
       //    ... And to start with, insert the already present body recursively
       //        into the appropriate quadrant.
-      int quadrant = node->intoNextQuadrant();
+      const int quadrant = node->intoNextQuadrant();
       new_node->setChild(quadrant, node);
     }
-    // 2. If node n is an internal node, we don't to modify its child.
-    else {
+    else // 2. If node n is an internal node, we don't to modify its child. 
       new_node = node;
-    }
+
     // 2. and 3. If node n is or has become an internal node ...
     //           ... update its mass and "center-of-mass times mass"
     new_node->addMassCom(body);
     // ... and recursively add the new body into the appropriate quadrant.
-    int quadrant = body->intoNextQuadrant();
+    const int quadrant = body->intoNextQuadrant();
     new_node->setChild (
 			quadrant,
 			add(body, new_node->extractChild(quadrant)) );
@@ -86,17 +85,16 @@ void accelerationOn( Body const* body, Node const* node, double theta,
                      double& ax, double& ay, double& az){
   // 1. If the current node is an external node, 
   //    calculate the force exerted by the current node on b.
-  double dsqr = node->distSqr(body);
-  if (node->isEndnode()) {
+  const double dsqr = node->distSqr(body);
+  if (node->isEndnode())
     node->accelerationOn(body, ax, ay, az,dsqr);
-  }
+
   // 2. Otherwise, calculate the ratio s/d. If s/d < θ, treat this internal
   //    node as a single body, and calculate the force it exerts on body b.
-  else if (sqr(node->getS()) < dsqr*sqr(theta)) {
+  else if (sqr(node->getS()) < dsqr*sqr(theta))
     node->accelerationOn(body, ax, ay, az,dsqr);
-  }
-  // 3. Otherwise, run the procedure recursively on each child.
-  else {
+  
+  else { // 3. Otherwise, run the procedure recursively on each child.
     ax = 0.;
     ay = 0.;
     az = 0.;
@@ -183,17 +181,16 @@ int main() {
     // "galaxy-like" impression.
     std::vector<Body*> bodies;
     for (int i=0; i<numbodies; ++i) {
-        double px = posx[i];
-        double py = posy[i];
-	double pz = posz[i];
-        double rpx = px-0.5;
-        double rpy = py-0.5;
-	double rpz = pz-0.5;
-        double rnorm = std::sqrt(sqr(rpx)+sqr(rpy));
+        const double px = posx[i];
+        const double py = posy[i];
+	const double pz = posz[i];
+        const double rpx = px-0.5;
+        const double rpy = py-0.5;
+        const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy));
         if ( rnorm < ini_radius ) {
-            double vx = -rpy * inivel * rnorm / ini_radius;
-            double vy =  rpx * inivel * rnorm / ini_radius;
-	    double vz = 0; //FIXME
+            const double vx = -rpy * inivel * rnorm / ini_radius;
+            const double vy =  rpx * inivel * rnorm / ini_radius;
+	    const double vz = 0;
             bodies.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
         }
     }
