@@ -124,29 +124,28 @@ public:
 	  double mx, my, mz, o_x, o_y,o_z;
 	  this->get_m_pos(mx, my, mz);
 	  other->getPos(o_x, o_y, o_z);
-            double m = this->getMass();
-            // The force goes like 1/r^2.
-            double inv_d_cube = std::pow(dsqr, -3./2.);
-            fx = (mx - o_x*m) * inv_d_cube;
-            fy = (my - o_y*m) * inv_d_cube;
-	    fy = (mz - o_z*m) * inv_d_cube;
+	  const double m = this->getMass();
+	  const double inv_d_cube = std::pow(dsqr, -3./2.); // The force goes like 1/r^2.
+	  fx = (mx - o_x*m) * inv_d_cube;
+	  fy = (my - o_y*m) * inv_d_cube;
+	  fy = (mz - o_z*m) * inv_d_cube;
         }
     }
 private:
-    // Compute the index of the next sub-quadrant along a given direction
-    // (there are two possibilities).
-    int subdivide(int i) {
-        // "relpos" is the relative coordinates of the center-of-mass with
-        // respect to the current quadrant.
-        relpos[i] *= 2.;
-        if (relpos[i] < 1.0) {
-            return 0;
-        }
-        else {
-            relpos[i] -= 1.0;
-            return 1;
-        }
+  // Compute the index of the next sub-quadrant along a given direction
+  // (there are two possibilities).
+  int subdivide(int i) {
+    // "relpos" is the relative coordinates of the center-of-mass with
+    // respect to the current quadrant.
+    relpos[i] *= 2.;
+    if (relpos[i] < 1.0)
+      return 0;
+    else {
+      relpos[i] -= 1.0;
+      return 1;
     }
+  }
+  
 private:
     double s; // Side-length of current quadrant.
     double relpos[3]; // Center-of-mass coordinates in current quadrant.
@@ -157,60 +156,60 @@ private:
 class Body : public Node {
 public:
   Body(double m, double x, double y, double z, double vx, double vy, double vz)
-        : mass(m),
-          pos_x(x), pos_y(y), pos_z(z),
-          vel_x(vx),
-          vel_y(vy),
-	  vel_z(vz)
-    { }
-    virtual bool isEndnode() const {
-        return true;
-    }
-    // Get the mass of the present body.
-    virtual double getMass() const {
-        return mass;
-    }
+    : mass(m),
+      pos_x(x), pos_y(y), pos_z(z),
+      vel_x(vx),
+      vel_y(vy),
+      vel_z(vz)
+  { }
+  virtual bool isEndnode() const {
+    return true;
+  }
+  // Get the mass of the present body.
+  virtual double getMass() const {
+    return mass;
+  }
     // Get the current position of this body.
   virtual void getPos(double& px, double& py, double& pz) const {
         px = pos_x;
         py = pos_y;
 	pz = pos_z;
     }
-    // Get the center-of-mass, times mass.
+  // Get the center-of-mass, times mass.
   virtual void get_m_pos(double& m_px, double& m_py, double& m_pz) const {
-        m_px = mass*pos_x;
-        m_py = mass*pos_y;
-	m_pz = mass*pos_z;
-    }
-    // You can't add another node into an end-node.
-    virtual void addMassCom(Node const* other) {
-        std::cout << "Error: trying to change mass and center-of-mass of an end-node." << std::endl;
-        assert( false );
-    }
-    // You can't add another node into an end-node.
-    virtual void setChild(int quadrant, Node* child) {
-        std::cout << "Error: trying to assign a child to an end-node." << std::endl;
-        assert( false );
-    }
-    // You can't add another node into an end-node.
-    virtual Node const* getChild(int quadrant) const {
-        std::cout << "Error: trying to get child of an end-node." << std::endl;
-        assert( false );
-    }
-    // You can't add another node into an end-node.
-    virtual Node* extractChild(int quadrant) {
-        std::cout << "Error: trying to get child of an end-node." << std::endl;
-        assert( false );
-    }
-    // Verlet integration step.
+    m_px = mass*pos_x;
+    m_py = mass*pos_y;
+    m_pz = mass*pos_z;
+  }
+  // You can't add another node into an end-node.
+  virtual void addMassCom(Node const* other) {
+    std::cout << "Error: trying to change mass and center-of-mass of an end-node." << std::endl;
+    assert( false );
+  }
+  // You can't add another node into an end-node.
+  virtual void setChild(int quadrant, Node* child) {
+    std::cout << "Error: trying to assign a child to an end-node." << std::endl;
+    assert( false );
+  }
+  // You can't add another node into an end-node.
+  virtual Node const* getChild(int quadrant) const {
+    std::cout << "Error: trying to get child of an end-node." << std::endl;
+    assert( false );
+  }
+  // You can't add another node into an end-node.
+  virtual Node* extractChild(int quadrant) {
+    std::cout << "Error: trying to get child of an end-node." << std::endl;
+    assert( false );
+  }
+  // Verlet integration step.
   void advance(double ax, double ay, double az,double dt) {
-        vel_x += dt*ax;
-        vel_y += dt*ay;
-	vel_z += dt*az;
-        pos_x += dt*vel_x;
-        pos_y += dt*vel_y;
-	pos_z += dt*vel_z;
-    }
+    vel_x += dt*ax;
+    vel_y += dt*ay;
+    vel_z += dt*az;
+    pos_x += dt*vel_x;
+    pos_y += dt*vel_y;
+    pos_z += dt*vel_z;
+  }
 private:
   double mass;
   double pos_x, pos_y,pos_z;
@@ -240,119 +239,119 @@ public:
         }
     }
     // When the quadtree is deleted, all internal nodes are removed recursively.
-    virtual ~InternalNode() {
-        for (int i=0; i<4; ++i) {
-            // Don't delete end-nodes. These are the bodies: they survive from
-            // one time-iteration step to the next.
-            if (children[i] && !children[i]->isEndnode())
-                delete children[i];
-        }
+  virtual ~InternalNode() {
+    for (int i=0; i<4; ++i) {
+      // Don't delete end-nodes. These are the bodies: they survive from
+      // one time-iteration step to the next.
+      if (children[i] && !children[i]->isEndnode())
+	delete children[i];
     }
-    // This class represents only internal nodes.
-    virtual bool isEndnode() const {
-        return false;
-    }
-    // Get the mass of this node.
-    virtual double getMass() const {
-        return mass;
-    }
-    // Get the current center-of-mass of this node.
+  }
+  
+  // This class represents only internal nodes.
+  virtual bool isEndnode() const {
+    return false;
+  }
+  // Get the mass of this node.
+  virtual double getMass() const {
+    return mass;
+  }
+  // Get the current center-of-mass of this node.
   virtual void getPos(double& px, double& py, double& pz) const {
-        // To get the center-of-mass, we need to divide by the mass. For better
-        // efficiency, lazy evaluation is used to calculate the inverse-mass.
-        if (!inv_mass_computed) {
-            inv_mass = 1./mass;
-            inv_mass_computed = true;
-        }
-        px = m_pos_x * inv_mass;
-        py = m_pos_y * inv_mass;
-	pz = m_pos_z * inv_mass;
+    // To get the center-of-mass, we need to divide by the mass. For better
+    // efficiency, lazy evaluation is used to calculate the inverse-mass.
+    if (!inv_mass_computed) {
+      inv_mass = 1./mass;
+      inv_mass_computed = true;
     }
+    px = m_pos_x * inv_mass;
+    py = m_pos_y * inv_mass;
+    pz = m_pos_z * inv_mass;
+  }
   
     // For computational efficiency: get the center-of-mass, times mass.
   virtual void get_m_pos(double& m_px, double& m_py, double& m_pz) const {
-        m_px = m_pos_x;
-        m_py = m_pos_y;
-	m_pz = m_pos_z;
-    }
+    m_px = m_pos_x;
+    m_py = m_pos_y;
+    m_pz = m_pos_z;
+  }
   
     // Update the mass and center-of-mass as a result of integrating another
     // node into the present quadrant.
-    virtual void addMassCom(Node const* other) {
-        // 1. Update the mass.
-        mass += other->getMass();
-        inv_mass_computed = false; // Trigger lazy-evaluation mechanism.
-        // 2. Update the center-of-mass.
-        double o_mx, o_my, o_mz;
-        other->get_m_pos(o_mx, o_my,o_mz);
-        m_pos_x += o_mx;
-        m_pos_y += o_my;
-	m_pos_z += o_mz;
-    }
-    // Set one of the four children of an internal node. It is not allowed to
-    // overwrite an already existing child.
-    virtual void setChild(int quadrant, Node* child) {
-        assert( children[quadrant]==0 );
-        children[quadrant] = child;
-    }
-    // Get a read-only pointer to one of the four children of an internal node.
-    virtual Node const* getChild(int quadrant) const {
-        return children[quadrant];
-    }
-    // Get a pointer to one of the four children and set the child to null.
-    virtual Node* extractChild(int quadrant) {
-        Node* child = children[quadrant];
-        // Set the child to null, to allow setting it to another
-        // node in the future.
-        children[quadrant] = 0;
-        return child;
-    }
+  virtual void addMassCom(Node const* other) {
+    // 1. Update the mass.
+    mass += other->getMass();
+    inv_mass_computed = false; // Trigger lazy-evaluation mechanism.
+    // 2. Update the center-of-mass.
+    double o_mx, o_my, o_mz;
+    other->get_m_pos(o_mx, o_my,o_mz);
+    m_pos_x += o_mx;
+    m_pos_y += o_my;
+    m_pos_z += o_mz;
+  }
+  // Set one of the four children of an internal node. It is not allowed to
+  // overwrite an already existing child.
+  virtual void setChild(int quadrant, Node* child) {
+    assert( children[quadrant]==0 );
+    children[quadrant] = child;
+  }
+  // Get a read-only pointer to one of the four children of an internal node.
+  virtual Node const* getChild(int quadrant) const {
+    return children[quadrant];
+  }
+  // Get a pointer to one of the four children and set the child to null.
+  virtual Node* extractChild(int quadrant) {
+    Node* child = children[quadrant];
+    // Set the child to null, to allow setting it to another
+    // node in the future.
+    children[quadrant] = 0;
+    return child;
+  }
 private:
-    double mass;
-    mutable double inv_mass;
-    mutable bool inv_mass_computed;
+  double mass;
+  mutable double inv_mass;
+  mutable bool inv_mass_computed;
   double m_pos_x, m_pos_y,m_pos_z;
-    Node* children[4];
+  Node* children[4];
 };
 
 // Barnes-Hut algorithm: Creation of the quad-tree. This function adds
 // a new body into a quad-tree node. Returns an updated version of the node.
 Node* add(Body* body, Node* node) {
     // To limit the recursion depth, set a lower limit for the size of quadrant.
-    static const double smallest_quadrant = 1.e-4;
-    Node* new_node = 0;
-    // 1. If node n does not contain a body, put the new body b here.
-    if (node==0) {
-        new_node = body;
+  static const double smallest_quadrant = 1.e-4;
+  Node* new_node = 0;
+  // 1. If node n does not contain a body, put the new body b here.
+  if (node==0)
+    new_node = body;
+  else {
+    if (node->getS() < smallest_quadrant)
+      return node;
+    
+    // 3. If node n is an external node, then the new body b is in conflict
+    //    with a body already present in this region. ...
+    if (node->isEndnode()) {
+      //    ... Subdivide the region further by creating an internal node.
+      new_node = new InternalNode(node);
+      //    ... And to start with, insert the already present body recursively
+      //        into the appropriate quadrant.
+      int quadrant = node->intoNextQuadrant();
+      new_node->setChild(quadrant, node);
     }
+    // 2. If node n is an internal node, we don't to modify its child.
     else {
-        if (node->getS() < smallest_quadrant) {
-            return node;
-        }
-        // 3. If node n is an external node, then the new body b is in conflict
-        //    with a body already present in this region. ...
-        if (node->isEndnode()) {
-        //    ... Subdivide the region further by creating an internal node.
-            new_node = new InternalNode(node);
-        //    ... And to start with, insert the already present body recursively
-        //        into the appropriate quadrant.
-            int quadrant = node->intoNextQuadrant();
-            new_node->setChild(quadrant, node);
-        }
-        // 2. If node n is an internal node, we don't to modify its child.
-        else {
-            new_node = node;
-        }
-        // 2. and 3. If node n is or has become an internal node ...
-        //           ... update its mass and "center-of-mass times mass"
-        new_node->addMassCom(body);
-        // ... and recursively add the new body into the appropriate quadrant.
-        int quadrant = body->intoNextQuadrant();
-        new_node->setChild (
-                      quadrant,
-                      add(body, new_node->extractChild(quadrant)) );
+      new_node = node;
     }
-    return new_node;
+    // 2. and 3. If node n is or has become an internal node ...
+    //           ... update its mass and "center-of-mass times mass"
+    new_node->addMassCom(body);
+    // ... and recursively add the new body into the appropriate quadrant.
+    int quadrant = body->intoNextQuadrant();
+    new_node->setChild (
+			quadrant,
+			add(body, new_node->extractChild(quadrant)) );
+  }
+  return new_node;
 }
 
 // Compute the force of all other nodes onto a given node, divided by
@@ -360,34 +359,34 @@ Node* add(Body* body, Node* node) {
 // This amounts to a recursive evaluation of the quad-tree created by
 // the Barnes-Hut algorithm.
 void accelerationOn( Body const* body, Node const* node, double theta,
-                     double& ax, double& ay, double& az)
-{
-    // 1. If the current node is an external node, 
-    //    calculate the force exerted by the current node on b.
-    double dsqr = node->distSqr(body);
-    if (node->isEndnode()) {
-      node->accelerationOn(body, ax, ay, az,dsqr);
+                     double& ax, double& ay, double& az){
+  // 1. If the current node is an external node, 
+  //    calculate the force exerted by the current node on b.
+  double dsqr = node->distSqr(body);
+  if (node->isEndnode()) {
+    node->accelerationOn(body, ax, ay, az,dsqr);
+  }
+  // 2. Otherwise, calculate the ratio s/d. If s/d < θ, treat this internal
+  //    node as a single body, and calculate the force it exerts on body b.
+  else if (sqr(node->getS()) < dsqr*sqr(theta)) {
+    node->accelerationOn(body, ax, ay, az,dsqr);
+  }
+  // 3. Otherwise, run the procedure recursively on each child.
+  else {
+    ax = 0.;
+    ay = 0.;
+    az = 0.;
+    for (int i=0; i<4; ++i) {
+      Node const* c = node->getChild(i);
+      if (c!=0) {
+	double ax_, ay_,az_;
+	accelerationOn(body, c, theta, ax_, ay_,az_);
+	ax += ax_;
+	ay += ay_;
+	az += az_;
+      }
     }
-    // 2. Otherwise, calculate the ratio s/d. If s/d < θ, treat this internal
-    //    node as a single body, and calculate the force it exerts on body b.
-    else if (sqr(node->getS()) < dsqr*sqr(theta)) {
-      node->accelerationOn(body, ax, ay, az,dsqr);
-    }
-    // 3. Otherwise, run the procedure recursively on each child.
-    else {
-        ax = 0.;
-        ay = 0.;
-        for (int i=0; i<4; ++i) {
-            Node const* c = node->getChild(i);
-            if (c!=0) {
-	      double ax_, ay_,az_;
-	      accelerationOn(body, c, theta, ax_, ay_,az_);
-                ax += ax_;
-                ay += ay_;
-		az += az_;
-            }
-        }
-    } 
+  } 
 }
 
 // Execute a time iteration according to the Verlet algorithm.
