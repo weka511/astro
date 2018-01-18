@@ -1,5 +1,5 @@
 # astro
-Astronomical Calculations inspired by Mike Brown's "Science of the Solar System" course
+Astronomical Calculations inspired by Mike Brown's course [Science of the Solar System](https://www.coursera.org/learn/solar-system/home/info)
 
 ## Orbital calculations
 
@@ -27,7 +27,7 @@ Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.
 
 ## Barnes Hut
 
-Barnes Hut simulation of a galaxy
+[Barnes Hut](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation) simulation of a galaxy
 
 | File | Purpose |
 |--------------------------|---------------------------------------------------------------------|
