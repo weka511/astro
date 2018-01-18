@@ -25,3 +25,12 @@ Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.
 | jacobi.py |  Zero velocity Surfaces for the Jacobi Integral |
 | jacobi3d.py |  Potential surfaces |
 
+## Barnes Hut
+
+Barnes Hut simulation of a galaxy
+
+| File | Purpose |
+|--------------------------|---------------------------------------------------------------------|
+| barnes_hut.cpp | Barnes Hut simulation |
+| Makefile | Build Barnes Hut simulation |
+| make_img.py | Plot output from barnes_hut |

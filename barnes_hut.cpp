@@ -36,6 +36,8 @@
 #include <cmath>
 #include <cassert>
 
+const int n_children=8;
+
 // Compute the square of a floating-point value.
 inline double sqr(double a) {
     return a*a;
@@ -45,92 +47,94 @@ inline double sqr(double a) {
 // either an end-node (i.e. a body) or an internal node.
 class Node {
 public:
-    Node()
-        : s(1.0)   {
-        relpos[0] = 0.;
-        relpos[1] = 0.;
-	relpos[2] = 0.;
-    }
+  Node()
+    : s(1.0)   {
+    relpos[0] = 0.;
+    relpos[1] = 0.;
+    relpos[2] = 0.;
+  }
   
-    Node (Node const& rhs)
-        : s(rhs.s)   {
-      relpos[0] = rhs.relpos[0];
-      relpos[1] = rhs.relpos[1];
-      relpos[2] = rhs.relpos[2];
-    }
+  Node (Node const& rhs)
+    : s(rhs.s)   {
+    relpos[0] = rhs.relpos[0];
+    relpos[1] = rhs.relpos[1];
+    relpos[2] = rhs.relpos[2];
+  }
   
-    virtual ~Node() { }
+  virtual ~Node() { }
   
-    virtual bool isEndnode() const =0;
+  virtual bool isEndnode() const =0;
   
-    // Get the mass of this node.
-    virtual double getMass() const =0;
+  // Get the mass of this node.
+  virtual double getMass() const =0;
   
-    // Get the current center-of-mass of this node.
+  // Get the current center-of-mass of this node.
   virtual void getPos(double& px, double& py, double& pz) const =0;
   
     // For computational efficiency: get the center-of-mass, times mass.
   virtual void get_m_pos(double& m_px, double& m_py, double& m_pz) const =0;
   
-    // Update the mass and center-of-mass as a result of integrating another
-    // node into the present quadrant.
-    virtual void addMassCom(Node const* other) =0;
+  // Update the mass and center-of-mass as a result of integrating another
+  // node into the present quadrant.
+  virtual void addMassCom(Node const* other) =0;
   
-    // Set one of the four children of an internal node. It is not allowed to
-    // overwrite an already existing child.
-    virtual void setChild(int quadrant, Node* child) =0;
+  // Set one of the four children of an internal node. It is not allowed to
+  // overwrite an already existing child.
+  virtual void setChild(int quadrant, Node* child) =0;
   
-    // Get a read-only pointer to one of the four children of an internal node.
-    virtual Node const* getChild(int quadrant) const =0;
+  // Get a read-only pointer to one of the four children of an internal node.
+  virtual Node const* getChild(int quadrant) const =0;
   
-    // Get a pointer to one of the four children and set the child to null.
-    virtual Node* extractChild(int quadrant) =0;
+  // Get a pointer to one of the four children and set the child to null.
+  virtual Node* extractChild(int quadrant) =0;
   
-    // Get the side-length of the current quadrant of the node.
-    double getS() const {
-        return s;
-    }
+  // Get the side-length of the current quadrant of the node.
+  double getS() const {
+    return s;
+  } 
   
-    // Place the node into the appropriate next sub-quadrant.
-    int intoNextQuadrant() {
-        s *= 0.5;
-        return subdivide(1) + 2*subdivide(0);
-    }
+  // Place the node into the appropriate next sub-quadrant.
+  int intoNextQuadrant() {
+    s *= 0.5;
+    return n_children==4 ?
+      subdivide(1) + 2*subdivide(0) :
+      subdivide(2) + 2* subdivide(1) + 4 * subdivide(0);
+  }
   
     // Replace the node to the root of the quadtree.
     void resetToZerothQuadrant() {
-        s = 1.0;
-        getPos(relpos[0], relpos[1],relpos[2]);
+      s = 1.0;
+      getPos(relpos[0], relpos[1],relpos[2]);
     }
   
     // Square of distance between center-of-masses wrt. another node.
-    double distSqr(Node const* other) const {
-      double x, y,z, ox, oy,oz;
-      this->getPos(x, y,z);
-      other->getPos(ox, oy,oz);
-      return sqr(x-ox)+sqr(y-oy) + sqr(z-oz);
-    }
+  double distSqr(Node const* other) const {
+    double x, y,z, ox, oy,oz;
+    this->getPos(x, y,z);
+    other->getPos(ox, oy,oz);
+    return sqr(x-ox)+sqr(y-oy) + sqr(z-oz);
+  }
   
-    // Compute the force of the present node onto another node, divided by
-    // the other node's mass, and divided by the gravitational constant G.
+  // Compute the force of the present node onto another node, divided by
+  // the other node's mass, and divided by the gravitational constant G.
   void accelerationOn(Node const* other, double& fx, double& fy, double& fz,double dsqr) const {
-        // Introduce a cut-off distance to avoid numerical instability in case two
-        // nodes are too close to each other.
-        static const double cutoff_dist = 0.002;
-        static const double cutoff_dist_sqr = cutoff_dist*cutoff_dist;
-        if (dsqr < cutoff_dist_sqr)
-            fx = fy = fz= 0.;
-        else {
-	  double mx, my, mz, o_x, o_y,o_z;
-	  this->get_m_pos(mx, my, mz);
-	  other->getPos(o_x, o_y, o_z);
-	  const double m = this->getMass();
-	  const double inv_d_cube = std::pow(dsqr, -3./2.); // The force goes like 1/r^2.
-	  fx = (mx - o_x*m) * inv_d_cube;
-	  fy = (my - o_y*m) * inv_d_cube;
-	  fy = (mz - o_z*m) * inv_d_cube;
-        }
+    // Introduce a cut-off distance to avoid numerical instability in case two
+    // nodes are too close to each other.
+    static const double cutoff_dist = 0.002;
+    static const double cutoff_dist_sqr = cutoff_dist*cutoff_dist;
+    if (dsqr < cutoff_dist_sqr)
+      fx = fy = fz= 0.;
+    else {
+      double mx, my, mz, o_x, o_y,o_z;
+      this->get_m_pos(mx, my, mz);
+      other->getPos(o_x, o_y, o_z);
+      const double m = this->getMass();
+      const double inv_d_cube = std::pow(dsqr, -3./2.); // The force goes like 1/r^2.
+      fx = (mx - o_x*m) * inv_d_cube;
+      fy = (my - o_y*m) * inv_d_cube;
+      fy = (mz - o_z*m) * inv_d_cube;
     }
+  }
 private:
   // Compute the index of the next sub-quadrant along a given direction
   // (there are two possibilities).
@@ -234,13 +238,12 @@ public:
         m_pos_x *= mass;
         m_pos_y *= mass;
 	m_pos_z *=mass;
-        for (int i=0; i<4; ++i) {
+        for (int i=0; i<n_children; ++i)
             children[i] = 0;
-        }
     }
     // When the quadtree is deleted, all internal nodes are removed recursively.
   virtual ~InternalNode() {
-    for (int i=0; i<4; ++i) {
+    for (int i=0; i<n_children; ++i) {
       // Don't delete end-nodes. These are the bodies: they survive from
       // one time-iteration step to the next.
       if (children[i] && !children[i]->isEndnode())
@@ -312,7 +315,7 @@ private:
   mutable double inv_mass;
   mutable bool inv_mass_computed;
   double m_pos_x, m_pos_y,m_pos_z;
-  Node* children[4];
+  Node* children[n_children];
 };
 
 // Barnes-Hut algorithm: Creation of the quad-tree. This function adds
@@ -376,7 +379,7 @@ void accelerationOn( Body const* body, Node const* node, double theta,
     ax = 0.;
     ay = 0.;
     az = 0.;
-    for (int i=0; i<4; ++i) {
+    for (int i=0; i<n_children; ++i) {
       Node const* c = node->getChild(i);
       if (c!=0) {
 	double ax_, ay_,az_;
