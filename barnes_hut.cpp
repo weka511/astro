@@ -46,75 +46,90 @@ inline double sqr(double a) {
 class Node {
 public:
     Node()
-        : s(1.0)
-    {
+        : s(1.0)   {
         relpos[0] = 0.;
         relpos[1] = 0.;
+	relpos[2] = 0.;
     }
+  
     Node (Node const& rhs)
-        : s(rhs.s)
-    {
+        : s(rhs.s)   {
       relpos[0] = rhs.relpos[0];
       relpos[1] = rhs.relpos[1];
+      relpos[2] = rhs.relpos[2];
     }
+  
     virtual ~Node() { }
+  
     virtual bool isEndnode() const =0;
+  
     // Get the mass of this node.
     virtual double getMass() const =0;
+  
     // Get the current center-of-mass of this node.
-    virtual void getPos(double& px, double& py) const =0;
+  virtual void getPos(double& px, double& py, double& pz) const =0;
+  
     // For computational efficiency: get the center-of-mass, times mass.
-    virtual void get_m_pos(double& m_px, double& m_py) const =0;
+  virtual void get_m_pos(double& m_px, double& m_py, double& m_pz) const =0;
+  
     // Update the mass and center-of-mass as a result of integrating another
     // node into the present quadrant.
     virtual void addMassCom(Node const* other) =0;
+  
     // Set one of the four children of an internal node. It is not allowed to
     // overwrite an already existing child.
     virtual void setChild(int quadrant, Node* child) =0;
+  
     // Get a read-only pointer to one of the four children of an internal node.
     virtual Node const* getChild(int quadrant) const =0;
+  
     // Get a pointer to one of the four children and set the child to null.
     virtual Node* extractChild(int quadrant) =0;
+  
     // Get the side-length of the current quadrant of the node.
     double getS() const {
         return s;
     }
-    // Place the node into the appropriate newxt sub-quadrant.
+  
+    // Place the node into the appropriate next sub-quadrant.
     int intoNextQuadrant() {
         s *= 0.5;
         return subdivide(1) + 2*subdivide(0);
     }
+  
     // Replace the node to the root of the quadtree.
     void resetToZerothQuadrant() {
         s = 1.0;
-        getPos(relpos[0], relpos[1]);
+        getPos(relpos[0], relpos[1],relpos[2]);
     }
+  
     // Square of distance between center-of-masses wrt. another node.
     double distSqr(Node const* other) const {
-        double x, y, ox, oy;
-        this->getPos(x, y);
-        other->getPos(ox, oy);
-        return sqr(x-ox)+sqr(y-oy);
+      double x, y,z, ox, oy,oz;
+      this->getPos(x, y,z);
+      other->getPos(ox, oy,oz);
+      return sqr(x-ox)+sqr(y-oy) + sqr(z-oz);
     }
+  
     // Compute the force of the present node onto another node, divided by
     // the other node's mass, and divided by the gravitational constant G.
-    void accelerationOn(Node const* other, double& fx, double& fy, double dsqr) const {
+  void accelerationOn(Node const* other, double& fx, double& fy, double& fz,double dsqr) const {
         // Introduce a cut-off distance to avoid numerical instability in case two
         // nodes are too close to each other.
         static const double cutoff_dist = 0.002;
         static const double cutoff_dist_sqr = cutoff_dist*cutoff_dist;
-        if (dsqr < cutoff_dist_sqr) {
-            fx = fy = 0.;
-        }
+        if (dsqr < cutoff_dist_sqr)
+            fx = fy = fz= 0.;
         else {
-            double mx, my, o_x, o_y;
-            this->get_m_pos(mx, my);
-            other->getPos(o_x, o_y);
+	  double mx, my, mz, o_x, o_y,o_z;
+	  this->get_m_pos(mx, my, mz);
+	  other->getPos(o_x, o_y, o_z);
             double m = this->getMass();
             // The force goes like 1/r^2.
             double inv_d_cube = std::pow(dsqr, -3./2.);
             fx = (mx - o_x*m) * inv_d_cube;
             fy = (my - o_y*m) * inv_d_cube;
+	    fy = (mz - o_z*m) * inv_d_cube;
         }
     }
 private:
@@ -134,18 +149,19 @@ private:
     }
 private:
     double s; // Side-length of current quadrant.
-    double relpos[2]; // Center-of-mass coordinates in current quadrant.
+    double relpos[3]; // Center-of-mass coordinates in current quadrant.
 };
 
 
 // A body is an end-node of the quad-tree.
 class Body : public Node {
 public:
-    Body(double m, double x, double y, double vx, double vy)
+  Body(double m, double x, double y, double z, double vx, double vy, double vz)
         : mass(m),
-          pos_x(x), pos_y(y),
+          pos_x(x), pos_y(y), pos_z(z),
           vel_x(vx),
-          vel_y(vy)
+          vel_y(vy),
+	  vel_z(vz)
     { }
     virtual bool isEndnode() const {
         return true;
@@ -155,14 +171,16 @@ public:
         return mass;
     }
     // Get the current position of this body.
-    virtual void getPos(double& px, double& py) const {
+  virtual void getPos(double& px, double& py, double& pz) const {
         px = pos_x;
         py = pos_y;
+	pz = pos_z;
     }
     // Get the center-of-mass, times mass.
-    virtual void get_m_pos(double& m_px, double& m_py) const {
+  virtual void get_m_pos(double& m_px, double& m_py, double& m_pz) const {
         m_px = mass*pos_x;
         m_py = mass*pos_y;
+	m_pz = mass*pos_z;
     }
     // You can't add another node into an end-node.
     virtual void addMassCom(Node const* other) {
@@ -185,16 +203,18 @@ public:
         assert( false );
     }
     // Verlet integration step.
-    void advance(double ax, double ay, double dt) {
+  void advance(double ax, double ay, double az,double dt) {
         vel_x += dt*ax;
         vel_y += dt*ay;
+	vel_z += dt*az;
         pos_x += dt*vel_x;
         pos_y += dt*vel_y;
+	pos_z += dt*vel_z;
     }
 private:
-    double mass;
-    double pos_x, pos_y;
-    double vel_x, vel_y;
+  double mass;
+  double pos_x, pos_y,pos_z;
+  double vel_x, vel_y,vel_z;
 };
 
 // An internal node of the quad-tree.
@@ -211,9 +231,10 @@ public:
         // Instead of storing the center-of-mass, we store the
         // center-of-mass times mass. This makes it cheaper to update the
         // center-of-mass whenever another body is added into the quadrant.
-        node->getPos(m_pos_x, m_pos_y);
+      node->getPos(m_pos_x, m_pos_y,m_pos_z);
         m_pos_x *= mass;
         m_pos_y *= mass;
+	m_pos_z *=mass;
         for (int i=0; i<4; ++i) {
             children[i] = 0;
         }
@@ -223,9 +244,8 @@ public:
         for (int i=0; i<4; ++i) {
             // Don't delete end-nodes. These are the bodies: they survive from
             // one time-iteration step to the next.
-            if (children[i] && !children[i]->isEndnode()) {
+            if (children[i] && !children[i]->isEndnode())
                 delete children[i];
-            }
         }
     }
     // This class represents only internal nodes.
@@ -237,7 +257,7 @@ public:
         return mass;
     }
     // Get the current center-of-mass of this node.
-    virtual void getPos(double& px, double& py) const {
+  virtual void getPos(double& px, double& py, double& pz) const {
         // To get the center-of-mass, we need to divide by the mass. For better
         // efficiency, lazy evaluation is used to calculate the inverse-mass.
         if (!inv_mass_computed) {
@@ -246,12 +266,16 @@ public:
         }
         px = m_pos_x * inv_mass;
         py = m_pos_y * inv_mass;
+	pz = m_pos_z * inv_mass;
     }
+  
     // For computational efficiency: get the center-of-mass, times mass.
-    virtual void get_m_pos(double& m_px, double& m_py) const {
+  virtual void get_m_pos(double& m_px, double& m_py, double& m_pz) const {
         m_px = m_pos_x;
         m_py = m_pos_y;
+	m_pz = m_pos_z;
     }
+  
     // Update the mass and center-of-mass as a result of integrating another
     // node into the present quadrant.
     virtual void addMassCom(Node const* other) {
@@ -259,10 +283,11 @@ public:
         mass += other->getMass();
         inv_mass_computed = false; // Trigger lazy-evaluation mechanism.
         // 2. Update the center-of-mass.
-        double o_mx, o_my;
-        other->get_m_pos(o_mx, o_my);
+        double o_mx, o_my, o_mz;
+        other->get_m_pos(o_mx, o_my,o_mz);
         m_pos_x += o_mx;
         m_pos_y += o_my;
+	m_pos_z += o_mz;
     }
     // Set one of the four children of an internal node. It is not allowed to
     // overwrite an already existing child.
@@ -286,7 +311,7 @@ private:
     double mass;
     mutable double inv_mass;
     mutable bool inv_mass_computed;
-    double m_pos_x, m_pos_y;
+  double m_pos_x, m_pos_y,m_pos_z;
     Node* children[4];
 };
 
@@ -335,18 +360,18 @@ Node* add(Body* body, Node* node) {
 // This amounts to a recursive evaluation of the quad-tree created by
 // the Barnes-Hut algorithm.
 void accelerationOn( Body const* body, Node const* node, double theta,
-                     double& ax, double& ay)
+                     double& ax, double& ay, double& az)
 {
     // 1. If the current node is an external node, 
     //    calculate the force exerted by the current node on b.
     double dsqr = node->distSqr(body);
     if (node->isEndnode()) {
-        node->accelerationOn(body, ax, ay, dsqr);
+      node->accelerationOn(body, ax, ay, az,dsqr);
     }
     // 2. Otherwise, calculate the ratio s/d. If s/d < θ, treat this internal
     //    node as a single body, and calculate the force it exerts on body b.
     else if (sqr(node->getS()) < dsqr*sqr(theta)) {
-        node->accelerationOn(body, ax, ay, dsqr);
+      node->accelerationOn(body, ax, ay, az,dsqr);
     }
     // 3. Otherwise, run the procedure recursively on each child.
     else {
@@ -355,25 +380,26 @@ void accelerationOn( Body const* body, Node const* node, double theta,
         for (int i=0; i<4; ++i) {
             Node const* c = node->getChild(i);
             if (c!=0) {
-                double ax_, ay_;
-                accelerationOn(body, c, theta, ax_, ay_);
+	      double ax_, ay_,az_;
+	      accelerationOn(body, c, theta, ax_, ay_,az_);
                 ax += ax_;
                 ay += ay_;
+		az += az_;
             }
         }
-    }
+    } 
 }
 
 // Execute a time iteration according to the Verlet algorithm.
 void verlet( std::vector<Body*>& bodies, Node* root,
-             double theta, double G, double dt )
-{
+             double theta, double G, double dt ) {
     for(size_t i=0; i<bodies.size(); ++i) {
-        double ax, ay;
-        accelerationOn(bodies[i], root, theta, ax, ay);
+      double ax, ay, az;
+      accelerationOn(bodies[i], root, theta, ax, ay, az);
         ax *= G;
         ay *= G;
-        bodies[i]->advance(ax, ay, dt);
+	az *= G;
+        bodies[i]->advance(ax, ay, az,dt);
     }
 }
 
@@ -388,11 +414,12 @@ void save_bodies( std::vector<Body*>& bodies, int i){
     fNameStream << path<< "body_" << std::setfill('0') << std::setw(6) << i << ".dat";
     std::ofstream ofile(fNameStream.str().c_str());
     for (unsigned i=0; i<bodies.size(); ++i) {
-        double px, py;
-        bodies[i] -> getPos(px, py);
+      double px, py, pz;
+        bodies[i] -> getPos(px, py,pz);
         ofile << std::setprecision(12)
               << std::setw(20) << px
-              << std::setw(20) << py << "\n";
+	      << std::setw(20) << py
+              << std::setw(20) << pz << "\n";
     }
 }
 
@@ -420,10 +447,11 @@ int main() {
     // value, for proper validation of the output for the exercise series.
     std::srand(1);
     // x- and y-pos are initialized to a square with side-length 2*ini_radius.
-    std::vector<double> posx(numbodies), posy(numbodies);
+    std::vector<double> posx(numbodies), posy(numbodies), posz(numbodies);
     for (int i=0; i<numbodies; ++i) {
         posx[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
         posy[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
+	posz[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
     }
     // Initially, the bodies have a radial velocity of an amplitude proportional to
     // the distance from the center. This induces a rotational motion creating a
@@ -432,13 +460,16 @@ int main() {
     for (int i=0; i<numbodies; ++i) {
         double px = posx[i];
         double py = posy[i];
+	double pz = posz[i];
         double rpx = px-0.5;
         double rpy = py-0.5;
+	double rpz = pz-0.5;
         double rnorm = std::sqrt(sqr(rpx)+sqr(rpy));
         if ( rnorm < ini_radius ) {
             double vx = -rpy * inivel * rnorm / ini_radius;
             double vy =  rpx * inivel * rnorm / ini_radius;
-            bodies.push_back( new Body(mass, px, py, vx, vy) );
+	    double vz = 0; //FIXME
+            bodies.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
         }
     }
 

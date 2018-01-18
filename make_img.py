@@ -14,8 +14,7 @@
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <http://www.gnu.org/licenses/>
 
- Investigation of simulated annealing for clustering
-
+  Companion to barnes_hut.cpp - plot images
 '''
 import os, re, sys, numpy as np, matplotlib.pyplot as plt
 
