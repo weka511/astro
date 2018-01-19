@@ -31,7 +31,11 @@ Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.
 
 | File | Purpose |
 |--------------------------|---------------------------------------------------------------------|
+| galaxy.cpp | Simulate Galaxy using Barnes Hut|
 | barnes_hut.cpp | Barnes Hut simulation |
+| barnes_hut.h | Barnes Hut simulation |
+| tree.cpp | Treecode |
+| tree.h | Treecode |
 | Makefile | Build Barnes Hut simulation |
 | make_img.py | Plot output from barnes_hut |
 | tree.h | Treecode for Barnes Hut |
