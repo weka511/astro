@@ -63,16 +63,16 @@ Node* add(Body* body, Node* node) {
       new_node->setChild(quadrant, node);
     }
     else // 2. If node n is an internal node, we don't to modify its child. 
-      new_node = node;
+		new_node = node;
 
-    // 2. and 3. If node n is or has become an internal node ...
-    //           ... update its mass and "center-of-mass times mass"
-    new_node->addMassCom(body);
-    // ... and recursively add the new body into the appropriate quadrant.
-    const int quadrant = body->intoNextQuadrant();
-    new_node->setChild (
-			quadrant,
-			add(body, new_node->extractChild(quadrant)) );
+		// 2. and 3. If node n is or has become an internal node ...
+		//           ... update its mass and "center-of-mass times mass"
+		new_node->addMassCom(body);
+		// ... and recursively add the new body into the appropriate quadrant.
+		const int quadrant = body->intoNextQuadrant();
+		new_node->setChild (
+				quadrant,
+				add(body, new_node->extractChild(quadrant)) );
   }
   return new_node;
 }
@@ -101,11 +101,11 @@ void accelerationOn( Body const* body, Node const* node, double theta,
     for (int i=0; i<n_children; ++i) {
       Node const* c = node->getChild(i);
       if (c!=0) {
-	double ax_, ay_,az_;
-	accelerationOn(body, c, theta, ax_, ay_,az_);
-	ax += ax_;
-	ay += ay_;
-	az += az_;
+		double ax_, ay_,az_;
+		accelerationOn(body, c, theta, ax_, ay_,az_);
+		ax += ax_;
+		ay += ay_;
+		az += az_;
       }
     }
   } 
@@ -115,12 +115,12 @@ void accelerationOn( Body const* body, Node const* node, double theta,
 void verlet( std::vector<Body*>& bodies, Node* root,
              double theta, double G, double dt ) {
     for(size_t i=0; i<bodies.size(); ++i) {
-      double ax, ay, az;
-      accelerationOn(bodies[i], root, theta, ax, ay, az);
-        ax *= G;
-        ay *= G;
-	az *= G;
-        bodies[i]->advance(ax, ay, az,dt);
+		double ax, ay, az;
+		accelerationOn(bodies[i], root, theta, ax, ay, az);
+		ax *= G;
+		ay *= G;
+		az *= G;
+		bodies[i]->advance(ax, ay, az,dt);
     }
 }
 
@@ -135,12 +135,12 @@ void save_bodies( std::vector<Body*>& bodies, int i, std::string path){
     fNameStream << path<< "body_" << std::setfill('0') << std::setw(6) << i << ".dat";
     std::ofstream ofile(fNameStream.str().c_str());
     for (unsigned i=0; i<bodies.size(); ++i) {
-      double px, py, pz;
-        bodies[i] -> getPos(px, py,pz);
-        ofile << std::setprecision(12)
-              << std::setw(20) << px
-	      << std::setw(20) << py
-              << std::setw(20) << pz << "\n";
+	double px, py, pz;
+	bodies[i] -> getPos(px, py,pz);
+	ofile << std::setprecision(12)
+		  << std::setw(20) << px
+		  << std::setw(20) << py
+		  << std::setw(20) << pz << "\n";
     }
 }
 
