@@ -1,3 +1,5 @@
+# Makefile snarfed from https://stackoverflow.com/questions/2481269/how-to-make-a-simple-c-makefile
+
 CPPFLAGS=-g -O3 -pthread -I/sw/include/root 
 LDFLAGS=-g -O3
 LDLIBS=
@@ -11,12 +13,17 @@ all : galaxy.exe
 
 clean :
 	${RM} ${OBJS}
+
+depend: .depend
+
+.depend: $(SRCS)
+	$(RM) ./.depend
+	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
 	
 galaxy.exe: $(OBJS)
 	${CXX} $(LDFLAGS) -o galaxy.exe ${OBJS} ${LDLIBS}
 
-barnes_hut.o: barnes_hut.cpp tree.h barnes_hut.h
+distclean: clean
+	$(RM) *~ .depend
 
-galaxy.o: galaxy.cpp barnes_hut.h tree.h
-
-tree.o: tree.h tree.cpp
+include .depend
