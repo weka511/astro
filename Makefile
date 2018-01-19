@@ -6,22 +6,25 @@ LDLIBS=
 CC=gcc
 CXX=g++
 RM=rm -f
-SRCS=barnes_hut.cpp galaxy.cpp tree.cpp
+SRCS=barnes_hut.cpp  tree.cpp 
 OBJS=$(subst .cpp,.o,$(SRCS))
 
-all : galaxy.exe
+all : galaxy.exe tests.exe
 
 clean :
 	${RM} ${OBJS}
 
 depend: .depend
 
-.depend: $(SRCS)
+.depend: $(SRCS) galaxy.cpp tests.cpp
 	$(RM) ./.depend
 	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
 	
-galaxy.exe: $(OBJS)
-	${CXX} $(LDFLAGS) -o galaxy.exe ${OBJS} ${LDLIBS}
+galaxy.exe: $(OBJS) galaxy.o
+	${CXX} $(LDFLAGS) -o galaxy.exe galaxy.o ${OBJS} ${LDLIBS}
+	
+tests.exe: $(OBJS) tests.o
+	${CXX} $(LDFLAGS) -o tests.exe tests.o ${OBJS} ${LDLIBS}
 
 distclean: clean
 	$(RM) *~ .depend
