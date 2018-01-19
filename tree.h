@@ -111,8 +111,6 @@ private:
   // Compute the index of the next sub-quadrant along a given direction
   // (there are two possibilities).
   int subdivide(int i) {
-    // "relpos" is the relative coordinates of the center-of-mass with
-    // respect to the current quadrant.
     relpos[i] *= 2.;
     if (relpos[i] < 1.0)
       return 0;
