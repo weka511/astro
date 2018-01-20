@@ -6,9 +6,11 @@ LDLIBS=
 CC=gcc
 CXX=g++
 RM=rm -f
-SRCS=barnes_hut.cpp  tree.cpp 
+SRCS=barnes_hut.cpp tree.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
-TESTS=tests.exe
+TESTS=tests.exe 
+TEST_CASES=test-tree.cpp
+TEST_OBJS=$(subst .cpp,.o,$(TEST_CASES))
 MAIN=galaxy.exe 
 TARGETS=$(MAIN) $(TESTS) 
 
@@ -22,15 +24,15 @@ tests : $(TESTS)
 	
 depend: .depend
 
-.depend: $(SRCS) galaxy.cpp tests.cpp
+.depend: $(SRCS) $(TARGETS)
 	$(RM) ./.depend
 	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
 	
 $(MAIN): $(OBJS) galaxy.o
 	${CXX} $(LDFLAGS) -o $(MAIN) galaxy.o ${OBJS} ${LDLIBS}
 	
-$(TESTS): $(OBJS) tests.o
-	${CXX} $(LDFLAGS) -o $(TESTS) tests.o ${OBJS} ${LDLIBS}
+$(TESTS): $(OBJS) tests.o $(TEST_OBJS)
+	${CXX} $(LDFLAGS) -o $(TESTS) tests.o $(TEST_OBJS) ${OBJS} ${LDLIBS}
 
 distclean: clean
 	$(RM) *~ .depend

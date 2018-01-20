@@ -12,6 +12,7 @@
 #include "barnes_hut.h"
 
 int main() {
+	std::cout<<"Starting eimulation" <<std::endl;
     // Theta-criterion of the Barnes-Hut algorithm.
     const double theta = 0.5;
     // Mass of a body.
