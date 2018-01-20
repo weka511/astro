@@ -7,14 +7,23 @@
 #include <cstdlib>
 #include <cmath>
 #include <cassert>
-
+#include <unistd.h>
+#include <getopt.h>
 #include "tree.h"
 #include "barnes_hut.h"
 
-int main() {
-	std::cout<<"Starting eimulation" <<std::endl;
+
+struct option long_options[] =
+{
+  {"numbodies",  required_argument, 0, 'n'},
+  {0, 0, 0, 0}
+};	
+	
+int main(int argc, char **argv) {
+
+
     // Theta-criterion of the Barnes-Hut algorithm.
-    const double theta = 0.5;
+    double theta = 0.5;
     // Mass of a body.
     const double mass = 1.0;
     // Initially, the bodies are distributed inside a circle of radius ini_radius.
@@ -26,13 +35,40 @@ int main() {
     // Discrete time step.
     const double dt = 1.e-3;
     // outside the initial radius are removed).
-    const int numbodies = 1000;
+    int numbodies = 1000;
     // Number of time-iterations executed by the program.
     const int max_iter = 10000;
     // Frequency at which PNG images are written.
     const int img_iter = 20;
-
-    std::string path = ".\\configs\\";
+	
+	std::string path = ".\\configs\\";
+	
+	int option_index = 0;
+	int c;
+	while ((c = getopt_long (argc, argv, "n:t:p:",long_options, &option_index)) != -1)
+    switch (c){
+		case 'n':{
+			std::stringstream param(optarg);
+			param>>numbodies;
+			std::cout<<"Number of bodies="<<numbodies<<std::endl;
+			break;
+		}
+			
+		case 't':{
+			std::stringstream param(optarg);
+			param>>theta;
+			std::cout<<"Theta="<<theta<<std::endl;
+			break;
+		}
+		
+		case 'p':{
+			std::stringstream param(optarg);
+			param>>path;
+			std::cout<<"Path="<<path<<std::endl;
+			break;
+		}
+	}
+    
     
     // The pseudo-random number generator is initialized at a deterministic
     // value, for proper validation of the output for the exercise series.
@@ -51,14 +87,14 @@ int main() {
     for (int i=0; i<numbodies; ++i) {
         const double px = posx[i];
         const double py = posy[i];
-	const double pz = posz[i];
+		const double pz = posz[i];
         const double rpx = px-0.5;
         const double rpy = py-0.5;
         const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy));
         if ( rnorm < ini_radius ) {
             const double vx = -rpy * inivel * rnorm / ini_radius;
             const double vy =  rpx * inivel * rnorm / ini_radius;
-	    const double vz = 0;
+			const double vz = 0;
             bodies.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
         }
     }
