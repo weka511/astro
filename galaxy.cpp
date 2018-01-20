@@ -13,44 +13,102 @@
 #include "barnes_hut.h"
 #include "galaxy.h"
 
-struct option long_options[] =
-{
+struct option long_options[] = {
+  {"dt",  required_argument, 0, 'd'},
+  {"G",  required_argument, 0, 'G'},
+  {"img_iter",  required_argument, 0, 'i'},
+  {"max_iter",  required_argument, 0, 'm'},
   {"numbodies",  required_argument, 0, 'n'},
+  {"path",  required_argument, 0, 'p'},
+  {"ini_radius",  required_argument, 0, 'r'},
+  {"mass",  required_argument, 0, 's'},
+  {"theta",  required_argument, 0, 't'},
+  {"inival",  required_argument, 0, 'v'},
   {0, 0, 0, 0}
 };	
 	
 int main(int argc, char **argv) {
 
-
     // Theta-criterion of the Barnes-Hut algorithm.
     double theta = 0.5;
     // Mass of a body.
-    const double mass = 1.0;
+    double mass = 1.0;
     // Initially, the bodies are distributed inside a circle of radius ini_radius.
-    const double ini_radius = 0.1;
+    double ini_radius = 0.1;
     // Initial maximum velocity of the bodies.
-    const double inivel = 0.1;
+    double inivel = 0.1;
     // The "gravitational constant" is chosen so as to get a pleasant output.
-    const double G = 4.e-6;
+    double G = 4.e-6;
     // Discrete time step.
-    const double dt = 1.e-3;
+    double dt = 1.e-3;
     // outside the initial radius are removed).
     int numbodies = 1000;
     // Number of time-iterations executed by the program.
-    const int max_iter = 10000;
+    int max_iter = 10000;
     // Frequency at which PNG images are written.
-    const int img_iter = 20;
+    int img_iter = 20;
 	
 	std::string path = ".\\configs\\";
 	
 	int option_index = 0;
 	int c;
-	while ((c = getopt_long (argc, argv, "n:t:p:",long_options, &option_index)) != -1)
+	
+
+	while ((c = getopt_long (argc, argv, "d:G:i:m:n:p:r:s:t:v:",long_options, &option_index)) != -1)
     switch (c){
+		case 'd':{
+			std::stringstream param(optarg);
+			param>>dt;
+			std::cout<<"dt="<<dt<<std::endl;
+			break;
+		}
+		
+		case 'G':{
+			std::stringstream param(optarg);
+			param>>G;
+			std::cout<<"G="<<G<<std::endl;
+			break;
+		}
+		
+		case 'i':{
+			std::stringstream param(optarg);
+			param>>img_iter;
+			std::cout<<"Frequency at which PNG images are written="<<img_iter<<std::endl;
+			break;
+		}
+		
+		case 'm':{
+			std::stringstream param(optarg);
+			param>>max_iter;
+			std::cout<<"Number of iterations="<<max_iter<<std::endl;
+			break;
+		}
+		
 		case 'n':{
 			std::stringstream param(optarg);
 			param>>numbodies;
 			std::cout<<"Number of bodies="<<numbodies<<std::endl;
+			break;
+		}
+		
+		case 'p':{
+			std::stringstream param(optarg);
+			param>>path;
+			std::cout<<"Path="<<path<<std::endl;
+			break;
+		}
+		
+		case 'r':{
+			std::stringstream param(optarg);
+			param>>ini_radius;
+			std::cout<<"Initial radius="<<ini_radius<<std::endl;
+			break;
+		}
+		
+		case 's':{
+			std::stringstream param(optarg);
+			param>>mass;
+			std::cout<<"mass="<<mass<<std::endl;
 			break;
 		}
 			
@@ -61,25 +119,50 @@ int main(int argc, char **argv) {
 			break;
 		}
 		
-		case 'p':{
+		case 'v':{
 			std::stringstream param(optarg);
-			param>>path;
-			std::cout<<"Path="<<path<<std::endl;
+			param>>inivel;
+			std::cout<<"Velocity="<<inivel<<std::endl;
 			break;
 		}
 	}
     
-    
-    // The pseudo-random number generator is initialized at a deterministic
-    // value, for proper validation of the output for the exercise series.
- 
-    // Initially, the bodies have a radial velocity of an amplitude proportional to
-    // the distance from the center. This induces a rotational motion creating a
-    // "galaxy-like" impression.
     std::vector<Body*> bodies;
 	createBodies(numbodies, inivel, ini_radius, mass,bodies );
+	simulate( max_iter, bodies,  theta,  G,  dt,  img_iter, path);
+ 
+}
 
-    // Principal loop over time iterations.
+
+ void createBodies(int numbodies,double inivel,double ini_radius,double mass,std::vector<Body*>& bodies ){
+	    std::srand(1);
+    // x- and y-pos are initialized to a square with side-length 2*ini_radius.
+    std::vector<double> posx(numbodies), posy(numbodies), posz(numbodies);
+	
+    for (int i=0; i<numbodies; ++i) {
+        posx[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
+        posy[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
+		posz[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
+    }
+	
+	for (int i=0; i<numbodies; ++i) {
+        const double px = posx[i];
+        const double py = posy[i];
+		const double pz = posz[i];
+        const double rpx = px-0.5;
+        const double rpy = py-0.5;
+        const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy));
+        if ( rnorm < ini_radius ) {
+            const double vx = -rpy * inivel * rnorm / ini_radius;
+            const double vy =  rpx * inivel * rnorm / ini_radius;
+			const double vz = 0;
+            bodies.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
+        }
+    }
+ }
+ 
+ void simulate(int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path) {
+
     for (int iter=0; iter<max_iter; ++iter) {
         // The quad-tree is recomputed at each iteration.
         Node* root = 0;
@@ -98,28 +181,3 @@ int main(int argc, char **argv) {
         }
     }
 }
-
- void createBodies(int numbodies,double inivel,double ini_radius,double mass,std::vector<Body*>& bodies ){
-	    std::srand(1);
-    // x- and y-pos are initialized to a square with side-length 2*ini_radius.
-    std::vector<double> posx(numbodies), posy(numbodies), posz(numbodies);
-    for (int i=0; i<numbodies; ++i) {
-        posx[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
-        posy[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
-		posz[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
-    }
-	   for (int i=0; i<numbodies; ++i) {
-        const double px = posx[i];
-        const double py = posy[i];
-		const double pz = posz[i];
-        const double rpx = px-0.5;
-        const double rpy = py-0.5;
-        const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy));
-        if ( rnorm < ini_radius ) {
-            const double vx = -rpy * inivel * rnorm / ini_radius;
-            const double vy =  rpx * inivel * rnorm / ini_radius;
-			const double vz = 0;
-            bodies.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
-        }
-    }
- }
