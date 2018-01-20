@@ -2,3 +2,6 @@
  
  void simulate(int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path);
  
+ void help();
+ 
+ 

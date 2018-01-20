@@ -14,17 +14,18 @@
 #include "galaxy.h"
 
 struct option long_options[] = {
-  {"dt",  required_argument, 0, 'd'},
-  {"G",  required_argument, 0, 'G'},
-  {"img_iter",  required_argument, 0, 'i'},
-  {"max_iter",  required_argument, 0, 'm'},
-  {"numbodies",  required_argument, 0, 'n'},
-  {"path",  required_argument, 0, 'p'},
-  {"ini_radius",  required_argument, 0, 'r'},
-  {"mass",  required_argument, 0, 's'},
-  {"theta",  required_argument, 0, 't'},
-  {"inival",  required_argument, 0, 'v'},
-  {0, 0, 0, 0}
+	{"dt",  required_argument, 0, 'd'},
+	{"G",  required_argument, 0, 'G'},
+    {"help",  no_argument, 0, 'h'},
+	{"img_iter",  required_argument, 0, 'i'},
+	{"max_iter",  required_argument, 0, 'm'},
+	{"numbodies",  required_argument, 0, 'n'},
+	{"path",  required_argument, 0, 'p'},
+	{"ini_radius",  required_argument, 0, 'r'},
+	{"mass",  required_argument, 0, 's'},
+	{"theta",  required_argument, 0, 't'},
+	{"inivel",  required_argument, 0, 'v'},
+	{0, 0, 0, 0}
 };	
 	
 int main(int argc, char **argv) {
@@ -48,13 +49,13 @@ int main(int argc, char **argv) {
     // Frequency at which PNG images are written.
     int img_iter = 20;
 	
-	std::string path = ".\\configs\\";
+	std::string path = "./configs/";
 	
 	int option_index = 0;
 	int c;
 	
 
-	while ((c = getopt_long (argc, argv, "d:G:i:m:n:p:r:s:t:v:",long_options, &option_index)) != -1)
+	while ((c = getopt_long (argc, argv, "d:G:hi:m:n:p:r:s:t:v:",long_options, &option_index)) != -1)
     switch (c){
 		case 'd':{
 			std::stringstream param(optarg);
@@ -68,6 +69,11 @@ int main(int argc, char **argv) {
 			param>>G;
 			std::cout<<"G="<<G<<std::endl;
 			break;
+		}
+		
+		case 'h':{
+			help();
+			return 0;
 		}
 		
 		case 'i':{
@@ -180,4 +186,19 @@ int main(int argc, char **argv) {
             save_bodies(bodies, iter/img_iter,path);
         }
     }
+}
+
+void help() {
+	std::cout << "Galaxy Simulator" << std::endl;
+	std::cout << "\t-d,--dt\t\tTime Step for Integration" << std::endl;
+	std::cout << "\t-G,--G\t\tGravitational Constant" << std::endl;
+	std::cout << "\t-h,--help\tHelp text" << std::endl;
+	std::cout << "\t-i,--img_iter\tFrequency for writing positions" << std::endl;
+	std::cout << "\t-m,--max_iter\tMaximum number of iterations" << std::endl;
+	std::cout << "\t-n,--numbodies\tNumber of bodies" << std::endl;
+	std::cout << "\t-p,--path\tPath for writing configurations" << std::endl;
+	std::cout << "\t-r,--ini_radius\tInitial Radius" << std::endl;
+	std::cout << "\t-s,--mass\tMass of bodies" << std::endl;
+	std::cout << "\t-t,--theta\tTheta-criterion of the Barnes-Hut algorithm" << std::endl;
+	std::cout << "\t-v,--inivel\tInitial velocities" << std::endl;
 }
