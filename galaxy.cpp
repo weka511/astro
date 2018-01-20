@@ -28,6 +28,9 @@ struct option long_options[] = {
 	{0, 0, 0, 0}
 };	
 	
+/**
+ * Main program. Parse command line options, create bodies, then run simulation.
+ */
 int main(int argc, char **argv) {
 
     // Theta-criterion of the Barnes-Hut algorithm.
@@ -139,7 +142,9 @@ int main(int argc, char **argv) {
  
 }
 
-
+ /**
+  * Create all bodies needed at start of run
+  */
  void createBodies(int numbodies,double inivel,double ini_radius,double mass,std::vector<Body*>& bodies ){
 	    std::srand(1);
     // x- and y-pos are initialized to a square with side-length 2*ini_radius.
@@ -167,6 +172,9 @@ int main(int argc, char **argv) {
     }
  }
  
+  /**
+  * Execute simulation
+  */
  void simulate(int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path) {
 
     for (int iter=0; iter<max_iter; ++iter) {
@@ -188,6 +196,9 @@ int main(int argc, char **argv) {
     }
 }
 
+/**
+  * Generate help text
+  */
 void help() {
 	std::cout << "Galaxy Simulator" << std::endl;
 	std::cout << "\t-d,--dt\t\tTime Step for Integration" << std::endl;
