@@ -11,7 +11,7 @@
 #include <getopt.h>
 #include "tree.h"
 #include "barnes_hut.h"
-
+#include "galaxy.h"
 
 struct option long_options[] =
 {
@@ -72,32 +72,12 @@ int main(int argc, char **argv) {
     
     // The pseudo-random number generator is initialized at a deterministic
     // value, for proper validation of the output for the exercise series.
-    std::srand(1);
-    // x- and y-pos are initialized to a square with side-length 2*ini_radius.
-    std::vector<double> posx(numbodies), posy(numbodies), posz(numbodies);
-    for (int i=0; i<numbodies; ++i) {
-        posx[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
-        posy[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
-		posz[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
-    }
+ 
     // Initially, the bodies have a radial velocity of an amplitude proportional to
     // the distance from the center. This induces a rotational motion creating a
     // "galaxy-like" impression.
     std::vector<Body*> bodies;
-    for (int i=0; i<numbodies; ++i) {
-        const double px = posx[i];
-        const double py = posy[i];
-		const double pz = posz[i];
-        const double rpx = px-0.5;
-        const double rpy = py-0.5;
-        const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy));
-        if ( rnorm < ini_radius ) {
-            const double vx = -rpy * inivel * rnorm / ini_radius;
-            const double vy =  rpx * inivel * rnorm / ini_radius;
-			const double vz = 0;
-            bodies.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
-        }
-    }
+	createBodies(numbodies, inivel, ini_radius, mass,bodies );
 
     // Principal loop over time iterations.
     for (int iter=0; iter<max_iter; ++iter) {
@@ -118,3 +98,28 @@ int main(int argc, char **argv) {
         }
     }
 }
+
+ void createBodies(int numbodies,double inivel,double ini_radius,double mass,std::vector<Body*>& bodies ){
+	    std::srand(1);
+    // x- and y-pos are initialized to a square with side-length 2*ini_radius.
+    std::vector<double> posx(numbodies), posy(numbodies), posz(numbodies);
+    for (int i=0; i<numbodies; ++i) {
+        posx[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
+        posy[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
+		posz[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
+    }
+	   for (int i=0; i<numbodies; ++i) {
+        const double px = posx[i];
+        const double py = posy[i];
+		const double pz = posz[i];
+        const double rpx = px-0.5;
+        const double rpy = py-0.5;
+        const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy));
+        if ( rnorm < ini_radius ) {
+            const double vx = -rpy * inivel * rnorm / ini_radius;
+            const double vy =  rpx * inivel * rnorm / ini_radius;
+			const double vz = 0;
+            bodies.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
+        }
+    }
+ }

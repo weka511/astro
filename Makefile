@@ -25,7 +25,7 @@ tests : $(TEST_MAIN)
 	
 depend: .depend
 
-.depend: $(SRCS) $(TARGETS)
+.depend: $(SRCS) $(TEST_CASES) galaxy.cpp test-main.cpp
 	$(RM) ./.depend
 	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
 	
