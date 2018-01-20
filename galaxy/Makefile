@@ -21,6 +21,7 @@ LDLIBS=
 CC=gcc
 CXX=g++
 RM=rm -f
+MKDIR=mkdir
 SRCS=barnes_hut.cpp tree.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
 TEST_MAIN=test-main.exe 
@@ -53,4 +54,8 @@ $(TEST_MAIN): $(OBJS) $(TEST_OBJS)
 distclean: clean
 	$(RM) *~ .depend
 
+setup:
+	-$(MKDIR) configs
+	-$(MKDIR) imgs
+	
 include .depend
