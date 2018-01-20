@@ -8,9 +8,10 @@ CXX=g++
 RM=rm -f
 SRCS=barnes_hut.cpp tree.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
-TESTS=tests.exe 
+TEST_MAIN=test-main.exe 
 TEST_CASES=test-tree.cpp
-TEST_OBJS=$(subst .cpp,.o,$(TEST_CASES))
+TEST_CASES_OBJS=$(subst .cpp,.o,$(TEST_CASES))
+TEST_OBJS=$(TEST_CASES_OBJS) test-main.o
 MAIN=galaxy.exe 
 TARGETS=$(MAIN) $(TESTS) 
 
@@ -19,8 +20,8 @@ all : $(TARGETS)
 clean :
 	${RM} *.o
 
-tests : $(TESTS)
-	./$(TESTS)
+tests : $(TEST_MAIN)
+	./$(TEST_MAIN)
 	
 depend: .depend
 
@@ -31,8 +32,8 @@ depend: .depend
 $(MAIN): $(OBJS) galaxy.o
 	${CXX} $(LDFLAGS) -o $(MAIN) galaxy.o ${OBJS} ${LDLIBS}
 	
-$(TESTS): $(OBJS) tests.o $(TEST_OBJS)
-	${CXX} $(LDFLAGS) -o $(TESTS) tests.o $(TEST_OBJS) ${OBJS} ${LDLIBS}
+$(TEST_MAIN): $(OBJS) $(TEST_OBJS)
+	${CXX} $(LDFLAGS) -o $(TEST_MAIN) $(TEST_OBJS) ${OBJS} ${LDLIBS}
 
 distclean: clean
 	$(RM) *~ .depend
