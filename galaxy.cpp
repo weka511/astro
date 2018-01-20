@@ -42,7 +42,7 @@ int main() {
     for (int i=0; i<numbodies; ++i) {
         posx[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
         posy[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
-	posz[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
+		posz[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
     }
     // Initially, the bodies have a radial velocity of an amplitude proportional to
     // the distance from the center. This induces a rotational motion creating a

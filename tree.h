@@ -136,24 +136,35 @@ public:
       vel_y(vy),
       vel_z(vz)
   { }
+  
   virtual bool isEndnode() const {
     return true;
   }
+  
   // Get the mass of the present body.
   virtual double getMass() const {
     return mass;
   }
-    // Get the current position of this body.
+  
+  // Get the current position of this body.
   virtual void getPos(double& px, double& py, double& pz) const {
         px = pos_x;
         py = pos_y;
-	pz = pos_z;
+		pz = pos_z;
     }
+	
+  // Get the current velocity of this body.
+  void getVel(double& vx, double& vy, double& vz) const {
+        vx = vel_x;
+        vy = vel_y;
+		vz = vel_z;
+    }
+	
   // Get the center-of-mass, times mass.
   virtual void get_m_pos(double& m_px, double& m_py, double& m_pz) const {
-    m_px = mass*pos_x;
-    m_py = mass*pos_y;
-    m_pz = mass*pos_z;
+		m_px = mass*pos_x;
+		m_py = mass*pos_y;
+		m_pz = mass*pos_z;
   }
   // You can't add another node into an end-node.
   virtual void addMassCom(Node const* other) {
