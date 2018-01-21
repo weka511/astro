@@ -57,8 +57,7 @@ int main(int argc, char **argv) {
 	int option_index = 0;
 	int c;
 	
-
-	while ((c = getopt_long (argc, argv, "d:G:hi:m:n:p:r:s:t:v:",long_options, &option_index)) != -1)
+	while ((c = getopt_long (argc, argv, "d:G:hi:m:n:p:r:Ss:t:v:",long_options, &option_index)) != -1)
     switch (c){
 		case 'd':{
 			std::stringstream param(optarg);
@@ -114,6 +113,12 @@ int main(int argc, char **argv) {
 			break;
 		}
 		
+		case 'S':{
+			std::cout<<"Seed random number generator"<<std::endl;
+			std::srand(1);
+			break;
+		}
+		
 		case 's':{
 			std::stringstream param(optarg);
 			param>>mass;
@@ -146,7 +151,7 @@ int main(int argc, char **argv) {
   * Create all bodies needed at start of run
   */
  void createBodies(int numbodies,double inivel,double ini_radius,double mass,std::vector<Body*>& bodies ){
-	    std::srand(1);
+	    
     // x- and y-pos are initialized to a square with side-length 2*ini_radius.
     std::vector<double> posx(numbodies), posy(numbodies), posz(numbodies);
 	
@@ -162,11 +167,12 @@ int main(int argc, char **argv) {
 		const double pz = posz[i];
         const double rpx = px-0.5;
         const double rpy = py-0.5;
-        const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy));
+		const double rpz = pz-0.5;
+        const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy)+sqr(rpz));
         if ( rnorm < ini_radius ) {
             const double vx = -rpy * inivel * rnorm / ini_radius;
             const double vy =  rpx * inivel * rnorm / ini_radius;
-			const double vz = 0;
+			const double vz = std::rand()%2==0 ? rpx : -rpx;
             bodies.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
         }
     }
@@ -178,17 +184,17 @@ int main(int argc, char **argv) {
  void simulate(int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path) {
 
     for (int iter=0; iter<max_iter; ++iter) {
-        // The quad-tree is recomputed at each iteration.
-        Node* root = 0;
+
+        Node* root = 0;    // The quad-tree is recomputed at each iteration.
         for (unsigned i=0; i<bodies.size(); ++i) {
             bodies[i] -> resetToZerothQuadrant();
             root = add(bodies[i], root);
         }
-        // Computation of forces, and advancement of bodies.
-        verlet(bodies, root, theta, G, dt);
-        // De-allocate the quad-tree.
-        delete root;
-        // Output.
+ 
+        verlet(bodies, root, theta, G, dt); // Compute forces and advance bodies.
+ 
+        delete root;  // De-allocate the quad-tree.
+
         if (iter%img_iter==0) {
             std::cout << "Writing images at iteration " << iter << std::endl;
             save_bodies(bodies, iter/img_iter,path);
