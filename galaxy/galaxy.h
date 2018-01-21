@@ -28,7 +28,7 @@
  /**
   * Generate help text
   */
- void help();
+ void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter,double theta, double G, double dt, int img_iter,std::string path);
  
  /**
   * Check for presence of killfile

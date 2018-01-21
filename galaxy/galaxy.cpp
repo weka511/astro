@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
 		}
 		
 		case 'h':{
-			help();
+			help( numbodies, inivel, ini_radius, mass, max_iter, theta,  G,  dt,  img_iter, path);
 			return 0;
 		}
 		
@@ -199,19 +199,20 @@ int main(int argc, char **argv) {
 /**
   * Generate help text
   */
-void help() {
-	std::cout << "Galaxy Simulator" << std::endl;
-	std::cout << "\t-d,--dt\t\tTime Step for Integration" << std::endl;
-	std::cout << "\t-G,--G\t\tGravitational Constant" << std::endl;
-	std::cout << "\t-h,--help\tHelp text" << std::endl;
-	std::cout << "\t-i,--img_iter\tFrequency for writing positions" << std::endl;
-	std::cout << "\t-m,--max_iter\tMaximum number of iterations" << std::endl;
-	std::cout << "\t-n,--numbodies\tNumber of bodies" << std::endl;
-	std::cout << "\t-p,--path\tPath for writing configurations" << std::endl;
-	std::cout << "\t-r,--ini_radius\tInitial Radius" << std::endl;
-	std::cout << "\t-s,--mass\tMass of bodies" << std::endl;
-	std::cout << "\t-t,--theta\tTheta-criterion of the Barnes-Hut algorithm" << std::endl;
-	std::cout << "\t-v,--inivel\tInitial velocities" << std::endl;
+void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter,double theta, double G, double dt, int img_iter,std::string path) {
+	std::cout << "Galaxy Simulator based on Barnes Hut code from University of Geneva." << std::endl<<std::endl;
+	std::cout << "Parameters, showing default values" <<std::endl;
+	std::cout << "\t-d,--dt\t\tTime Step for Integration [" << dt<<"]"<< std::endl;
+	std::cout << "\t-G,--G\t\tGravitational Constant [" << G << "]"<<std::endl;
+	std::cout << "\t-h,--help\tShow help text" << std::endl;
+	std::cout << "\t-i,--img_iter\tFrequency for writing positions [" << img_iter << "]"<< std::endl;
+	std::cout << "\t-m,--max_iter\tMaximum number of iterations [" << max_iter << "]"<< std::endl;
+	std::cout << "\t-n,--numbodies\tNumber of bodies [" << numbodies<< "]"<<std::endl;
+	std::cout << "\t-p,--path\tPath for writing configurations [" << path << "]"<< std::endl;
+	std::cout << "\t-r,--ini_radius\tInitial Radius [" << ini_radius << "]"<<std::endl;
+	std::cout << "\t-s,--mass\tMass of bodies [" << mass << "]"<<std::endl;
+	std::cout << "\t-t,--theta\tTheta-criterion of the Barnes-Hut algorithm [" << theta << "]"<< std::endl;
+	std::cout << "\t-v,--inivel\tInitial velocities [" << inivel << "]"<<std::endl;
 }
 
 /**

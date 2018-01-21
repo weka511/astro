@@ -61,18 +61,17 @@ Node* add(Body* body, Node* node) {
       //        into the appropriate quadrant.
       const int quadrant = node->intoNextQuadrant();
       new_node->setChild(quadrant, node);
-    }
-    else // 2. If node n is an internal node, we don't to modify its child. 
+    } else // 2. If node n is an internal node, we don't to modify its child. 
 		new_node = node;
 
-		// 2. and 3. If node n is or has become an internal node ...
-		//           ... update its mass and "center-of-mass times mass"
-		new_node->addMassCom(body);
-		// ... and recursively add the new body into the appropriate quadrant.
-		const int quadrant = body->intoNextQuadrant();
-		new_node->setChild (
-				quadrant,
-				add(body, new_node->extractChild(quadrant)) );
+	// 2. and 3. If node n is or has become an internal node ...
+	//           ... update its mass and "center-of-mass times mass"
+	new_node->addMassCom(body);
+	// ... and recursively add the new body into the appropriate quadrant.
+	const int quadrant = body->intoNextQuadrant();
+	new_node->setChild (
+			quadrant,
+			add(body, new_node->extractChild(quadrant)) );
   }
   return new_node;
 }
