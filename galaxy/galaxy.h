@@ -40,6 +40,8 @@
   */
  std::vector<std::vector<double>> direct_sphere(int d=3,int n=1,double mean=0);
  
+ void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path);
+ 
  
  
  

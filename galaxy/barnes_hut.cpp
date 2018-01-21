@@ -134,12 +134,12 @@ void save_bodies( std::vector<Body*>& bodies, int i, std::string path){
     fNameStream << path<< "body_" << std::setfill('0') << std::setw(6) << i << ".dat";
     std::ofstream ofile(fNameStream.str().c_str());
     for (unsigned i=0; i<bodies.size(); ++i) {
-	double px, py, pz;
-	bodies[i] -> getPos(px, py,pz);
-	ofile << std::setprecision(12)
-		  << std::setw(20) << px
-		  << std::setw(20) << py
-		  << std::setw(20) << pz << "\n";
+		double px, py, pz;
+		bodies[i] -> getPos(px, py,pz);
+		ofile << std::setprecision(12)
+			  << std::setw(20) << px
+			  << std::setw(20) << py
+			  << std::setw(20) << pz << "\n";
     }
 }
 

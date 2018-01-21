@@ -29,7 +29,11 @@
 #include <random>
 #include <algorithm>
 
- std::string serialize(const double small) {
+/**
+ *
+ * Snarfed from: https://stackoverflow.com/questions/27149246/how-to-implement-serialization-and-de-serialization-of-a-double
+ */
+ std::string encode(const double small) {
 	const std::size_t maxPrecision = std::numeric_limits<double>::digits;
 	uint64_t* pi = (uint64_t*)&small;
 	std::stringstream stream;
@@ -38,7 +42,7 @@
 	return stream.str();
  }
  
- double deserialize(std::string str){
+ double decode(std::string str){
 	uint64_t out = std::stoull(str);
 	double* pf = (double*)&out;
 	return *pf;

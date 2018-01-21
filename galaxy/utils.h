@@ -15,8 +15,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>
  */
  
- std::string serialize(const double small);
+ std::string encode(const double small);
  
- double deserialize(std::string str);
+ double decode(std::string str);
  
  

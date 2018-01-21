@@ -31,7 +31,7 @@
 #include "tree.h"
 #include "barnes_hut.h"
 #include "galaxy.h"
-
+#include "utils.h"
 
 /**
  *  Long version of command line options.
@@ -212,8 +212,38 @@ int main(int argc, char **argv) {
         if (iter%img_iter==0) {
             std::cout << "Writing images at iteration " << iter << std::endl;
             save_bodies(bodies, iter/img_iter,path);
+			save_config(bodies, iter, theta, G, dt,path);
         }
     }
+}
+
+void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path) {
+	std::stringstream file_name;
+    file_name << path<< "config.txt";
+	std::ifstream file(file_name.str().c_str());
+	if (file.is_open()) {
+		std::stringstream backup_file_name;
+		backup_file_name << path<< "config.txt~";
+		std::cout << "copying\n" << std::endl;
+		std::ifstream  src(file_name.str().c_str());
+		std::ofstream  dst(backup_file_name.str().c_str());
+		dst << src.rdbuf();
+	}
+    std::ofstream ofile(file_name.str().c_str());
+	ofile<<"Version="<<0.0<<"\n";
+	ofile << "iteration=" << iter  << "\n";
+	ofile << "theta=" << encode(theta)  << "\n";
+	ofile << "G=" << encode(G)  << "\n";
+	ofile << "dt=" << encode(dt)  << "\n";
+    for (unsigned i=0; i<bodies.size(); ++i) {
+		double px, py, pz;
+		bodies[i] -> getPos(px, py,pz);
+		double vx, vy,vz;
+		bodies[i] -> getVel(vx, vy,vz);
+		double m=bodies[i]->getMass();
+		ofile <<i<<","<< encode(px)<<","<< encode(py)<<","<< encode(pz)<<","<< encode(m) <<","<< encode(vx)<<","<< encode(vy)<<","<< encode(vz)<<"\n";
+	}
+	ofile << "End\n";
 }
 
 /**
