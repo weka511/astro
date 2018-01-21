@@ -159,7 +159,6 @@ int main(int argc, char **argv) {
 	std::vector<std::vector<double>> positions=direct_sphere(3,numbodies);
 	
 	for (int i=0; i<numbodies; ++i) {
-		std::cout << positions[i][0] << "," << positions[i][1]<<","<<positions[i][2]<<std::endl;
         const double px = positions[i][0]* 2.*ini_radius + 0.5-ini_radius;
         const double py = positions[i][1]* 2.*ini_radius + 0.5-ini_radius;
 		const double pz = positions[i][2]* 2.*ini_radius + 0.5-ini_radius;
@@ -240,7 +239,7 @@ void help() {
 	  std::default_random_engine generator;
 	  std::normal_distribution<double> gaussian_distribution(mean,1.0);
 	  std::uniform_real_distribution<double> uniform_distribution(0.0,1.0);
-	  std::vector<std::vector<double>> xs;
+	  std::vector<std::vector<double>> samples;
 	  for (int i=0;i<n;i++){
 		std::vector<double> x;
 		double Sigma=0;
@@ -252,8 +251,8 @@ void help() {
 
 		const double upsilon=pow(uniform_distribution(generator),1.0/d);
 		std::transform(x.begin(), x.end(), x.begin(),std::bind2nd(std::multiplies<double>(), upsilon/Sigma));
-		xs.push_back(x);
+		samples.push_back(x);
 	  }
 
-	  return xs;
+	  return samples;
   }
