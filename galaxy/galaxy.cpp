@@ -1,3 +1,20 @@
+/**
+ * Copyright (C) 2018 Greenweaves Software Limited
+ *
+ * This is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this software.  If not, see <http://www.gnu.org/licenses/>
+ */
+ 
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -10,26 +27,29 @@
 #include <unistd.h>
 #include <getopt.h>
 #include <random>
+#include <algorithm>
 #include "tree.h"
 #include "barnes_hut.h"
 #include "galaxy.h"
-#include <algorithm>
 
 
+/**
+ *  Long version of command line options.
+ */
 
 struct option long_options[] = {
-	{"dt",  required_argument, 0, 'd'},
-	{"G",  required_argument, 0, 'G'},
-    {"help",  no_argument, 0, 'h'},
-	{"img_iter",  required_argument, 0, 'i'},
-	{"max_iter",  required_argument, 0, 'm'},
-	{"numbodies",  required_argument, 0, 'n'},
-	{"path",  required_argument, 0, 'p'},
-	{"ini_radius",  required_argument, 0, 'r'},
-	{"mass",  required_argument, 0, 's'},
-	{"theta",  required_argument, 0, 't'},
-	{"inivel",  required_argument, 0, 'v'},
-	{0, 0, 0, 0}
+	{"dt",  		required_argument,	0, 'd'},
+	{"G",  			required_argument, 	0, 'G'},
+    {"help",  		no_argument, 		0, 'h'},
+	{"img_iter",	required_argument, 	0, 'i'},
+	{"max_iter",  	required_argument, 	0, 'm'},
+	{"numbodies",  	required_argument, 	0, 'n'},
+	{"path",  		required_argument, 	0, 'p'},
+	{"ini_radius",  required_argument, 	0, 'r'},
+	{"mass",  		required_argument, 	0, 's'},
+	{"theta",  		required_argument, 	0, 't'},
+	{"inivel",  	required_argument, 	0, 'v'},
+	{0, 			0, 					0, 0}
 };	
 	
 /**
