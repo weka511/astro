@@ -217,18 +217,12 @@ int main(int argc, char **argv) {
     }
 }
 
+
+
 void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path) {
 	std::stringstream file_name;
     file_name << path<< "config.txt";
-	std::ifstream file(file_name.str().c_str());
-	if (file.is_open()) {
-		std::stringstream backup_file_name;
-		backup_file_name << path<< "config.txt~";
-		std::cout << "copying\n" << std::endl;
-		std::ifstream  src(file_name.str().c_str());
-		std::ofstream  dst(backup_file_name.str().c_str());
-		dst << src.rdbuf();
-	}
+	backup(file_name.str().c_str());
     std::ofstream ofile(file_name.str().c_str());
 	ofile<<"Version="<<0.0<<"\n";
 	ofile << "iteration=" << iter  << "\n";
@@ -265,45 +259,6 @@ void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter
 	std::cout << "\t-v,--inivel\tInitial velocities [" << inivel << "]"<<std::endl;
 }
 
-/**
-  * Check for presence of killfile
-  */
- bool killed(std::string killfile) {
-	std::ifstream file(killfile);
-	bool result=file.is_open();
-	if (result){
-		std::cout << "Found killfile: " <<killfile<<std::endl;
-		file.close();
-		std::remove(killfile.c_str());
-	}
-	return result;
- }
+
  
- /**
-  *  Sample points from hypersphere
-  *
-  *  Use algorithm 1.21 from Werner Krauth, Statistical Mechanics: Algorithms and Computations,
-  *  http://blancopeck.net/Statistics.pdf and http://www.oupcanada.com/catalog/9780198515364.html
-  *
-  */
-  std::vector<std::vector<double>> direct_sphere(int d,int n,double mean){
-	  std::default_random_engine generator;
-	  std::normal_distribution<double> gaussian_distribution(mean,1.0);
-	  std::uniform_real_distribution<double> uniform_distribution(0.0,1.0);
-	  std::vector<std::vector<double>> samples;
-	  for (int i=0;i<n;i++){
-		std::vector<double> x;
-		double Sigma=0;
-
-		for (int i=0;i<d;i++){
-			x.push_back(gaussian_distribution(generator));
-			Sigma+=x.back()*x.back();
-		}
-
-		const double upsilon=pow(uniform_distribution(generator),1.0/d);
-		std::transform(x.begin(), x.end(), x.begin(),std::bind2nd(std::multiplies<double>(), upsilon/Sigma));
-		samples.push_back(x);
-	  }
-
-	  return samples;
-  }
+ 

@@ -47,3 +47,60 @@
 	double* pf = (double*)&out;
 	return *pf;
  }
+ 
+ /**
+ * If file exists, copy to backup
+ */
+void backup(std::string file_name, std::string backup) {
+	std::ifstream file(file_name);
+	if (file.is_open()) {
+		std::stringstream backup_file_name;
+		backup_file_name << file_name<<backup;
+		std::ifstream  src(file_name);
+		std::ofstream  dst(backup_file_name.str().c_str());
+		dst << src.rdbuf();
+	}
+}
+
+/**
+  * Check for presence of killfile
+  */
+ bool killed(std::string killfile) {
+	std::ifstream file(killfile);
+	bool result=file.is_open();
+	if (result){
+		std::cout << "Found killfile: " <<killfile<<std::endl;
+		file.close();
+		std::remove(killfile.c_str());
+	}
+	return result;
+ }
+ 
+ /**
+  *  Sample points from hypersphere
+  *
+  *  Use algorithm 1.21 from Werner Krauth, Statistical Mechanics: Algorithms and Computations,
+  *  http://blancopeck.net/Statistics.pdf and http://www.oupcanada.com/catalog/9780198515364.html
+  *
+  */
+  std::vector<std::vector<double>> direct_sphere(int d,int n,double mean){
+	  std::default_random_engine generator;
+	  std::normal_distribution<double> gaussian_distribution(mean,1.0);
+	  std::uniform_real_distribution<double> uniform_distribution(0.0,1.0);
+	  std::vector<std::vector<double>> samples;
+	  for (int i=0;i<n;i++){
+		std::vector<double> x;
+		double Sigma=0;
+
+		for (int i=0;i<d;i++){
+			x.push_back(gaussian_distribution(generator));
+			Sigma+=x.back()*x.back();
+		}
+
+		const double upsilon=pow(uniform_distribution(generator),1.0/d);
+		std::transform(x.begin(), x.end(), x.begin(),std::bind2nd(std::multiplies<double>(), upsilon/Sigma));
+		samples.push_back(x);
+	  }
+
+	  return samples;
+  }

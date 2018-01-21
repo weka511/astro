@@ -30,17 +30,11 @@
   */
  void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter,double theta, double G, double dt, int img_iter,std::string path);
  
- /**
-  * Check for presence of killfile
-  */
- bool killed(std::string killfile="kill");
- 
- /**
-  *  Sample points from hypersphere
-  */
- std::vector<std::vector<double>> direct_sphere(int d=3,int n=1,double mean=0);
- 
+
  void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path);
+ 
+ 
+ 
  
  
  
