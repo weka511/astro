@@ -44,9 +44,9 @@
 Node* add(Body* body, Node* node) {
     // To limit the recursion depth, set a lower limit for the size of quadrant.
   static const double smallest_quadrant = 1.e-4;
-  Node* new_node = 0;
+  Node* new_node = NULL;
   // 1. If node n does not contain a body, put the new body b here.
-  if (node==0)
+  if (node==NULL)
     new_node = body;
   else {
     if (node->getS() < smallest_quadrant)

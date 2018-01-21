@@ -18,7 +18,7 @@
  /**
   * Create all bodies needed at start of run
   */
- void createBodies(int numbodies,double inivel,double ini_radius,double mass,std::vector<Body*>&);
+ std::vector<Body*>  createBodies(int numbodies,double inivel,double ini_radius,double mass);
  
  /**
   * Execute simulation

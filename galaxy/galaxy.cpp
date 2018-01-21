@@ -145,8 +145,7 @@ int main(int argc, char **argv) {
 		}
 	}
     
-    std::vector<Body*> bodies;
-	createBodies(numbodies, inivel, ini_radius, mass,bodies );
+    std::vector<Body*> bodies=createBodies(numbodies, inivel, ini_radius, mass );
 	simulate( max_iter, bodies,  theta,  G,  dt,  img_iter, path);
  
 }
@@ -154,9 +153,10 @@ int main(int argc, char **argv) {
  /**
   * Create all bodies needed at start of run
   */
- void createBodies(int numbodies,double inivel,double ini_radius,double mass,std::vector<Body*>& bodies ){
+ std::vector<Body*>  createBodies(int numbodies,double inivel,double ini_radius,double mass ){
 	std::cout << "Initializing " << numbodies << " bodies" << std::endl;
 	std::vector<std::vector<double>> positions=direct_sphere(3,numbodies);
+	std::vector<Body*> product;
 	for (std::vector<std::vector<double>>::iterator it = positions.begin() ; it != positions.end(); ++it) {
         const double px = (*it)[0]* 2.*ini_radius + 0.5-ini_radius;
         const double py = (*it)[1]* 2.*ini_radius + 0.5-ini_radius;
@@ -168,8 +168,9 @@ int main(int argc, char **argv) {
         const double vx = -rpy * inivel * rnorm / ini_radius;
         const double vy =  rpx * inivel * rnorm / ini_radius;
 		const double vz = std::rand()%2==0 ? rpx : -rpx;
-        bodies.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
+        product.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
     }
+	return product;
  }
  
   /**
@@ -178,7 +179,7 @@ int main(int argc, char **argv) {
  void simulate(int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path) {
 
     for (int iter=0; iter<max_iter&&!killed(); ++iter) {
-        Node* root = 0;    // The quad-tree is recomputed at each iteration.
+        Node* root = NULL;    // The oct-tree is recomputed at each iteration.
         for (unsigned i=0; i<bodies.size(); ++i) {
             bodies[i] -> resetToZerothQuadrant();
             root = add(bodies[i], root);
@@ -186,7 +187,7 @@ int main(int argc, char **argv) {
  
         verlet(bodies, root, theta, G, dt); // Compute forces and advance bodies.
  
-        delete root;  // De-allocate the quad-tree.
+        delete root;  // De-allocate the oct-tree.
 
         if (iter%img_iter==0) {
             std::cout << "Writing images at iteration " << iter << std::endl;
