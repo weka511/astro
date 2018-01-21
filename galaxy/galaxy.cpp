@@ -12,6 +12,7 @@
 #include "tree.h"
 #include "barnes_hut.h"
 #include "galaxy.h"
+//#include <cstdio>
 
 struct option long_options[] = {
 	{"dt",  required_argument, 0, 'd'},
@@ -183,8 +184,7 @@ int main(int argc, char **argv) {
   */
  void simulate(int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path) {
 
-    for (int iter=0; iter<max_iter; ++iter) {
-
+    for (int iter=0; iter<max_iter&&!killed(); ++iter) {
         Node* root = 0;    // The quad-tree is recomputed at each iteration.
         for (unsigned i=0; i<bodies.size(); ++i) {
             bodies[i] -> resetToZerothQuadrant();
@@ -219,3 +219,17 @@ void help() {
 	std::cout << "\t-t,--theta\tTheta-criterion of the Barnes-Hut algorithm" << std::endl;
 	std::cout << "\t-v,--inivel\tInitial velocities" << std::endl;
 }
+
+/**
+  * Check for presence of killfile
+  */
+ bool killed(std::string killfile) {
+	std::ifstream file(killfile);
+	bool result=file.is_open();
+	if (result){
+		std::cout << "Found killfile: " <<killfile<<std::endl;
+		file.close();
+		std::remove(killfile.c_str());
+	}
+	return result;
+ }

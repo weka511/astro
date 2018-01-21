@@ -30,4 +30,10 @@
   */
  void help();
  
+ /**
+  * Check for presence of killfile
+  */
+ bool killed(std::string killfile="kill");
+ 
+ 
  
