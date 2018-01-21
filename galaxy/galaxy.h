@@ -35,5 +35,11 @@
   */
  bool killed(std::string killfile="kill");
  
+ /**
+  *  Sample points from hypersphere
+  */
+ std::vector<std::vector<double>> direct_sphere(int d=3,int n=1,double mean=0);
+ 
+ 
  
  

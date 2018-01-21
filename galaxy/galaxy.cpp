@@ -9,10 +9,13 @@
 #include <cassert>
 #include <unistd.h>
 #include <getopt.h>
+#include <random>
 #include "tree.h"
 #include "barnes_hut.h"
 #include "galaxy.h"
-//#include <cstdio>
+#include <algorithm>
+
+
 
 struct option long_options[] = {
 	{"dt",  required_argument, 0, 'd'},
@@ -152,30 +155,22 @@ int main(int argc, char **argv) {
   * Create all bodies needed at start of run
   */
  void createBodies(int numbodies,double inivel,double ini_radius,double mass,std::vector<Body*>& bodies ){
-	    
-    // x- and y-pos are initialized to a square with side-length 2*ini_radius.
-    std::vector<double> posx(numbodies), posy(numbodies), posz(numbodies);
-	
-    for (int i=0; i<numbodies; ++i) {
-        posx[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
-        posy[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
-		posz[i] = ((double) std::rand() / (double)RAND_MAX) * 2.*ini_radius + 0.5-ini_radius;
-    }
+	 
+	std::vector<std::vector<double>> positions=direct_sphere(3,numbodies);
 	
 	for (int i=0; i<numbodies; ++i) {
-        const double px = posx[i];
-        const double py = posy[i];
-		const double pz = posz[i];
+		std::cout << positions[i][0] << "," << positions[i][1]<<","<<positions[i][2]<<std::endl;
+        const double px = positions[i][0]* 2.*ini_radius + 0.5-ini_radius;
+        const double py = positions[i][1]* 2.*ini_radius + 0.5-ini_radius;
+		const double pz = positions[i][2]* 2.*ini_radius + 0.5-ini_radius;
         const double rpx = px-0.5;
         const double rpy = py-0.5;
 		const double rpz = pz-0.5;
         const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy)+sqr(rpz));
-        if ( rnorm < ini_radius ) {
-            const double vx = -rpy * inivel * rnorm / ini_radius;
-            const double vy =  rpx * inivel * rnorm / ini_radius;
-			const double vz = std::rand()%2==0 ? rpx : -rpx;
-            bodies.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
-        }
+        const double vx = -rpy * inivel * rnorm / ini_radius;
+        const double vy =  rpx * inivel * rnorm / ini_radius;
+		const double vz = std::rand()%2==0 ? rpx : -rpx;
+        bodies.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
     }
  }
  
@@ -233,3 +228,32 @@ void help() {
 	}
 	return result;
  }
+ 
+ /**
+  *  Sample points from hypersphere
+  *
+  *  Use algorithm 1.21 from Werner Krauth, Statistical Mechanics: Algorithms and Computations,
+  *  http://blancopeck.net/Statistics.pdf and http://www.oupcanada.com/catalog/9780198515364.html
+  *
+  */
+  std::vector<std::vector<double>> direct_sphere(int d,int n,double mean){
+	  std::default_random_engine generator;
+	  std::normal_distribution<double> gaussian_distribution(mean,1.0);
+	  std::uniform_real_distribution<double> uniform_distribution(0.0,1.0);
+	  std::vector<std::vector<double>> xs;
+	  for (int i=0;i<n;i++){
+		std::vector<double> x;
+		double Sigma=0;
+
+		for (int i=0;i<d;i++){
+			x.push_back(gaussian_distribution(generator));
+			Sigma+=x.back()*x.back();
+		}
+
+		const double upsilon=pow(uniform_distribution(generator),1.0/d);
+		std::transform(x.begin(), x.end(), x.begin(),std::bind2nd(std::multiplies<double>(), upsilon/Sigma));
+		xs.push_back(x);
+	  }
+
+	  return xs;
+  }
