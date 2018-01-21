@@ -18,7 +18,7 @@
 '''
 import os, re, sys, numpy as np, matplotlib.pyplot as plt,mpl_toolkits.mplot3d as trid
 
-fname_in='./configs/body_000399.dat'
+fname_in='./configs/body_000449.dat'
 pos = np.loadtxt(fname_in)
 ax = plt.gcf().add_subplot(111, aspect='equal', projection='3d')
 ax.scatter(pos[:,0],pos[:,2],pos[:,2])

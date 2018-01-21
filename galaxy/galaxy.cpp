@@ -155,13 +155,12 @@ int main(int argc, char **argv) {
   * Create all bodies needed at start of run
   */
  void createBodies(int numbodies,double inivel,double ini_radius,double mass,std::vector<Body*>& bodies ){
-	 
+	std::cout << "Initializing " << numbodies << " bodies" << std::endl;
 	std::vector<std::vector<double>> positions=direct_sphere(3,numbodies);
-	
-	for (int i=0; i<numbodies; ++i) {
-        const double px = positions[i][0]* 2.*ini_radius + 0.5-ini_radius;
-        const double py = positions[i][1]* 2.*ini_radius + 0.5-ini_radius;
-		const double pz = positions[i][2]* 2.*ini_radius + 0.5-ini_radius;
+	for (std::vector<std::vector<double>>::iterator it = positions.begin() ; it != positions.end(); ++it) {
+        const double px = (*it)[0]* 2.*ini_radius + 0.5-ini_radius;
+        const double py = (*it)[1]* 2.*ini_radius + 0.5-ini_radius;
+		const double pz = (*it)[2]* 2.*ini_radius + 0.5-ini_radius;
         const double rpx = px-0.5;
         const double rpy = py-0.5;
 		const double rpz = pz-0.5;

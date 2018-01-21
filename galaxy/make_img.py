@@ -23,8 +23,8 @@ def plot(fname_in,fname_out):
     ax = plt.gcf().add_subplot(111, aspect='equal')
     ax.cla()
     ax.scatter(pos[:,0], pos[:,1], 1)
-    ax.set_xlim([0., 1.0])
-    ax.set_ylim([0., 1.0])
+    #ax.set_xlim([0., 1.0])
+    #ax.set_ylim([0., 1.0])
     plt.gcf().savefig(fname_out)
     plt.close()
     
