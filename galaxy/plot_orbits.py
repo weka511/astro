@@ -22,7 +22,8 @@ colours=['r','g','b','m','c','y']
 def plot(data,rows=[]):
     def get_coordinates(body,i):
         return [d[body][i] for d in data]
-    ax = plt.gcf().add_subplot(111, aspect='equal', projection='3d')
+    plt.figure(figsize=(20,20)) 
+    ax = plt.gcf().add_subplot(111,  projection='3d')
     for body in range(len(data[0])):
         ax.scatter(get_coordinates(body,0)[0],get_coordinates(body,1)[0],get_coordinates(body,2)[0],c=colours[body%len(colours)],
                    label="Body: {0}".format(rows[body]))
@@ -33,7 +34,7 @@ def plot(data,rows=[]):
 def extract(config_path = './configs/',rows=[0,1,2,55,100,400]):
     result=[]
     for file_name in os.listdir(config_path):
-        m = re.search('body_[0-9]+00.dat',file_name)
+        m = re.search('body_[0-9]+.dat',file_name)
         if m:
             positions = np.loadtxt(os.path.join(config_path,m.group(0)))
             result.append([positions[i] for i in rows])
@@ -46,5 +47,3 @@ if __name__=='__main__':
     data=extract(rows=rows)
     plot(data,rows=rows)
     plt.show()
-    
-        
