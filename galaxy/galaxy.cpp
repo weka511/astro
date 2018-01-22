@@ -178,7 +178,7 @@ int main(int argc, char **argv) {
 	int iter=0;
     if (restore_config(path,config_file_name, bodies0,  iter,  theta,  G,  dt)) {
 		std::cout <<"Resume at "<<iter <<  ", theta="<<theta<<", G="<< G <<", dt="<<  dt << ", size="<< bodies0.size() << std::endl;
-		simulate(iter+1, max_iter, bodies0,  theta,  G,  dt,  img_iter, path,config_file_name);
+		simulate(iter, max_iter, bodies0,  theta,  G,  dt,  img_iter, path,config_file_name);
 	} else {
 		std::cout << "Configuration file not found: starting from a new configuration" << std::endl;
 		std::vector<Body*> bodies=createBodies(numbodies, inivel, ini_radius, mass );
@@ -213,8 +213,8 @@ int main(int argc, char **argv) {
   * Execute simulation
   */
  void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name) {
-
-    for (int iter=start_iter; iter<max_iter+start_iter&&!killed(); ++iter) {
+	bool exiting=false;
+    for (int iter=start_iter; iter<max_iter+start_iter && !exiting; ++iter) {
         Node* root = NULL;    // The oct-tree is recomputed at each iteration.
         for (unsigned i=0; i<bodies.size(); ++i) {
             bodies[i] -> resetToZerothQuadrant();
@@ -224,12 +224,14 @@ int main(int argc, char **argv) {
         verlet(bodies, root, theta, G, dt); // Compute forces and advance bodies.
  
         delete root;  // De-allocate the oct-tree.
-
-        if (iter%img_iter==0) {
+		
+		exiting=killed();
+        if (iter%img_iter==0||exiting) {
             std::cout << "Writing images at iteration " << iter << std::endl;
             save_bodies(bodies, iter/img_iter,path);
 			save_config(bodies, iter, theta, G, dt,path,config_file_name);
         }
+		
     }
 }
 
@@ -258,6 +260,9 @@ bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies
 				state=State::expect_iteration;
 				break;
 			case State::expect_iteration:
+				token = line.substr(1+line.find("="));
+				iter=atoi(token.c_str());
+				std::cout << iter << std::endl;
 				state=State::expect_theta;
 				break;
 			case State::expect_theta:
@@ -281,10 +286,8 @@ bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies
 			case State::expect_body:
 				if (line.find("End")==0)
 					state=State::expect_eof;
-				else {
+				else
 					bodies.push_back(extract_body(line));
-					iter++;
-				}
 				break;
 			case State::expect_eof:
 				if (line.length()>0){
