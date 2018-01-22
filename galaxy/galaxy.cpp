@@ -170,6 +170,7 @@ int main(int argc, char **argv) {
 		std::cout <<"Resume at "<<iter <<  ", theta="<<theta<<", G="<< G <<", dt="<<  dt << ", size="<< bodies0.size() << std::endl;
 		simulate(iter+1, max_iter, bodies0,  theta,  G,  dt,  img_iter, path);
 	} else {
+		std::cout << "Configuration file not found: starting from a new configuration" << std::endl;
 		std::vector<Body*> bodies=createBodies(numbodies, inivel, ini_radius, mass );
 		simulate(0, max_iter, bodies,  theta,  G,  dt,  img_iter, path);
 	}
@@ -226,7 +227,7 @@ double config_version=0.0;
 
 
 
-bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies, int iter, double theta, double G, double dt) {
+bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies, int& iter, double &theta, double &G, double &dt) {
 	std::stringstream file_name;
     file_name << path<< name;
 	std::ifstream config_file(file_name.str().c_str());
@@ -246,12 +247,8 @@ bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies
 				std::cout << token << std::endl;
 				state=State::expect_iteration;
 				break;
-			case State::expect_iteration:{
-					token = line.substr(1+line.find("="));
-					std::cout << token << std::endl;
-					std::stringstream s(token);
-					s>>iter;
-					state=State::expect_theta;}
+			case State::expect_iteration:
+				state=State::expect_theta;
 				break;
 			case State::expect_theta:
 				token = line.substr(1+line.find("="));
@@ -274,8 +271,10 @@ bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies
 			case State::expect_body:
 				if (line.find("End")==0)
 					state=State::expect_eof;
-				else 
+				else {
 					bodies.push_back(extract_body(line));
+					iter++;
+				}
 				break;
 			case State::expect_eof:
 				if (line.length()>0){
@@ -305,7 +304,6 @@ Body * extract_body(std::string line){
 		int pos=line.find(",");
 		std::string token=pos>=0 ? line.substr(0,pos) : line;
 		line=line.substr(pos+1);
-		// std::cout<<pos<< ":"<<token<<":"<<line<<std::endl;
 	
 		switch (state){
 			case expect_i:
