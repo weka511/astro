@@ -6,10 +6,14 @@
 
 | File | Purpose |
 |--------------------------|---------------------------------------------------------------------|
+| barnes_hut.cpp, barnes_hut.h | Barnes Hut simulation |
+| catch.hpp | [Catch2](https://github.com/catchorg/Catch2) Unit testing framework |
 | galaxy.cpp | Simulate Galaxy using Barnes Hut|
-| barnes_hut.cpp | Barnes Hut simulation |
-| barnes_hut.h | Barnes Hut simulation |
 | Makefile | Build Barnes Hut simulation |
-| make_img.py | Plot output from barnes_hut |
-| tree.cpp | Treecode for Barnes Hut |
-| tree.h | Treecode for Barnes Hut |
+| make_3d.py | Plot output from galaxy |
+| make_img.py | Plot output from galaxy |
+| plot_orbits.py | Select a few stars at random and plot their orbits |
+| test-main.cpp | Execute unit tests|
+| test-tree.cpp | Unit tests for tree.cpp and tree.h |
+| tree.cpp, tree.h | Treecode for Barnes Hut |
+| utils.cpp, utils.h | Assorted utility functions|
