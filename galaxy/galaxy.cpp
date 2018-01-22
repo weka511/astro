@@ -39,6 +39,7 @@
 
 struct option long_options[] = {
 	{"dt",  		required_argument,	0, 'd'},
+	{"config",  	required_argument,	0, 'c'},
 	{"G",  			required_argument, 	0, 'G'},
     {"help",  		no_argument, 		0, 'h'},
 	{"img_iter",	required_argument, 	0, 'i'},
@@ -76,13 +77,22 @@ int main(int argc, char **argv) {
     // Frequency at which PNG images are written.
     int img_iter = 20;
 	
+	std::string config_file_name="config.txt";
+	
 	std::string path = "./configs/";
 	
 	int option_index = 0;
 	int c;
 	
-	while ((c = getopt_long (argc, argv, "d:G:hi:m:n:p:r:Ss:t:v:",long_options, &option_index)) != -1)
+	while ((c = getopt_long (argc, argv, "c:d:G:hi:m:n:p:r:Ss:t:v:",long_options, &option_index)) != -1)
     switch (c){
+		case 'c':{
+			std::stringstream param(optarg);
+			param>>config_file_name;
+			std::cout<<"Configuration File:="<<config_file_name<<std::endl;
+			break;
+		}
+		
 		case 'd':{
 			std::stringstream param(optarg);
 			param>>dt;
@@ -98,7 +108,7 @@ int main(int argc, char **argv) {
 		}
 		
 		case 'h':{
-			help( numbodies, inivel, ini_radius, mass, max_iter, theta,  G,  dt,  img_iter, path);
+			help( numbodies, inivel, ini_radius, mass, max_iter, theta,  G,  dt,  img_iter, path,config_file_name);
 			return 0;
 		}
 		
@@ -166,13 +176,13 @@ int main(int argc, char **argv) {
 	}
 	std::vector<Body*> bodies0;
 	int iter=0;
-    if (restore_config(path,"config.txt", bodies0,  iter,  theta,  G,  dt)) {
+    if (restore_config(path,config_file_name, bodies0,  iter,  theta,  G,  dt)) {
 		std::cout <<"Resume at "<<iter <<  ", theta="<<theta<<", G="<< G <<", dt="<<  dt << ", size="<< bodies0.size() << std::endl;
-		simulate(iter+1, max_iter, bodies0,  theta,  G,  dt,  img_iter, path);
+		simulate(iter+1, max_iter, bodies0,  theta,  G,  dt,  img_iter, path,config_file_name);
 	} else {
 		std::cout << "Configuration file not found: starting from a new configuration" << std::endl;
 		std::vector<Body*> bodies=createBodies(numbodies, inivel, ini_radius, mass );
-		simulate(0, max_iter, bodies,  theta,  G,  dt,  img_iter, path);
+		simulate(0, max_iter, bodies,  theta,  G,  dt,  img_iter, path,config_file_name);
 	}
 }
 
@@ -202,7 +212,7 @@ int main(int argc, char **argv) {
   /**
   * Execute simulation
   */
- void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path) {
+ void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name) {
 
     for (int iter=start_iter; iter<max_iter+start_iter&&!killed(); ++iter) {
         Node* root = NULL;    // The oct-tree is recomputed at each iteration.
@@ -218,7 +228,7 @@ int main(int argc, char **argv) {
         if (iter%img_iter==0) {
             std::cout << "Writing images at iteration " << iter << std::endl;
             save_bodies(bodies, iter/img_iter,path);
-			save_config(bodies, iter, theta, G, dt,path);
+			save_config(bodies, iter, theta, G, dt,path,config_file_name);
         }
     }
 }
@@ -365,9 +375,10 @@ void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, 
 /**
   * Generate help text
   */
-void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter,double theta, double G, double dt, int img_iter,std::string path) {
+void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter,double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name) {
 	std::cout << "Galaxy Simulator based on Barnes Hut code from University of Geneva." << std::endl<<std::endl;
 	std::cout << "Parameters, showing default values" <<std::endl;
+	std::cout << "\t-c,--config\t\tConfugyration file [" << config_file_name<<"]"<< std::endl;
 	std::cout << "\t-d,--dt\t\tTime Step for Integration [" << dt<<"]"<< std::endl;
 	std::cout << "\t-G,--G\t\tGravitational Constant [" << G << "]"<<std::endl;
 	std::cout << "\t-h,--help\tShow help text" << std::endl;
