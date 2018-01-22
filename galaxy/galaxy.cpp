@@ -164,10 +164,15 @@ int main(int argc, char **argv) {
 			break;
 		}
 	}
-    restore_config(path);
-    std::vector<Body*> bodies=createBodies(numbodies, inivel, ini_radius, mass );
-	simulate( max_iter, bodies,  theta,  G,  dt,  img_iter, path);
- 
+	std::vector<Body*> bodies0;
+	int iter=0;
+    if (restore_config(path,"config.txt", bodies0,  iter,  theta,  G,  dt)) {
+		std::cout <<iter <<", "<<  theta<<", "<< G <<", "<<  dt << ","<< bodies0.size() << std::endl;
+		simulate( max_iter, bodies0,  theta,  G,  dt,  img_iter, path);
+	} else {
+		std::vector<Body*> bodies=createBodies(numbodies, inivel, ini_radius, mass );
+		simulate( max_iter, bodies,  theta,  G,  dt,  img_iter, path);
+	}
 }
 
  /**
@@ -221,7 +226,7 @@ double config_version=0.0;
 
 
 
-bool restore_config(std::string path,std::string name) {
+bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies, int iter, double theta, double G, double dt) {
 	std::stringstream file_name;
     file_name << path<< name;
 	std::ifstream config_file(file_name.str().c_str());
@@ -241,31 +246,36 @@ bool restore_config(std::string path,std::string name) {
 				std::cout << token << std::endl;
 				state=State::expect_iteration;
 				break;
-			case State::expect_iteration:
-				token = line.substr(1+line.find("="));
-				std::cout << token << std::endl;
-				state=State::expect_theta;
+			case State::expect_iteration:{
+					token = line.substr(1+line.find("="));
+					std::cout << token << std::endl;
+					std::stringstream s(token);
+					s>>iter;
+					state=State::expect_theta;}
 				break;
 			case State::expect_theta:
 				token = line.substr(1+line.find("="));
 				std::cout << decode(token) << std::endl;
+				theta=decode(token);
 				state=State::expect_g;
 				break;
 			case State::expect_g:
 				token = line.substr(1+line.find("="));
 				std::cout << decode(token) << std::endl;
+				G=decode(token);
 				state=State::expect_dt;
 				break;
 			case State::expect_dt:
 				token = line.substr(1+line.find("="));
 				std::cout << decode(token) << std::endl;
+				dt=decode(token);
 				state=State::expect_body;
 				break;
 			case State::expect_body:
 				if (line.find("End")==0)
 					state=State::expect_eof;
 				else 
-					extract_body(line);
+					bodies.push_back(extract_body(line));
 				break;
 			case State::expect_eof:
 				if (line.length()>0){
@@ -287,7 +297,7 @@ bool restore_config(std::string path,std::string name) {
 	return true;
 }
 
-void extract_body(std::string line){
+Body * extract_body(std::string line){
 	enum State {expect_i,expect_x,expect_y,expect_z,expect_m,expect_vx,expect_vy,expect_vz,end_line};
 	State state=expect_i;
 	double px, py, pz, m, vx,vy,vz;
@@ -330,7 +340,7 @@ void extract_body(std::string line){
 				state=end_line;
 		}
 	}
-	// std::cout << px<<","<< py<<","<< pz<<","<< m<<","<< vx<<","<<vy<<","<< vz << std::endl;
+	return new Body(m,px,py,pz,vx,vy,vz);
 }
 
 void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path,std::string name) {

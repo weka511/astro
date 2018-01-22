@@ -30,11 +30,11 @@ void simulate(int max_iter,std::vector<Body*> bodies, double theta, double G, do
   */
 void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter,double theta, double G, double dt, int img_iter,std::string path);
  
-bool restore_config(std::string path,std::string name="config.txt");
+bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies, int iter, double theta, double G, double dt);
 
 void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path,std::string name="config.txt");
 
-void extract_body(std::string line);
+Body * extract_body(std::string line);
  
  
  
