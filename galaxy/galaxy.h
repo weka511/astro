@@ -30,10 +30,19 @@ void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double thet
   */
 void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter,double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name);
  
+ /**
+  * Restore configuration from saved file
+  */
 bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies, int &iter, double &theta, double &G, double& dt);
 
+ /**
+  * Restore value stored by encode
+  */
 void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path,std::string name="config.txt");
 
+/**
+ * Retrieve position, mass, and velocities stored for one Body
+ */
 Body * extract_body(std::string line);
  
  

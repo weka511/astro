@@ -30,6 +30,7 @@
 #include <algorithm>
 
 /**
+ * Encode a floating value so it can be stored and retrieved without loss of significant digits
  *
  * Snarfed from: https://stackoverflow.com/questions/27149246/how-to-implement-serialization-and-de-serialization-of-a-double
  */
@@ -42,6 +43,9 @@
 	return stream.str();
  }
  
+ /**
+  * Restore value stored by encode
+  */
  double decode(std::string str){
 	uint64_t out = std::stoull(str);
 	double* pf = (double*)&out;

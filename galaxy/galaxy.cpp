@@ -238,7 +238,9 @@ int main(int argc, char **argv) {
 double config_version=0.0;
 
 
-
+ /**
+  * Restore configuration from saved file
+  */
 bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies, int& iter, double &theta, double &G, double &dt) {
 	std::stringstream file_name;
     file_name << path<< name;
@@ -309,6 +311,9 @@ bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies
 	return true;
 }
 
+/**
+ * Retrieve position, mass, and velocities stored for one Body
+ */
 Body * extract_body(std::string line){
 	enum State {expect_i,expect_x,expect_y,expect_z,expect_m,expect_vx,expect_vy,expect_vz,end_line};
 	State state=expect_i;
@@ -354,10 +359,13 @@ Body * extract_body(std::string line){
 	return new Body(m,px,py,pz,vx,vy,vz);
 }
 
+
 void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path,std::string name) {
 	std::stringstream file_name;
     file_name << path<< name;
-	backup(file_name.str().c_str());
+/**
+ * Save configuration so it can be restarted later
+ */	backup(file_name.str().c_str());
     std::ofstream ofile(file_name.str().c_str());
 	ofile << "Version="<<config_version<<"\n";
 	ofile << "iteration=" << iter  << "\n";

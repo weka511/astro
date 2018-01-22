@@ -15,8 +15,14 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>
  */
  
+ /**
+  * Encode a floating value so it can be stored and retrieved without loss of significant digits
+  */
  std::string encode(const double small);
  
+ /**
+  * Restore value stored by encode
+  */
  double decode(std::string str);
  
  /**
