@@ -167,11 +167,11 @@ int main(int argc, char **argv) {
 	std::vector<Body*> bodies0;
 	int iter=0;
     if (restore_config(path,"config.txt", bodies0,  iter,  theta,  G,  dt)) {
-		std::cout <<iter <<", "<<  theta<<", "<< G <<", "<<  dt << ","<< bodies0.size() << std::endl;
-		simulate( max_iter, bodies0,  theta,  G,  dt,  img_iter, path);
+		std::cout <<"Resume at "<<iter <<  ", theta="<<theta<<", G="<< G <<", dt="<<  dt << ", size="<< bodies0.size() << std::endl;
+		simulate(iter+1, max_iter, bodies0,  theta,  G,  dt,  img_iter, path);
 	} else {
 		std::vector<Body*> bodies=createBodies(numbodies, inivel, ini_radius, mass );
-		simulate( max_iter, bodies,  theta,  G,  dt,  img_iter, path);
+		simulate(0, max_iter, bodies,  theta,  G,  dt,  img_iter, path);
 	}
 }
 
@@ -201,9 +201,9 @@ int main(int argc, char **argv) {
   /**
   * Execute simulation
   */
- void simulate(int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path) {
+ void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path) {
 
-    for (int iter=0; iter<max_iter&&!killed(); ++iter) {
+    for (int iter=start_iter; iter<max_iter+start_iter&&!killed(); ++iter) {
         Node* root = NULL;    // The oct-tree is recomputed at each iteration.
         for (unsigned i=0; i<bodies.size(); ++i) {
             bodies[i] -> resetToZerothQuadrant();

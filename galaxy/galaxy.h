@@ -23,7 +23,7 @@ std::vector<Body*>  createBodies(int numbodies,double inivel,double ini_radius,d
  /**
   * Execute simulation
   */
-void simulate(int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path);
+void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path);
  
  /**
   * Generate help text
