@@ -18,20 +18,23 @@
  /**
   * Create all bodies needed at start of run
   */
- std::vector<Body*>  createBodies(int numbodies,double inivel,double ini_radius,double mass);
+std::vector<Body*>  createBodies(int numbodies,double inivel,double ini_radius,double mass);
  
  /**
   * Execute simulation
   */
- void simulate(int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path);
+void simulate(int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path);
  
  /**
   * Generate help text
   */
- void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter,double theta, double G, double dt, int img_iter,std::string path);
+void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter,double theta, double G, double dt, int img_iter,std::string path);
  
+bool restore_config(std::string path,std::string name="config.txt");
 
- void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path);
+void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path,std::string name="config.txt");
+
+void extract_body(std::string line);
  
  
  
