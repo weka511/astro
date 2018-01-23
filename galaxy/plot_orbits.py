@@ -65,9 +65,9 @@ def extract(config_path = './configs/',selector=[0,1,2,55,100,400],maxsamples=10
 
 if __name__=='__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='Plot orbits')
+    parser = argparse.ArgumentParser(description='Plot orbits from Barnes Hut Galaxy Simulator, galaxy.exe.')
     parser.add_argument('--bodies','-b', type=int,action='store',
-                        help='Number of orbits',default=1000)    
+                        help='Number of bodies from simulation',default=1000)    
     parser.add_argument('--norbits','-n', type=int,action='store',
                         help='Number of orbits',default=6)
     parser.add_argument('--maxsamples','-m', type=int,action='store',
