@@ -14,28 +14,44 @@
  You should have received a copy of the GNU General Public License
  along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-  Companion to barnes_hut.cpp - plot images
+ Companion to galaxy.cpp - plot orbits of randomly selected stars
 '''
 import os, re, sys, numpy as np, matplotlib.pyplot as plt,mpl_toolkits.mplot3d,random
 
-colours=['r','g','b','m','c','y']
-def plot(data,rows=[]):
+'''
+Plot orbits
+
+    Parameters:
+        data      Positions of sampled points in all orbits
+        selector  Used to selectd which points will be plotted
+        colours   Colours used to distinguish orbits
+'''
+def plot(data,selector=[],colours=['r','g','b','m','c','y']):
     def get_coordinates(body,i):
         return [d[body][i] for d in data]
     plt.figure(figsize=(20,20)) 
     ax = plt.gcf().add_subplot(111,  projection='3d')
     for body in range(len(data[0])):
         ax.scatter(get_coordinates(body,0)[0],get_coordinates(body,1)[0],get_coordinates(body,2)[0],c=colours[body%len(colours)],
-                   label="Body: {0}".format(rows[body]))
+                   label="Body: {0}".format(selector[body]))
         ax.scatter(get_coordinates(body,0),get_coordinates(body,1),get_coordinates(body,2),edgecolor=colours[body%len(colours)],s=1) 
         plt.legend(loc='best')
+    plt.title('Orbits of randomly selected stars')
+    plt.savefig('orbits.png')
 
+'''
+Extract data from configuration files
 
-def extract(config_path = './configs/',rows=[0,1,2,55,100,400],maxpoints=1000):
+    Parameters:
+        config_path     Location of data
+        selector        Used to select points that will be extracted
+        maxsamples      Maximum number of points sampled in each orbit
+'''
+def extract(config_path = './configs/',selector=[0,1,2,55,100,400],maxsamples=1000):
     result=[]
-    n=len(os.listdir(config_path))
-    skip=1
-    while n//skip>maxpoints:
+    n=len(os.listdir(config_path))   # Total number of points
+    skip=1                           # Used to skip over data so number of points won't exceed maxsamples
+    while n//skip>maxsamples:
         skip*=10
         i=0
     for file_name in os.listdir(config_path):
@@ -43,14 +59,14 @@ def extract(config_path = './configs/',rows=[0,1,2,55,100,400],maxpoints=1000):
         if m:
             if i%skip == 0:
                 positions = np.loadtxt(os.path.join(config_path,m.group(0)))
-                result.append([positions[i] for i in rows])
+                result.append([positions[i] for i in selector])
             i+=1
     return result
 
 if __name__=='__main__':
-    M=30
-    N=1000
-    rows=random.sample(range(N),M) 
-    data=extract(rows=rows)
-    plot(data,rows=rows)
+    n_orbits=30
+    maxsamples=1000   #Maximum points for each orbit
+    selector=random.sample(range(n_orbits),n_orbits) 
+    data=extract(selector=selector,maxsamples=maxsamples)
+    plot(data,selector=selector)
     plt.show()
