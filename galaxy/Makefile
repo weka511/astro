@@ -29,7 +29,7 @@ TEST_CASES=test-tree.cpp
 TEST_CASES_OBJS=$(subst .cpp,.o,$(TEST_CASES))
 TEST_OBJS=$(TEST_CASES_OBJS) test-main.o
 MAIN=galaxy.exe 
-TARGETS=$(MAIN) $(TESTS) 
+TARGETS=$(MAIN) $(TEST_MAIN) 
 
 all : $(TARGETS)
 
