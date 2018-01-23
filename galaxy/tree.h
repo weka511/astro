@@ -126,7 +126,9 @@ private:
 };
 
 
-// A body is an end-node of the quad-tree.
+/**
+ * A body is an end-node of the quad-tree.
+ */
 class Body : public Node {
 public:
   Body(double m, double x, double y, double z, double vx, double vy, double vz)
@@ -137,14 +139,10 @@ public:
       vel_z(vz)
   { }
   
-  virtual bool isEndnode() const {
-    return true;
-  }
+  virtual bool isEndnode() const { return true; }
   
   // Get the mass of the present body.
-  virtual double getMass() const {
-    return mass;
-  }
+  virtual double getMass() const { return mass; }
   
   // Get the current position of this body.
   virtual void getPos(double& px, double& py, double& pz) const {
@@ -204,46 +202,53 @@ private:
 // An internal node of the quad-tree.
 class InternalNode : public Node {
 public:
-    // When an internal node is crated, it replaces a single body,
-    // and it inherits the body's mass and center-of-mass.
+    /** 
+	 * When an internal node is created, it replaces a single body,
+     * and it inherits the body's mass and center-of-mass.
+	 */
     InternalNode(Node const* node)
         : Node(*node),
           mass(node->getMass()),
           inv_mass(0.),
-          inv_mass_computed(false)
-    {
+          inv_mass_computed(false)  {
         // Instead of storing the center-of-mass, we store the
         // center-of-mass times mass. This makes it cheaper to update the
         // center-of-mass whenever another body is added into the quadrant.
       node->getPos(m_pos_x, m_pos_y,m_pos_z);
         m_pos_x *= mass;
         m_pos_y *= mass;
-	m_pos_z *=mass;
+		m_pos_z *=mass;
         for (int i=0; i<n_children; ++i)
             children[i] = 0;
     }
-    // When the quadtree is deleted, all internal nodes are removed recursively.
+    /**
+     *When the quadtree is deleted, all internal nodes are removed recursively.
+	 * Don't delete end-nodes. These are the bodies: they survive from
+     * one time-iteration step to the next.
+	 */
   virtual ~InternalNode() {
-    for (int i=0; i<n_children; ++i) {
-      // Don't delete end-nodes. These are the bodies: they survive from
-      // one time-iteration step to the next.
+    for (int i=0; i<n_children; ++i)
       if (children[i] && !children[i]->isEndnode())
-	delete children[i];
-    }
+		delete children[i];
   }
   
-  // This class represents only internal nodes.
-  virtual bool isEndnode() const {
-    return false;
-  }
-  // Get the mass of this node.
-  virtual double getMass() const {
-    return mass;
-  }
-  // Get the current center-of-mass of this node.
+  /**
+   * This class represents only internal nodes. 
+   */
+  virtual bool isEndnode() const { return false;  }
+  
+  /**
+   * Get the mass of this node.
+   */
+  virtual double getMass() const { return mass; }
+  
+  /**
+   * Get the current center-of-mass of this node.
+   * To get the center-of-mass, we need to divide by the mass. For better
+   * efficiency, lazy evaluation is used to calculate the inverse-mass.
+   */
   virtual void getPos(double& px, double& py, double& pz) const {
-    // To get the center-of-mass, we need to divide by the mass. For better
-    // efficiency, lazy evaluation is used to calculate the inverse-mass.
+
     if (!inv_mass_computed) {
       inv_mass = 1./mass;
       inv_mass_computed = true;
@@ -253,15 +258,19 @@ public:
     pz = m_pos_z * inv_mass;
   }
   
-    // For computational efficiency: get the center-of-mass, times mass.
+  /**
+   * For computational efficiency: get the center-of-mass, times mass.
+   */
   virtual void get_m_pos(double& m_px, double& m_py, double& m_pz) const {
     m_px = m_pos_x;
     m_py = m_pos_y;
     m_pz = m_pos_z;
   }
   
-    // Update the mass and center-of-mass as a result of integrating another
-    // node into the present quadrant.
+  /**
+   * Update the mass and center-of-mass as a result of integrating another
+   * node into the present quadrant.
+   */
   virtual void addMassCom(Node const* other) {
     // 1. Update the mass.
     mass += other->getMass();
@@ -273,24 +282,34 @@ public:
     m_pos_y += o_my;
     m_pos_z += o_mz;
   }
-  // Set one of the four children of an internal node. It is not allowed to
-  // overwrite an already existing child.
+  
+  /**
+   * Set one of the four children of an internal node. It is not allowed to
+   * overwrite an already existing child.
+   */
   virtual void setChild(int quadrant, Node* child) {
-    assert( children[quadrant]==0 );
+    assert( children[quadrant]==NULL );
     children[quadrant] = child;
   }
-  // Get a read-only pointer to one of the four children of an internal node.
+  
+  /**
+   * Get a read-only pointer to one of the four children of an internal node.
+   */
   virtual Node const* getChild(int quadrant) const {
     return children[quadrant];
   }
-  // Get a pointer to one of the four children and set the child to null.
+  
+  /**
+   *  Get a pointer to one of the four children and set the child to null.
+   *  Set the child to null, to allow setting it to another
+   *  node in the future.
+   */
   virtual Node* extractChild(int quadrant) {
     Node* child = children[quadrant];
-    // Set the child to null, to allow setting it to another
-    // node in the future.
-    children[quadrant] = 0;
+    children[quadrant] = NULL;
     return child;
   }
+  
 private:
   double mass;
   mutable double inv_mass;
