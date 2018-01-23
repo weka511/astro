@@ -31,17 +31,24 @@ def plot(data,rows=[]):
         plt.legend(loc='best')
 
 
-def extract(config_path = './configs/',rows=[0,1,2,55,100,400]):
+def extract(config_path = './configs/',rows=[0,1,2,55,100,400],maxpoints=1000):
     result=[]
+    n=len(os.listdir(config_path))
+    skip=1
+    while n//skip>maxpoints:
+        skip*=10
+        i=0
     for file_name in os.listdir(config_path):
         m = re.search('body_[0-9]+.dat',file_name)
         if m:
-            positions = np.loadtxt(os.path.join(config_path,m.group(0)))
-            result.append([positions[i] for i in rows])
+            if i%skip == 0:
+                positions = np.loadtxt(os.path.join(config_path,m.group(0)))
+                result.append([positions[i] for i in rows])
+            i+=1
     return result
 
 if __name__=='__main__':
-    M=6
+    M=30
     N=1000
     rows=random.sample(range(N),M) 
     data=extract(rows=rows)
