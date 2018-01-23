@@ -39,8 +39,10 @@
 #include "tree.h"
 #include "barnes_hut.h"
 
-// Barnes-Hut algorithm: Creation of the quad-tree. This function adds
-// a new body into a quad-tree node. Returns an updated version of the node.
+/**
+ * Barnes-Hut algorithm: Creation of the quad-tree. This function adds
+ * a new body into a quad-tree node. Returns an updated version of the node.
+ */
 Node* add(Body* body, Node* node) {
     // To limit the recursion depth, set a lower limit for the size of quadrant.
   static const double smallest_quadrant = 1.e-4;
@@ -76,10 +78,12 @@ Node* add(Body* body, Node* node) {
   return new_node;
 }
 
-// Compute the force of all other nodes onto a given node, divided by
-// the node's mass, and divided by the gravitational constant G.
-// This amounts to a recursive evaluation of the quad-tree created by
-// the Barnes-Hut algorithm.
+/**
+ * Compute the force of all other nodes onto a given node, divided by
+ * the node's mass, and divided by the gravitational constant G.
+ * This amounts to a recursive evaluation of the quad-tree created by
+ * the Barnes-Hut algorithm.
+ */
 void accelerationOn( Body const* body, Node const* node, double theta,
                      double& ax, double& ay, double& az){
   // 1. If the current node is an external node, 
@@ -87,12 +91,10 @@ void accelerationOn( Body const* body, Node const* node, double theta,
   const double dsqr = node->distSqr(body);
   if (node->isEndnode())
     node->accelerationOn(body, ax, ay, az,dsqr);
-
   // 2. Otherwise, calculate the ratio s/d. If s/d < θ, treat this internal
   //    node as a single body, and calculate the force it exerts on body b.
   else if (sqr(node->getS()) < dsqr*sqr(theta))
-    node->accelerationOn(body, ax, ay, az,dsqr);
-  
+    node->accelerationOn(body, ax, ay, az,dsqr); 
   else { // 3. Otherwise, run the procedure recursively on each child.
     ax = 0.;
     ay = 0.;
@@ -110,32 +112,35 @@ void accelerationOn( Body const* body, Node const* node, double theta,
   } 
 }
 
-// Execute a time iteration according to the Verlet algorithm.
-void verlet( std::vector<Body*>& bodies, Node* root,
-             double theta, double G, double dt ) {
-    for(size_t i=0; i<bodies.size(); ++i) {
+/**
+ * Execute a time iteration according to the Verlet algorithm.
+ */
+void verlet( std::vector<Body*>& bodies, Node* root,double theta, double G, double dt ) {
+	for (std::vector<Body*>::iterator it = bodies.begin() ; it != bodies.end(); ++it) {
 		double ax, ay, az;
-		accelerationOn(bodies[i], root, theta, ax, ay, az);
+		accelerationOn(*it, root, theta, ax, ay, az);
 		ax *= G;
 		ay *= G;
 		az *= G;
-		bodies[i]->advance(ax, ay, az,dt);
+		(*it)->advance(ax, ay, az,dt);
     }
 }
 
 
-// Write the position of all bodies into a text file.
-// The text file can be converted into an image with the
-// Python script make_img.py
-// Batch-processing of all text files is achieved with the
-// shell script dat2img.
+/**
+ * Write the position of all bodies into a text file.
+ * The text file can be converted into an image with the
+ * Python script make_img.py
+ * Batch-processing of all text files is achieved with the
+ * shell script dat2img
+ */
 void save_bodies( std::vector<Body*>& bodies, int i, std::string path){
     std::stringstream fNameStream;
     fNameStream << path<< "body_" << std::setfill('0') << std::setw(6) << i << ".dat";
     std::ofstream ofile(fNameStream.str().c_str());
-    for (unsigned i=0; i<bodies.size(); ++i) {
+    for (std::vector<Body*>::iterator it = bodies.begin() ; it != bodies.end(); ++it) {
 		double px, py, pz;
-		bodies[i] -> getPos(px, py,pz);
+		(*it) -> getPos(px, py,pz);
 		ofile << std::setprecision(12)
 			  << std::setw(20) << px
 			  << std::setw(20) << py

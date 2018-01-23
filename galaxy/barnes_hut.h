@@ -26,13 +26,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+ * Barnes-Hut algorithm: Creation of the quad-tree. This function adds
+ * a new body into a quad-tree node. Returns an updated version of the node.
+ */
 Node* add(Body* body, Node* node);
 
+/**
+ * Compute the force of all other nodes onto a given node, divided by
+ * the node's mass, and divided by the gravitational constant G.
+ * This amounts to a recursive evaluation of the quad-tree created by
+ * the Barnes-Hut algorithm.
+ */
 void accelerationOn( Body const* body, Node const* node, double theta,
                      double& ax, double& ay, double& az);
 
+/**
+ * Execute a time iteration according to the Verlet algorithm.
+ */
 void verlet( std::vector<Body*>& bodies, Node* root,
              double theta, double G, double dt );
 
+/**
+ * Write the position of all bodies into a text file.
+ * The text file can be converted into an image with the
+ * Python script make_img.py
+ * Batch-processing of all text files is achieved with the
+ * shell script dat2img
+ */
 void save_bodies( std::vector<Body*>& bodies, int i, std::string path);
 			 
