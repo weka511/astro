@@ -64,9 +64,17 @@ def extract(config_path = './configs/',selector=[0,1,2,55,100,400],maxsamples=10
     return result
 
 if __name__=='__main__':
-    n_orbits=30
-    maxsamples=1000   #Maximum points for each orbit
-    selector=random.sample(range(n_orbits),n_orbits) 
-    data=extract(selector=selector,maxsamples=maxsamples)
+    import argparse
+    parser = argparse.ArgumentParser(description='Plot orbits')
+    parser.add_argument('--bodies','-b', type=int,action='store',
+                        help='Number of orbits',default=1000)    
+    parser.add_argument('--norbits','-n', type=int,action='store',
+                        help='Number of orbits',default=6)
+    parser.add_argument('--maxsamples','-m', type=int,action='store',
+                        help='Maximum number of sample per orbit',default=1000)    
+    
+    args = parser.parse_args()    
+    selector=random.sample(range(args.bodies),args.norbits) 
+    data=extract(selector=selector,maxsamples=args.maxsamples)
     plot(data,selector=selector)
     plt.show()
