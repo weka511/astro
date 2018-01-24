@@ -226,6 +226,7 @@ int main(int argc, char **argv) {
  void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name,int check_energy) {
 	bool exiting=false;
 	double total_energy=-1;
+	double initial_energy=-1;
     for (int iter=start_iter; iter<max_iter+start_iter && !exiting; ++iter) {
         Node* root = NULL;    // The oct-tree is recomputed at each iteration.
         for (unsigned i=0; i<bodies.size(); ++i) {
@@ -245,7 +246,10 @@ int main(int argc, char **argv) {
         }
 		if (check_energy>0 && iter%check_energy==0){
 			double energy=get_kinetic_energy(bodies) + get_potential_energy(bodies,G);
-			std::cout<< "Energy=" << energy<<std::endl;
+			if (initial_energy==-1)
+				initial_energy=energy;
+			else
+				std::cout<< "Energy=" << energy << ", previous=" << total_energy << ", initial=" << initial_energy <<std::endl;
 			total_energy=energy;
 		}
     }
@@ -265,7 +269,7 @@ double get_potential_energy(std::vector<Body*> bodies,double G){
 	for (int i=1;i<bodies.size();i++)
 		for (int j=0;j<i;j++)
 			total+=bodies[i]->get_potential_energy(bodies[j]);
-	return -G*total; // TODO
+	return -G*total;
 }
 
 

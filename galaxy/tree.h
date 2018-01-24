@@ -195,11 +195,11 @@ public:
   }
   
   double get_kinetic_energy() {
-	  return 0.5*mass*(vel_x*vel_x+vel_y*vel_y+vel_z*vel_z);
+	  return 0.5*mass*(sqr(vel_x) + sqr(vel_y) + sqr(vel_z));
   }
   
   get_potential_energy(Body* oth){
-	  return mass*oth->mass/sqrt(distSqr(oth));
+	  return mass * oth->mass /sqrt(distSqr(oth));
   }
 private:
   double mass;
