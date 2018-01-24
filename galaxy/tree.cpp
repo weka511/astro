@@ -25,6 +25,6 @@
       const double inv_d_cube = std::pow(dsqr, -3./2.); // The force goes like 1/r^2.
       fx = (mx - o_x*m) * inv_d_cube;
       fy = (my - o_y*m) * inv_d_cube;
-      fy = (mz - o_z*m) * inv_d_cube;
+      fz = (mz - o_z*m) * inv_d_cube;
     }
   }
