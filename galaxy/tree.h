@@ -186,12 +186,18 @@ public:
   }
   // Verlet integration step.
   void advance(double ax, double ay, double az,double dt) {
+	assert(az==0);
+	assert(vel_z==0);
+	assert(pos_z==0);	 
     vel_x += dt*ax;
     vel_y += dt*ay;
     vel_z += dt*az;
     pos_x += dt*vel_x;
     pos_y += dt*vel_y;
     pos_z += dt*vel_z;
+	assert(az==0);
+	assert(vel_z==0);
+	assert(pos_z==0);	
   }
   
   double get_kinetic_energy() {
