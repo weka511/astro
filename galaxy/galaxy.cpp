@@ -38,6 +38,7 @@
  */
 
 static int flat_flag = 0;
+
 static int resume_flag = 0;
 
 struct option long_options[] = {
