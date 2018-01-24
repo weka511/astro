@@ -37,21 +37,24 @@
  *  Long version of command line options.
  */
 
+static int flat_flag = 0;
+
 struct option long_options[] = {
-	{"config",  		required_argument,	0, 'c'},
-	{"dt",  			required_argument,	0, 'd'},
-	{"check_energy",  	required_argument,	0, 'e'},
-	{"G",  				required_argument, 	0, 'G'},
-    {"help",  			no_argument, 		0, 'h'},
-	{"img_iter",		required_argument, 	0, 'i'},
-	{"max_iter",  		required_argument, 	0, 'm'},
-	{"numbodies",  		required_argument, 	0, 'n'},
-	{"path",  			required_argument, 	0, 'p'},
-	{"ini_radius",  	required_argument, 	0, 'r'},
-	{"mass",  			required_argument, 	0, 's'},
-	{"theta",  			required_argument, 	0, 't'},
-	{"inivel",  		required_argument, 	0, 'v'},
-	{0, 				0, 					0, 0}
+	{"flat", 			no_argument,       &flat_flag, 	1},
+	{"config",  		required_argument,	0, 			'c'},
+	{"dt",  			required_argument,	0, 			'd'},
+	{"check_energy",  	required_argument,	0, 			'e'},
+	{"G",  				required_argument, 	0, 			'G'},
+    {"help",  			no_argument, 		0, 			'h'},
+	{"img_iter",		required_argument, 	0, 			'i'},
+	{"max_iter",  		required_argument, 	0, 			'm'},
+	{"numbodies",  		required_argument, 	0, 			'n'},
+	{"path",  			required_argument, 	0, 			'p'},
+	{"ini_radius",  	required_argument, 	0, 			'r'},
+	{"mass",  			required_argument, 	0, 			's'},
+	{"theta",  			required_argument, 	0, 			't'},
+	{"inivel",  		required_argument, 	0, 			'v'},
+	{0, 				0, 					0, 			0}
 };	
 	
 /**
@@ -204,17 +207,18 @@ int main(int argc, char **argv) {
 	std::cout << "Initializing " << numbodies << " bodies" << std::endl;
 	std::vector<std::vector<double>> positions=direct_sphere(3,numbodies);
 	std::vector<Body*> product;
+	
 	for (std::vector<std::vector<double>>::iterator it = positions.begin() ; it != positions.end(); ++it) {
         const double px = (*it)[0]* 2.*ini_radius + 0.5-ini_radius;
         const double py = (*it)[1]* 2.*ini_radius + 0.5-ini_radius;
-		const double pz = (*it)[2]* 2.*ini_radius + 0.5-ini_radius;
+		const double pz = flat_flag==0 ? (*it)[2]* 2.*ini_radius + 0.5-ini_radius:0;
         const double rpx = px-0.5;
         const double rpy = py-0.5;
-		const double rpz = pz-0.5;
+		const double rpz = flat_flag==0 ? pz-0.5 : 0;
         const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy)+sqr(rpz));
         const double vx = -rpy * inivel * rnorm / ini_radius;
         const double vy =  rpx * inivel * rnorm / ini_radius;
-		const double vz = std::rand()%2==0 ? rpx : -rpx;
+		const double vz = flat_flag==0 ? (std::rand()%2==0 ? rpx : -rpx) : 0;
         product.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
     }
 	return product;
@@ -430,6 +434,7 @@ void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter
 	std::cout << "\t-c,--config\t\tConfiguration file [" << config_file_name<<"]"<< std::endl;
 	std::cout << "\t-d,--dt\t\tTime Step for Integration [" << dt<<"]"<< std::endl;
 	std::cout << "\t-e,--check_energy\tCheck total energy every `check_energy` iterations[don't check]"<< std::endl;
+	std::cout << "\t--flat\t\tUsed to set z to origin for 3D only"<< std::endl;
 	std::cout << "\t-G,--G\t\tGravitational Constant [" << G << "]"<<std::endl;
 	std::cout << "\t-h,--help\tShow help text" << std::endl;
 	std::cout << "\t-i,--img_iter\tFrequency for writing positions [" << img_iter << "]"<< std::endl;

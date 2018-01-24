@@ -53,7 +53,7 @@ def extract(config_path = './configs/',selector=[0,1,2,55,100,400],maxsamples=10
     skip=1                           # Used to skip over data so number of points won't exceed maxsamples
     while n//skip>maxsamples:
         skip*=10
-        i=0
+    i=0
     for file_name in os.listdir(config_path):
         m = re.search('body_[0-9]+.dat',file_name)
         if m:
@@ -65,7 +65,7 @@ def extract(config_path = './configs/',selector=[0,1,2,55,100,400],maxsamples=10
 
 if __name__=='__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='Plot orbits from Barnes Hut Galaxy Simulator, galaxy.exe.')
+    parser = argparse.ArgumentParser(description='Plot orbits from Barnes Hut Galaxy Simulator, galax')
     parser.add_argument('--bodies','-b', type=int,action='store',
                         help='Number of bodies from simulation',default=1000)    
     parser.add_argument('--norbits','-n', type=int,action='store',
