@@ -257,19 +257,29 @@ int main(int argc, char **argv) {
         }
 		if (check_energy>0 && iter%check_energy==0){
 			double energy=get_kinetic_energy(bodies) + get_potential_energy(bodies,G);
-			std::cout<< "Energy=" << energy << ", previous=" << total_energy << ", initial=" << initial_energy <<std::endl;
+			print_energy(energy, total_energy,initial_energy);
 			total_energy=energy;
 		}
     }
 	if (check_energy>0 ){
 		double energy=get_kinetic_energy(bodies) + get_potential_energy(bodies,G);
-		std::cout<< "Energy=" << energy << ", previous=" << total_energy << ", initial=" << initial_energy <<std::endl;
+		print_energy(energy, total_energy,initial_energy);
 		total_energy=energy;
 	}
 }
 
+/**
+ * Print total energy
+ */
+void print_energy(double energy, double total_energy,double initial_energy) {
+	std::cout<< "Energy=" << energy << "("<<(energy-total_energy)<< "}, previous=" 
+				<< total_energy << "(" << (energy-initial_energy) 
+				<< "), initial=" << initial_energy  <<std::endl;
+}
 
-	
+/**
+ * Calculate kinetic energy for bodies
+ */	
 double get_kinetic_energy(std::vector<Body*> bodies) {
 	double result=0;
 	for (std::vector<Body*>::iterator it = bodies.begin() ; it != bodies.end(); ++it)
@@ -277,6 +287,9 @@ double get_kinetic_energy(std::vector<Body*> bodies) {
 	return result; 
 }
 
+/**
+ * Calculate gravitational potential energy for bodies
+ */
 double get_potential_energy(std::vector<Body*> bodies,double G){
 	double total=0;
 	for (int i=1;i<bodies.size();i++)
