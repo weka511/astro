@@ -235,7 +235,7 @@ int main(int argc, char **argv) {
     for (int iter=start_iter; iter<max_iter+start_iter && !exiting; ++iter) {
         Node* root = NULL;    // The oct-tree is recomputed at each iteration.
         for (unsigned i=0; i<bodies.size(); ++i) {
-            bodies[i] -> resetToZerothQuadrant();
+            bodies[i] -> resetToZerothOctant();
             root = add(bodies[i], root);
         }
  

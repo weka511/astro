@@ -64,26 +64,26 @@ public:
   virtual void get_m_pos(double& m_px, double& m_py, double& m_pz) const =0;
   
   // Update the mass and center-of-mass as a result of integrating another
-  // node into the present quadrant.
+  // node into the present octant.
   virtual void addMassCom(Node const* other) =0;
   
-  // Set one of the four children of an internal node. It is not allowed to
+  // Set one of the eight children of an internal node. It is not allowed to
   // overwrite an already existing child.
-  virtual void setChild(int quadrant, Node* child) =0;
+  virtual void setChild(int octant, Node* child) =0;
   
-  // Get a read-only pointer to one of the four children of an internal node.
-  virtual Node const* getChild(int quadrant) const =0;
+  // Get a read-only pointer to one of the eight children of an internal node.
+  virtual Node const* getChild(int octant) const =0;
   
-  // Get a pointer to one of the four children and set the child to null.
-  virtual Node* extractChild(int quadrant) =0;
+  // Get a pointer to one of the eight children and set the child to null.
+  virtual Node* extractChild(int octant) =0;
   
-  // Get the side-length of the current quadrant of the node.
+  // Get the side-length of the current octant of the node.
   double getS() const {
     return s;
   } 
   
-  // Place the node into the appropriate next sub-quadrant.
-  int intoNextQuadrant() {
+  // Place the node into the appropriate next sub-octant.
+  int intoNextOctant() {
     s *= 0.5;
     return n_children==4 ?
       subdivide(1) + 2*subdivide(0) :
@@ -91,7 +91,7 @@ public:
   }
   
     // Replace the node to the root of the quadtree.
-    void resetToZerothQuadrant() {
+    void resetToZerothOctant() {
       s = 1.0;
       getPos(relpos[0], relpos[1],relpos[2]);
     }
@@ -108,7 +108,7 @@ public:
   // the other node's mass, and divided by the gravitational constant G.
   void accelerationOn(Node const* other, double& fx, double& fy, double& fz,double dsqr) const ;
 private:
-  // Compute the index of the next sub-quadrant along a given direction
+  // Compute the index of the next sub-octant along a given direction
   // (there are two possibilities).
   int subdivide(int i) {
     relpos[i] *= 2.;
@@ -121,8 +121,8 @@ private:
   }
   
 private:
-    double s; // Side-length of current quadrant.
-    double relpos[3]; // Center-of-mass coordinates in current quadrant.
+    double s; // Side-length of current octant.
+    double relpos[3]; // Center-of-mass coordinates in current octant.
 };
 
 
@@ -170,17 +170,17 @@ public:
     assert( false );
   }
   // You can't add another node into an end-node.
-  virtual void setChild(int quadrant, Node* child) {
+  virtual void setChild(int octant, Node* child) {
     std::cout << "Error: trying to assign a child to an end-node." << std::endl;
     assert( false );
   }
   // You can't add another node into an end-node.
-  virtual Node const* getChild(int quadrant) const {
+  virtual Node const* getChild(int octant) const {
     std::cout << "Error: trying to get child of an end-node." << std::endl;
     assert( false );
   }
   // You can't add another node into an end-node.
-  virtual Node* extractChild(int quadrant) {
+  virtual Node* extractChild(int octant) {
     std::cout << "Error: trying to get child of an end-node." << std::endl;
     assert( false );
   }
@@ -227,7 +227,7 @@ public:
           inv_mass_computed(false)  {
         // Instead of storing the center-of-mass, we store the
         // center-of-mass times mass. This makes it cheaper to update the
-        // center-of-mass whenever another body is added into the quadrant.
+        // center-of-mass whenever another body is added into the octant.
       node->getPos(m_pos_x, m_pos_y,m_pos_z);
         m_pos_x *= mass;
         m_pos_y *= mass;
@@ -283,7 +283,7 @@ public:
   
   /**
    * Update the mass and center-of-mass as a result of integrating another
-   * node into the present quadrant.
+   * node into the present octant.
    */
   virtual void addMassCom(Node const* other) {
     // 1. Update the mass.
@@ -298,29 +298,29 @@ public:
   }
   
   /**
-   * Set one of the four children of an internal node. It is not allowed to
+   * Set one of the eight children of an internal node. It is not allowed to
    * overwrite an already existing child.
    */
-  virtual void setChild(int quadrant, Node* child) {
-    assert( children[quadrant]==NULL );
-    children[quadrant] = child;
+  virtual void setChild(int octant, Node* child) {
+    assert( children[octant]==NULL );
+    children[octant] = child;
   }
   
   /**
-   * Get a read-only pointer to one of the four children of an internal node.
+   * Get a read-only pointer to one of the eight children of an internal node.
    */
-  virtual Node const* getChild(int quadrant) const {
-    return children[quadrant];
+  virtual Node const* getChild(int octant) const {
+    return children[octant];
   }
   
   /**
-   *  Get a pointer to one of the four children and set the child to null.
+   *  Get a pointer to one of the eight children and set the child to null.
    *  Set the child to null, to allow setting it to another
    *  node in the future.
    */
-  virtual Node* extractChild(int quadrant) {
-    Node* child = children[quadrant];
-    children[quadrant] = NULL;
+  virtual Node* extractChild(int octant) {
+    Node* child = children[octant];
+    children[octant] = NULL;
     return child;
   }
   

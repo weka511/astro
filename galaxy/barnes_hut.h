@@ -27,15 +27,15 @@
 */
 
 /**
- * Barnes-Hut algorithm: Creation of the quad-tree. This function adds
- * a new body into a quad-tree node. Returns an updated version of the node.
+ * Barnes-Hut algorithm: Creation of the oct-tree. This function adds
+ * a new body into a oct-tree node. Returns an updated version of the node.
  */
 Node* add(Body* body, Node* node);
 
 /**
  * Compute the force of all other nodes onto a given node, divided by
  * the node's mass, and divided by the gravitational constant G.
- * This amounts to a recursive evaluation of the quad-tree created by
+ * This amounts to a recursive evaluation of the oct-tree created by
  * the Barnes-Hut algorithm.
  */
 void accelerationOn( Body const* body, Node const* node, double theta,

@@ -10,11 +10,14 @@
 
 #include "tree.h"
 
+// Introduce a cut-off distance to avoid numerical instability in case two
+// nodes are too close to each other.
+
+static const double cutoff_dist = 0.002;
+static const double cutoff_dist_sqr = cutoff_dist*cutoff_dist;
+	
  void Node::accelerationOn(Node const* other, double& fx, double& fy, double& fz,double dsqr) const {
-    // Introduce a cut-off distance to avoid numerical instability in case two
-    // nodes are too close to each other.
-    static const double cutoff_dist = 0.002;
-    static const double cutoff_dist_sqr = cutoff_dist*cutoff_dist;
+ 
     if (dsqr < cutoff_dist_sqr)
       fx = fy = fz= 0.;
     else {

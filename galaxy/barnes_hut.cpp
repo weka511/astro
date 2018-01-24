@@ -40,18 +40,18 @@
 #include "barnes_hut.h"
 
 /**
- * Barnes-Hut algorithm: Creation of the quad-tree. This function adds
- * a new body into a quad-tree node. Returns an updated version of the node.
+ * Barnes-Hut algorithm: Creation of the oct-tree. This function adds
+ * a new body into a oct-tree node. Returns an updated version of the node.
  */
 Node* add(Body* body, Node* node) {
-    // To limit the recursion depth, set a lower limit for the size of quadrant.
-  static const double smallest_quadrant = 1.e-4;
+    // To limit the recursion depth, set a lower limit for the size of octant.
+  static const double smallest_octant = 1.e-4;
   Node* new_node = NULL;
   // 1. If node n does not contain a body, put the new body b here.
   if (node==NULL)
     new_node = body;
   else {
-    if (node->getS() < smallest_quadrant)
+    if (node->getS() < smallest_octant)
       return node;
     
     // 3. If node n is an external node, then the new body b is in conflict
@@ -60,20 +60,20 @@ Node* add(Body* body, Node* node) {
       //    ... Subdivide the region further by creating an internal node.
       new_node = new InternalNode(node);
       //    ... And to start with, insert the already present body recursively
-      //        into the appropriate quadrant.
-      const int quadrant = node->intoNextQuadrant();
-      new_node->setChild(quadrant, node);
+      //        into the appropriate octant.
+      const int octant = node->intoNextOctant();
+      new_node->setChild(octant, node);
     } else // 2. If node n is an internal node, we don't to modify its child. 
 		new_node = node;
 
 	// 2. and 3. If node n is or has become an internal node ...
 	//           ... update its mass and "center-of-mass times mass"
 	new_node->addMassCom(body);
-	// ... and recursively add the new body into the appropriate quadrant.
-	const int quadrant = body->intoNextQuadrant();
+	// ... and recursively add the new body into the appropriate octant.
+	const int octant = body->intoNextOctant();
 	new_node->setChild (
-			quadrant,
-			add(body, new_node->extractChild(quadrant)) );
+			octant,
+			add(body, new_node->extractChild(octant)) );
   }
   return new_node;
 }
@@ -81,7 +81,7 @@ Node* add(Body* body, Node* node) {
 /**
  * Compute the force of all other nodes onto a given node, divided by
  * the node's mass, and divided by the gravitational constant G.
- * This amounts to a recursive evaluation of the quad-tree created by
+ * This amounts to a recursive evaluation of the oct-tree created by
  * the Barnes-Hut algorithm.
  */
 void accelerationOn( Body const* body, Node const* node, double theta,
