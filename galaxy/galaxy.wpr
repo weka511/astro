@@ -9,10 +9,11 @@ proj.file-list = [loc('make_3d.py'),
                   loc('plot_orbits.py')]
 proj.file-type = 'normal'
 proj.launch-config = {loc('plot_orbits.py'): ('project',
-        (u'-n 12',
+        (u'-n 60',
          ''))}
 [user attributes]
-debug.recent-run-args = {loc('plot_orbits.py'): [u'-n 12']}
+debug.recent-run-args = {loc('plot_orbits.py'): [u'-n 60',
+        u'-n 12']}
 guimgr.overall-gui-state = {'windowing-policy': 'combined-window',
                             'windows': [{'name': 'dtaAtJloNhSft7SabFzspl0xqE'\
         'mVIDbK',
@@ -456,13 +457,14 @@ guimgr.overall-gui-state = {'windowing-policy': 'combined-window',
                                 'selection_start': 28L,
                                 'zoom': 0L}),
                               (loc('plot_orbits.py'),
-                               {'attrib-starts': [],
-                                'first-line': 56L,
+                               {'attrib-starts': [('extract',
+        49)],
+                                'first-line': 40L,
                                 'folded-linenos': [],
-                                'sel-line': 71L,
-                                'sel-line-start': 2933L,
-                                'selection_end': 2990L,
-                                'selection_start': 2990L,
+                                'sel-line': 54L,
+                                'sel-line-start': 2280L,
+                                'selection_end': 2296L,
+                                'selection_start': 2296L,
                                 'zoom': 0L})],
         'has-focus': True,
         'locked': False},

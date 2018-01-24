@@ -38,19 +38,20 @@
  */
 
 struct option long_options[] = {
-	{"dt",  		required_argument,	0, 'd'},
-	{"config",  	required_argument,	0, 'c'},
-	{"G",  			required_argument, 	0, 'G'},
-    {"help",  		no_argument, 		0, 'h'},
-	{"img_iter",	required_argument, 	0, 'i'},
-	{"max_iter",  	required_argument, 	0, 'm'},
-	{"numbodies",  	required_argument, 	0, 'n'},
-	{"path",  		required_argument, 	0, 'p'},
-	{"ini_radius",  required_argument, 	0, 'r'},
-	{"mass",  		required_argument, 	0, 's'},
-	{"theta",  		required_argument, 	0, 't'},
-	{"inivel",  	required_argument, 	0, 'v'},
-	{0, 			0, 					0, 0}
+	{"config",  		required_argument,	0, 'c'},
+	{"dt",  			required_argument,	0, 'd'},
+	{"check_energy",  	required_argument,	0, 'e'},
+	{"G",  				required_argument, 	0, 'G'},
+    {"help",  			no_argument, 		0, 'h'},
+	{"img_iter",		required_argument, 	0, 'i'},
+	{"max_iter",  		required_argument, 	0, 'm'},
+	{"numbodies",  		required_argument, 	0, 'n'},
+	{"path",  			required_argument, 	0, 'p'},
+	{"ini_radius",  	required_argument, 	0, 'r'},
+	{"mass",  			required_argument, 	0, 's'},
+	{"theta",  			required_argument, 	0, 't'},
+	{"inivel",  		required_argument, 	0, 'v'},
+	{0, 				0, 					0, 0}
 };	
 	
 /**
@@ -77,6 +78,9 @@ int main(int argc, char **argv) {
     // Frequency at which PNG images are written.
     int img_iter = 20;
 	
+	// Frequency for checking total energy
+	int check_energy = -1;
+	
 	std::string config_file_name="config.txt";
 	
 	std::string path = "./configs/";
@@ -84,7 +88,7 @@ int main(int argc, char **argv) {
 	int option_index = 0;
 	int c;
 	
-	while ((c = getopt_long (argc, argv, "c:d:G:hi:m:n:p:r:Ss:t:v:",long_options, &option_index)) != -1)
+	while ((c = getopt_long (argc, argv, "c:d:e:G:hi:m:n:p:r:Ss:t:v:",long_options, &option_index)) != -1)
     switch (c){
 		case 'c':{
 			std::stringstream param(optarg);
@@ -97,6 +101,13 @@ int main(int argc, char **argv) {
 			std::stringstream param(optarg);
 			param>>dt;
 			std::cout<<"dt="<<dt<<std::endl;
+			break;
+		}
+		
+		case 'e':{
+			std::stringstream param(optarg);
+			param>>check_energy;
+			std::cout<<"check_energy="<<check_energy <<std::endl;
 			break;
 		}
 		
@@ -178,11 +189,11 @@ int main(int argc, char **argv) {
 	int iter=0;
     if (restore_config(path,config_file_name, bodies0,  iter,  theta,  G,  dt)) {
 		std::cout <<"Resume at "<<iter <<  ", theta="<<theta<<", G="<< G <<", dt="<<  dt << ", size="<< bodies0.size() << std::endl;
-		simulate(iter, max_iter, bodies0,  theta,  G,  dt,  img_iter, path,config_file_name);
+		simulate(iter, max_iter, bodies0,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
 	} else {
 		std::cout << "Configuration file not found: starting from a new configuration" << std::endl;
 		std::vector<Body*> bodies=createBodies(numbodies, inivel, ini_radius, mass );
-		simulate(0, max_iter, bodies,  theta,  G,  dt,  img_iter, path,config_file_name);
+		simulate(0, max_iter, bodies,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
 	}
 }
 
@@ -212,8 +223,9 @@ int main(int argc, char **argv) {
   /**
   * Execute simulation
   */
- void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name) {
+ void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name,int check_energy) {
 	bool exiting=false;
+	double total_energy=-1;
     for (int iter=start_iter; iter<max_iter+start_iter && !exiting; ++iter) {
         Node* root = NULL;    // The oct-tree is recomputed at each iteration.
         for (unsigned i=0; i<bodies.size(); ++i) {
@@ -231,9 +243,31 @@ int main(int argc, char **argv) {
             save_bodies(bodies, iter/img_iter,path);
 			save_config(bodies, iter, theta, G, dt,path,config_file_name);
         }
-		
+		if (check_energy>0 && iter%check_energy==0){
+			double energy=get_kinetic_energy(bodies) + get_potential_energy(bodies,G);
+			std::cout<< "Energy=" << energy<<std::endl;
+			total_energy=energy;
+		}
     }
 }
+
+
+	
+double get_kinetic_energy(std::vector<Body*> bodies) {
+	double result=0;
+	for (std::vector<Body*>::iterator it = bodies.begin() ; it != bodies.end(); ++it)
+		result+=(*it)->get_kinetic_energy();
+	return result; 
+}
+
+double get_potential_energy(std::vector<Body*> bodies,double G){
+	double total=0;
+	for (int i=1;i<bodies.size();i++)
+		for (int j=0;j<i;j++)
+			total+=bodies[i]->get_potential_energy(bodies[j]);
+	return -G*total; // TODO
+}
+
 
 double config_version=0.0;
 
@@ -389,8 +423,9 @@ void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, 
 void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter,double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name) {
 	std::cout << "Galaxy Simulator based on Barnes Hut code from University of Geneva." << std::endl<<std::endl;
 	std::cout << "Parameters, showing default values" <<std::endl;
-	std::cout << "\t-c,--config\t\tConfugyration file [" << config_file_name<<"]"<< std::endl;
+	std::cout << "\t-c,--config\t\tConfiguration file [" << config_file_name<<"]"<< std::endl;
 	std::cout << "\t-d,--dt\t\tTime Step for Integration [" << dt<<"]"<< std::endl;
+	std::cout << "\t-e,--check_energy\tCheck total energy every `check_energy` iterations[don't check]"<< std::endl;
 	std::cout << "\t-G,--G\t\tGravitational Constant [" << G << "]"<<std::endl;
 	std::cout << "\t-h,--help\tShow help text" << std::endl;
 	std::cout << "\t-i,--img_iter\tFrequency for writing positions [" << img_iter << "]"<< std::endl;
