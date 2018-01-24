@@ -38,23 +38,25 @@
  */
 
 static int flat_flag = 0;
+static int resume_flag = 0;
 
 struct option long_options[] = {
-	{"flat", 			no_argument,       &flat_flag, 	1},
-	{"config",  		required_argument,	0, 			'c'},
-	{"dt",  			required_argument,	0, 			'd'},
-	{"check_energy",  	required_argument,	0, 			'e'},
-	{"G",  				required_argument, 	0, 			'G'},
-    {"help",  			no_argument, 		0, 			'h'},
-	{"img_iter",		required_argument, 	0, 			'i'},
-	{"max_iter",  		required_argument, 	0, 			'm'},
-	{"numbodies",  		required_argument, 	0, 			'n'},
-	{"path",  			required_argument, 	0, 			'p'},
-	{"ini_radius",  	required_argument, 	0, 			'r'},
-	{"mass",  			required_argument, 	0, 			's'},
-	{"theta",  			required_argument, 	0, 			't'},
-	{"inivel",  		required_argument, 	0, 			'v'},
-	{0, 				0, 					0, 			0}
+	{"flat", 			no_argument,       	&flat_flag, 	1},
+	{"config",  		required_argument,	0, 				'c'},
+	{"dt",  			required_argument,	0, 				'd'},
+	{"check_energy",  	required_argument,	0, 				'e'},
+	{"G",  				required_argument, 	0, 				'G'},
+    {"help",  			no_argument, 		0, 				'h'},
+	{"img_iter",		required_argument, 	0, 				'i'},
+	{"max_iter",  		required_argument, 	0, 				'm'},
+	{"numbodies",  		required_argument, 	0, 				'n'},
+	{"path",  			required_argument, 	0, 				'p'},
+	{"ini_radius",  	required_argument, 	0, 				'r'},
+	{"mass",  			required_argument, 	0, 				's'},
+	{"resume", 			no_argument,       	&resume_flag, 	1},
+	{"theta",  			required_argument, 	0, 				't'},
+	{"inivel",  		required_argument, 	0, 				'v'},
+	{0, 				0, 					0, 				0}
 };	
 	
 /**
@@ -190,11 +192,14 @@ int main(int argc, char **argv) {
 	}
 	std::vector<Body*> bodies0;
 	int iter=0;
-    if (restore_config(path,config_file_name, bodies0,  iter,  theta,  G,  dt)) {
+    if (resume_flag && restore_config(path,config_file_name, bodies0,  iter,  theta,  G,  dt)) {
 		std::cout <<"Resume at "<<iter <<  ", theta="<<theta<<", G="<< G <<", dt="<<  dt << ", size="<< bodies0.size() << std::endl;
 		simulate(iter, max_iter, bodies0,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
 	} else {
-		std::cout << "Configuration file not found: starting from a new configuration" << std::endl;
+		if (resume_flag)
+			std::cout << "Configuration file not found: starting from a new configuration" << std::endl;
+		else
+			std::cout << "Starting from a new configuration" << std::endl;
 		std::vector<Body*> bodies=createBodies(numbodies, inivel, ini_radius, mass );
 		simulate(0, max_iter, bodies,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
 	}
@@ -445,6 +450,7 @@ void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter
 	std::cout << "\t-n,--numbodies\tNumber of bodies [" << numbodies<< "]"<<std::endl;
 	std::cout << "\t-p,--path\tPath for writing configurations [" << path << "]"<< std::endl;
 	std::cout << "\t-r,--ini_radius\tInitial Radius [" << ini_radius << "]"<<std::endl;
+	std::cout << "\t--resume\tResume previous run"<<std::endl;
 	std::cout << "\t-s,--mass\tMass of bodies [" << mass << "]"<<std::endl;
 	std::cout << "\t-t,--theta\tTheta-criterion of the Barnes-Hut algorithm [" << theta << "]"<< std::endl;
 	std::cout << "\t-v,--inivel\tInitial velocities [" << inivel << "]"<<std::endl;
