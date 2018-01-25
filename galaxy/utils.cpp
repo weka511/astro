@@ -108,3 +108,14 @@ void backup(std::string file_name, std::string backup) {
 
 	  return samples;
   }
+  
+ void remove_old_configs(std::string path) {
+	std::stringstream command;
+	command<<"exec rm -r " << path << "*";
+	system(command.str().c_str());
+}
+
+bool ends_with(std::string const & value, std::string const & ending){
+    if (ending.size() > value.size()) return false;
+    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+}

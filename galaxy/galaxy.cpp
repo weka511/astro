@@ -204,13 +204,12 @@ int main(int argc, char **argv) {
 			std::cout << "Configuration file not found: starting from a new configuration" << std::endl;
 		else
 			std::cout << "Starting from a new configuration" << std::endl;
-		std::stringstream command;
-		command<<"exec rm -r " << path << "*";
-		system(command.str().c_str());
+		remove_old_configs(path);
 		bodies=createBodies(numbodies, inivel, ini_radius, mass );
 		simulate(0, max_iter, bodies,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
 	}
 }
+
 
  /**
   * Create all bodies needed at start of run

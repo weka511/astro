@@ -40,11 +40,9 @@
   */
  std::vector<std::vector<double>> direct_sphere(int d=3,int n=1,double mean=0);
  
-bool ends_with(std::string const & value, std::string const & ending){
-    if (ending.size() > value.size()) return false;
-    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
-}
- 
+bool ends_with(std::string const & value, std::string const & ending);
+
+void remove_old_configs(std::string path);
  
  
  
