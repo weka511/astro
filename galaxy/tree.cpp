@@ -26,7 +26,7 @@ static const double cutoff_dist_sqr = cutoff_dist*cutoff_dist;
       other->getPos(o_x, o_y, o_z);
       const double m = this->getMass();
       const double inv_d_cube = std::pow(dsqr, -3./2.); // The force goes like 1/r^2.
-      fx = (mx - o_x*m) * inv_d_cube;
+      fx = (mx - o_x*m) * inv_d_cube;  //FIXME - assumes that masses are equal!
       fy = (my - o_y*m) * inv_d_cube;
       fz = (mz - o_z*m) * inv_d_cube;
     }

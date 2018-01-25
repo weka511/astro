@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
 	
 	std::string config_file_name="config.txt";
 	
-	std::string path = "./configs/";
+	std::string path = "./configs";
 	
 	int option_index = 0;
 	int c;
@@ -191,17 +191,23 @@ int main(int argc, char **argv) {
 			break;
 		}
 	}
-	std::vector<Body*> bodies0;
+	if (!ends_with(path,"/"))
+		path.append("/");
+	
+	std::vector<Body*> bodies; 
 	int iter=0;
-    if (resume_flag && restore_config(path,config_file_name, bodies0,  iter,  theta,  G,  dt)) {
-		std::cout <<"Resume at "<<iter <<  ", theta="<<theta<<", G="<< G <<", dt="<<  dt << ", size="<< bodies0.size() << std::endl;
-		simulate(iter, max_iter, bodies0,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
+    if (resume_flag && restore_config(path,config_file_name, bodies,  iter,  theta,  G,  dt)) {
+		std::cout <<"Resume at "<<iter <<  ", theta="<<theta<<", G="<< G <<", dt="<<  dt << ", size="<< bodies.size() << std::endl;
+		simulate(iter, max_iter, bodies,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
 	} else {
 		if (resume_flag)
 			std::cout << "Configuration file not found: starting from a new configuration" << std::endl;
 		else
 			std::cout << "Starting from a new configuration" << std::endl;
-		std::vector<Body*> bodies=createBodies(numbodies, inivel, ini_radius, mass );
+		std::stringstream command;
+		command<<"exec rm -r " << path << "*";
+		system(command.str().c_str());
+		bodies=createBodies(numbodies, inivel, ini_radius, mass );
 		simulate(0, max_iter, bodies,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
 	}
 }
