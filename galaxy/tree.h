@@ -26,6 +26,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef _TREE_H
+#define _TREE_H
+
 const int n_children=8;
 // Compute the square of a floating-point value.
 inline double sqr(double a) {
@@ -186,18 +189,12 @@ public:
   }
   // Verlet integration step.
   void advance(double ax, double ay, double az,double dt) {
-	assert(az==0);
-	assert(vel_z==0);
-	assert(pos_z==0);	 
     vel_x += dt*ax;
     vel_y += dt*ay;
     vel_z += dt*az;
     pos_x += dt*vel_x;
     pos_y += dt*vel_y;
-    pos_z += dt*vel_z;
-	assert(az==0);
-	assert(vel_z==0);
-	assert(pos_z==0);	
+    pos_z += dt*vel_z;	
   }
   
   double get_kinetic_energy() {
@@ -331,3 +328,6 @@ private:
   double m_pos_x, m_pos_y,m_pos_z;
   Node* children[n_children];
 };
+
+#endif
+

@@ -122,7 +122,6 @@ void verlet( std::vector<Body*>& bodies, Node* root,double theta, double G, doub
 		ax *= G;
 		ay *= G;
 		az *= G;
-		assert(az==0);
 		(*it)->advance(ax, ay, az,dt);
     }
 }

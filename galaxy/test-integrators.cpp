@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this software.  If not, see <http://www.gnu.org/licenses/>
  */
-
+ 
 #include <vector>
 #include <iostream>
 #include <fstream>
@@ -24,39 +24,36 @@
 #include <cstdlib>
 #include <cmath>
 #include <cassert>
-
 #include "tree.h"
 #include "catch.hpp"
+#include "integrators.h"
+#include "barnes_hut.h"
 
-TEST_CASE( "Tests for Node and its descendants", "[node]" ) {
+ TEST_CASE( "Tests for Verlet integrator", "[verlet]" ) {
     
 	SECTION("Simple manipulators for Body"){
-		Body b(6.5,1,2,3,0,0,0);
-		double x,y,z;
-		b.getPos(x,y,z);
-		REQUIRE(x==1);
-		REQUIRE(y==2);
-		REQUIRE(z==3);
-		double mx,my,mz;
-		b.get_m_pos(mx,my,mz);
-		REQUIRE(mx==6.5);
-		REQUIRE(my==13);
-		REQUIRE(mz==19.5);
+		std::vector<Body*> bodies;
+		bodies.push_back(new Body (1e20,0,0,0,0,0,0));
+		bodies.push_back(new Body (1e12,1e6,0,0,0,0,0));
+		double theta=0.5;
+		double G = 6.6740e-11;
+		double dt=1000;
+		Node* root = NULL;
+		for (unsigned i=0; i<bodies.size(); ++i) {
+            bodies[i] -> resetToZerothOctant();
+            root = add(bodies[i], root);
+        }
+		double ax1, ay1, az1;
+		accelerationOn(bodies[0], root, theta, ax1, ay1, az1);
+		ax1*=G; ay1*=G; az1*=G;
+		REQUIRE(ax1==6.67400E-11);
+		REQUIRE(ay1==0);
+		REQUIRE(az1==0);
+		double ax2, ay2, az2;
+		accelerationOn(bodies[1], root, theta, ax2, ay2, az2);
+		ax2*=G; ay2*=G; az2*=G;
+		REQUIRE(ax2==Approx(-6.67400E-3));
+		REQUIRE(ay2==0);
+		REQUIRE(az2==0);
 	}
-
-	SECTION("Verlet Integration"){
-		Body b(6.5,1,2,3,4,5,6);
-		b.advance(0.1,0.01,0.001, 3);
-		double vx,vy,vz;
-		b.getVel(vx,vy,vz);
-		REQUIRE(vx==4+3*0.1);
-		REQUIRE(vy==5+3*0.01);
-		REQUIRE(vz==6+3*0.001);
-		double x,y,z;
-		b.getPos(x,y,z);
-		REQUIRE(x==1+3*(4+3*0.1));
-		REQUIRE(y==2+3*(5+3*0.01));
-		REQUIRE(z==3+3*(6+3*0.001));
-	
-	}
-}
+ }
