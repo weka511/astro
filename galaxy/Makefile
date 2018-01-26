@@ -34,7 +34,7 @@ TARGETS=$(MAIN) $(TEST_MAIN)
 all : $(TARGETS)
 
 clean :
-	${RM} *.o
+	${RM} *.o *.stackdump
 
 tests : $(TEST_MAIN)
 	./$(TEST_MAIN)
