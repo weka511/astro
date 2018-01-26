@@ -154,6 +154,13 @@ public:
 		pz = pos_z;
     }
 	
+	  // Get the current position of this body.
+  void setPos(double px, double py, double pz)  {
+		pos_x = px;
+		pos_y = pz;
+		pos_z = pz;
+    }
+	
   // Get the current velocity of this body.
   void getVel(double& vx, double& vy, double& vz) const {
         vx = vel_x;
@@ -195,6 +202,13 @@ public:
     pos_x += dt*vel_x;
     pos_y += dt*vel_y;
     pos_z += dt*vel_z;	
+  }
+  
+   // Verlet integration step.
+  void setVel(double vx, double vy, double vz) {
+    vel_x = vx;
+    vel_y = vy;
+    vel_z = vz;
   }
   
   double get_kinetic_energy() {

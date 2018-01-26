@@ -19,7 +19,14 @@
 #define _INTEGRATORS_H
 
  class Euler {
-	 
+	public:
+		Euler(std::vector<Body*>& bodies,double G,Node* root,double theta) : _bodies(bodies),_G(G),_root(root),_theta(theta) {;}
+		void step(double dt);
+	private:
+		std::vector<Body*>& _bodies;
+		double 				_G;
+		Node* 				_root;
+		double 				_theta;
  };
  
  class Verlet {
