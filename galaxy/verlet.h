@@ -30,7 +30,7 @@ class Particle {
 		_ax(NAN), _ay(NAN), _az(NAN)
 	{}
 	
-	Particle (double x, double vx,double m)
+	Particle (double x, double vx,double m=1)
 	: Particle(x,0,0,vx,0,0,m) {}
 	
 	virtual ~Particle() {

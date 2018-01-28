@@ -20,22 +20,31 @@
  
  #include "verlet.h"
 
-void get_acceleration(std::vector<Particle*> particles){
-
+void get_acceleration_shm(std::vector<Particle*> particles){
+	double x,y,z;
+	particles[0]->getPos( x, y,  z);
+	particles[0]->setAcc( -x, 0,  0);
 }
 
 
 int main(int argc, char** argv){
-    int max_iter = 10000; // Number of time-iterations executed by the program.
+    int max_iter = 1000000; // Number of time-iterations executed by the program.
 	double dt=0.0001;
 	std::vector<Particle*> particles;
-	particles.push_back(new Particle(0,0,1));
-	particles.push_back(new Particle(0,0,2));
-	get_acceleration(particles);
+	particles.push_back(new Particle(1,0));
+	get_acceleration_shm(particles);
 	std::for_each(particles.begin(),particles.end(),[dt](Particle* p){euler(p,0.5*dt);});
 	for (int i=1;i<max_iter;i++) {
-		get_acceleration(particles);
+		double vx0,vy0,vz0;
+		particles[0]->getVel( vx0, vy0,  vz0);
+		get_acceleration_shm(particles);
 		std::for_each(particles.begin(),particles.end(),[dt](Particle* p){verlet(p,dt);});
+		double x,y,z;
+		particles[0]->getPos( x, y,  z);
+		double vx,vy,vz;
+		particles[0]->getVel( vx, vy,  vz);
+		vx = 0.5*(vx+vx0);
+		std::cout<<x<<","<<vx<<"," <<x*x+vx*vx/4<<std::endl;
 	}
 	for (std::vector<Particle*>::iterator it = particles.begin() ; it != particles.end(); ++it) 
 		delete (*it);
