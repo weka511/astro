@@ -22,14 +22,22 @@ CC=gcc
 CXX=g++
 RM=rm -f
 MKDIR=mkdir
-SRCS=barnes_hut.cpp integrators.cpp tree.cpp utils.cpp
+SRCS=	barnes_hut.cpp 	\
+		integrators.cpp	\
+		tree.cpp		\
+		utils.cpp		\
+		verlet.cpp
+		
 OBJS=$(subst .cpp,.o,$(SRCS))
 TEST_MAIN=test-main.exe 
-TEST_CASES=test-tree.cpp test-integrators.cpp
+TEST_CASES=	test-tree.cpp 		\
+			test-integrators.cpp
+			
 TEST_CASES_OBJS=$(subst .cpp,.o,$(TEST_CASES))
 TEST_OBJS=$(TEST_CASES_OBJS) test-main.o
-MAIN=galaxy.exe 
-TARGETS=$(MAIN) $(TEST_MAIN) 
+MAIN=galaxy.exe
+MAIN1= verlet.exe
+TARGETS=$(MAIN) $(TEST_MAIN) $(MAIN1)
 
 all : $(TARGETS)
 
@@ -41,12 +49,15 @@ tests : $(TEST_MAIN)
 	
 depend: .depend
 
-.depend: $(SRCS) $(TEST_CASES) galaxy.cpp test-main.cpp
+.depend: $(SRCS) $(TEST_CASES) galaxy.cpp test-main.cpp driver.cpp
 	$(RM) ./.depend
 	$(CXX) $(CPPFLAGS) -MM $^>>./.depend;
 	
 $(MAIN): $(OBJS) galaxy.o
 	${CXX} $(LDFLAGS) -o $(MAIN) galaxy.o ${OBJS} ${LDLIBS}
+	
+$(MAIN1): $(OBJS) driver.o
+	${CXX} $(LDFLAGS) -o $(MAIN1) driver.o ${OBJS} ${LDLIBS}
 	
 $(TEST_MAIN): $(OBJS) $(TEST_OBJS)
 	${CXX} $(LDFLAGS) -o $(TEST_MAIN) $(TEST_OBJS) ${OBJS} ${LDLIBS}
