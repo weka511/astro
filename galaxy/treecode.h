@@ -25,24 +25,28 @@
 
 class Node {
   public:
-    Node(int body_index)
-	: _body_index(body_index) {
-		for (int i=0;i<8;i++)
+  	enum Status {Internal=-2, Unused=-1};
+	enum {N_Children=8};
+    Node()
+	: _particle_index(Unused) {
+		for (int i=0;i<N_Children;i++)
 			_child[i]=NULL;
 	}
 	
-	void insert(Particle * particle);
+	void insert(Particle * particle,int particle_index,std::vector<Particle*> particles);
 	
 	virtual ~Node() {
-		for (int i=0;i<8;i++)
+		for (int i=0;i<N_Children;i++)
 			if (_child[i]!=NULL)
 				delete _child[i];
 	}
 	
 	static Node * create(std::vector<Particle*> particles);
   private:
-	int _body_index;
-	Node * _child[8];
+	int _get_child_index(Particle * particle) {return -1;}     //TODO
+	void _pass_down(int particle_index,int incumbent,std::vector<Particle*> particles) {;}    //TODO
+	int _particle_index;
+	Node * _child[N_Children];
 };
 
 #endif

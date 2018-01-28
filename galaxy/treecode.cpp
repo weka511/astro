@@ -19,13 +19,34 @@
 #include <algorithm>
 
 Node * Node ::create(std::vector<Particle*> particles){
-	Node * product=new Node(-1);
-	std::for_each(	particles.begin(),
-					particles.end(),
-					[product](Particle* particle){product->insert(particle);});
+	Node * product=new Node();
+	for (int index=0;index<particles.size();index++)
+		product->insert(particles[index],index,particles);
 	return product;
 }
 
-void Node::insert(Particle * particle) {
-	
+void Node::insert(Particle * particle,int particle_index,std::vector<Particle*> particles) {
+	switch(_particle_index){
+		case Unused:
+			_particle_index=particle_index;
+			return;
+		case Internal:
+			_child[_get_child_index(particle)]->insert(particle,particle_index,particles);
+			return;
+		default:
+			int incumbent=_particle_index;
+			_particle_index=Internal;
+			for (int i=0;i<N_Children;i++)
+				_child[i]=new Node();
+			int child_index_new=_get_child_index(particle);
+			int child_index_incumbent=_get_child_index(particles[incumbent]);
+			if (child_index_new==child_index_incumbent)
+				_child[child_index_incumbent]->_pass_down(particle_index,incumbent,particles);
+			else {
+				_child[child_index_new]->insert(particle,particle_index,particles);
+				_child[child_index_incumbent]->insert(particles[incumbent],incumbent,particles);
+			}
+			
+
+	}
 }
