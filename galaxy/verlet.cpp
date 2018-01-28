@@ -16,10 +16,9 @@
  */
  
  
- 
- #include "verlet.h"
-
-
+#include <algorithm>
+#include <iostream>
+#include "verlet.h"
 
 void  euler(Particle* particle,double dt){
 	double vx,vy,vz;
@@ -44,5 +43,19 @@ void  verlet_v(Particle* particle,double dt) {
 	particle->getAcc( ax, ay,  az);
 	particle->setVel( vx+dt*ax, vy+dt*ay,  vz+dt*az);
 	
+}
+
+void run_verlet(void (*get_acceleration)(std::vector<Particle*>),
+				int max_iter,
+				double dt,
+				std::vector<Particle*> particles,
+				bool (*shouldContinue)(std::vector<Particle*> particles)) {
+	get_acceleration(particles);
+	std::for_each(particles.begin(),particles.end(),[dt](Particle* particle){euler(particle,0.5*dt);});
+	for (int i=1;i<max_iter && shouldContinue(particles);i++) {
+		std::for_each(particles.begin(),particles.end(),[dt](Particle* particle){verlet_x(particle,dt);});
+		get_acceleration(particles);
+		std::for_each(particles.begin(),particles.end(),[dt](Particle* particle){verlet_v(particle,dt);});
+	}
 }
 
