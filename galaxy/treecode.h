@@ -27,13 +27,15 @@ class Node {
   public:
   	enum Status {Internal=-2, Unused=-1};
 	enum {N_Children=8};
-    Node()
-	: _particle_index(Unused) {
+    Node(double xmin,double xmax,double ymin,double ymax,double zmin,double zmax)
+	: _particle_index(Unused),
+		_xmin(xmin), _xmax(xmax), _ymin(ymin), _ymax(ymax), _zmin(zmin), _zmax(zmax),
+		_xmean(0.5*(xmin+ xmax)), _ymean(0.5*(ymin+ ymax)), _zmean(0.5*(zmin+ zmax))	{
 		for (int i=0;i<N_Children;i++)
 			_child[i]=NULL;
 	}
 	
-	void insert(Particle * particle,int particle_index,std::vector<Particle*> particles);
+	void insert(int particle_index,std::vector<Particle*> particles);
 	
 	virtual ~Node() {
 		for (int i=0;i<N_Children;i++)
@@ -43,9 +45,20 @@ class Node {
 	
 	static Node * create(std::vector<Particle*> particles);
   private:
-	int _get_child_index(Particle * particle) {return -1;}     //TODO
-	void _pass_down(int particle_index,int incumbent,std::vector<Particle*> particles) {;}    //TODO
+	int _get_child_index(int i, int j, int k) {return 4*i+2*j+k;}
+	
+	int _get_child_index(Particle * particle);
+	
+	void _pass_down(int particle_index,int incumbent,std::vector<Particle*> particles);
+	
+	void _insert_or_propagate(int particle_index,int incumbent,std::vector<Particle*> particles);
+	
+	void _split_node();
+	
 	int _particle_index;
+	
+	const double _xmin, _xmax, _ymin, _ymax, _zmin, _zmax, _xmean, _ymean, _zmean;
+	
 	Node * _child[N_Children];
 };
 
