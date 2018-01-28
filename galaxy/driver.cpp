@@ -28,23 +28,21 @@ void get_acceleration_shm(std::vector<Particle*> particles){
 
 
 int main(int argc, char** argv){
-    int max_iter = 1000000; // Number of time-iterations executed by the program.
-	double dt=0.0001;
+    int max_iter = 100000; // Number of time-iterations executed by the program.
+	double dt=0.01;
 	std::vector<Particle*> particles;
 	particles.push_back(new Particle(1,0));
 	get_acceleration_shm(particles);
-	std::for_each(particles.begin(),particles.end(),[dt](Particle* p){euler(p,0.5*dt);});
+	std::for_each(particles.begin(),particles.end(),[dt](Particle* particle){euler(particle,0.5*dt);});
 	for (int i=1;i<max_iter;i++) {
-		double vx0,vy0,vz0;
-		particles[0]->getVel( vx0, vy0,  vz0);
+		std::for_each(particles.begin(),particles.end(),[dt](Particle* particle){verlet_x(particle,dt);});
 		get_acceleration_shm(particles);
-		std::for_each(particles.begin(),particles.end(),[dt](Particle* p){verlet(p,dt);});
+		std::for_each(particles.begin(),particles.end(),[dt](Particle* particle){verlet_v(particle,dt);});
 		double x,y,z;
 		particles[0]->getPos( x, y,  z);
 		double vx,vy,vz;
 		particles[0]->getVel( vx, vy,  vz);
-		vx = 0.5*(vx+vx0);
-		std::cout<<x<<","<<vx<<"," <<x*x+vx*vx/4<<std::endl;
+		std::cout<<x<<","<<vx<<"," << x*x + vx*vx<<std::endl;
 	}
 	for (std::vector<Particle*>::iterator it = particles.begin() ; it != particles.end(); ++it) 
 		delete (*it);

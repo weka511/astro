@@ -62,6 +62,8 @@ class Particle {
 
 void  euler(Particle* p,double dt);
 
-void  verlet(Particle* p,double dt);
+void  verlet_x(Particle* p,double dt);
+
+void  verlet_v(Particle* p,double dt);
 
 #endif

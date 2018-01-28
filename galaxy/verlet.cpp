@@ -29,14 +29,20 @@ void  euler(Particle* particle,double dt){
 	particle->setVel( vx+dt*ax, vy+dt*ay,  vz+dt*az);
 }
 
-void  verlet(Particle* particle,double dt) {
+void  verlet_x(Particle* particle,double dt) {
 	double x,y,z;
 	particle->getPos( x, y,  z);
 	double vx,vy,vz;
 	particle->getVel( vx, vy,  vz);
+	particle->setPos( x+dt*vx, y+dt*vy,  z+ dt*vz);
+}
+
+void  verlet_v(Particle* particle,double dt) {
+	double vx,vy,vz;
+	particle->getVel( vx, vy,  vz);
 	double ax,ay,az;
 	particle->getAcc( ax, ay,  az);
-	particle->setPos( x+dt*vx, y+dt*vy,  z+ dt*vz);
 	particle->setVel( vx+dt*ax, vy+dt*ay,  vz+dt*az);
+	
 }
 
