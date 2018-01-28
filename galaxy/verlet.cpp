@@ -15,16 +15,13 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>
  */
  
- #include <cstdlib>
- #include <iostream>
- #include <algorithm>
+ 
  
  #include "verlet.h"
 
 
 
 void  euler(Particle* particle,double dt){
-	std::cout << "Euler: " <<dt<< std::endl;
 	double vx,vy,vz;
 	particle->getVel( vx, vy,  vz);
 	double ax,ay,az;
@@ -33,7 +30,6 @@ void  euler(Particle* particle,double dt){
 }
 
 void  verlet(Particle* particle,double dt) {
-	std::cout << "Verlet: " <<dt<< std::endl;
 	double x,y,z;
 	particle->getPos( x, y,  z);
 	double vx,vy,vz;

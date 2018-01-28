@@ -34,7 +34,6 @@ class Particle {
 	: Particle(x,0,0,vx,0,0,m) {}
 	
 	virtual ~Particle() {
-		std::cout << "Deleted" << std::endl;
 	}
 
 	void getPos(double& x,	double& y, double& z) {x=_x;y=_y;z=_z;}
