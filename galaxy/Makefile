@@ -25,6 +25,7 @@ MKDIR=mkdir
 SRCS=	barnes_hut.cpp 	\
 		integrators.cpp	\
 		tree.cpp		\
+		treecode.cpp	\
 		utils.cpp		\
 		verlet.cpp
 		

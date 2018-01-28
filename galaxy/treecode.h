@@ -15,23 +15,34 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>
  */
  
-#ifndef _VERLET_H
-#define _VERLET_H
+#ifndef _TREECODE_H
+#define _TREECODE_H
+
+#include <cstdlib>
 #include <vector>
-#include <cmath>
+#include "verlet.h"
 #include "particle.h"
 
-
-
-void  euler(Particle* p,double dt);
-
-void  verlet_x(Particle* p,double dt);
-
-void  verlet_v(Particle* p,double dt);
-
-void run_verlet(void (*get_acceleration)(std::vector<Particle*>),
-				int max_iter,double dt,
-				std::vector<Particle*> particles,
-				bool (*shouldContinue)(std::vector<Particle*> ));
+class Node {
+  public:
+    Node(int body_index)
+	: _body_index(body_index) {
+		for (int i=0;i<8;i++)
+			_child[i]=NULL;
+	}
+	
+	void insert(Particle * particle);
+	
+	virtual ~Node() {
+		for (int i=0;i<8;i++)
+			if (_child[i]!=NULL)
+				delete _child[i];
+	}
+	
+	static Node * create(std::vector<Particle*> particles);
+  private:
+	int _body_index;
+	Node * _child[8];
+};
 
 #endif

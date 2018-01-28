@@ -15,23 +15,17 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>
  */
  
-#ifndef _VERLET_H
-#define _VERLET_H
-#include <vector>
-#include <cmath>
-#include "particle.h"
+#include "treecode.h"
+#include <algorithm>
 
+Node * Node ::create(std::vector<Particle*> particles){
+	Node * product=new Node(-1);
+	std::for_each(	particles.begin(),
+					particles.end(),
+					[product](Particle* particle){product->insert(particle);});
+	return product;
+}
 
-
-void  euler(Particle* p,double dt);
-
-void  verlet_x(Particle* p,double dt);
-
-void  verlet_v(Particle* p,double dt);
-
-void run_verlet(void (*get_acceleration)(std::vector<Particle*>),
-				int max_iter,double dt,
-				std::vector<Particle*> particles,
-				bool (*shouldContinue)(std::vector<Particle*> ));
-
-#endif
+void Node::insert(Particle * particle) {
+	
+}
