@@ -29,6 +29,7 @@ class Node {
 		public:
 		  virtual bool visit(Node * node)=0;
 		  virtual void propagate(Node * node,Node * child){;}
+		  virtual bool depart(Node * node) {return true;};
 	  };
   	enum Status {Internal=-2, Unused=-1};
 	enum {N_Children=8};
@@ -81,6 +82,7 @@ class CentreOfMassCalculator : public Node::Visitor {
 	CentreOfMassCalculator(std::vector<Particle*> particles);
 	bool visit(Node * node);
 	virtual void propagate(Node * node,Node * child);
+	virtual bool depart(Node * node);
 	void display();
 	
   private:

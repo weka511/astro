@@ -18,12 +18,12 @@
  /**
   * Create all bodies needed at start of run
   */
-std::vector<Body*>  createBodies(int numbodies,double inivel,double ini_radius,double mass);
+// std::vector<Body*>  createBodies(int numbodies,double inivel,double ini_radius,double mass);
  
  /**
   * Execute simulation
   */
-void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name,int check_energy);
+// void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name,int check_energy);
  
  /**
   * Generate help text
@@ -33,32 +33,32 @@ void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter
  /**
   * Restore configuration from saved file
   */
-bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies, int &iter, double &theta, double &G, double& dt);
+// bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies, int &iter, double &theta, double &G, double& dt);
 
  /**
   * Restore value stored by encode
   */
-void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path,std::string name="config.txt");
+// void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path,std::string name="config.txt");
 
 /**
  * Retrieve position, mass, and velocities stored for one Body
  */
-Body * extract_body(std::string line);
+// Body * extract_body(std::string line);
 
 /**
  * Calculate kinetic energy for bodies
  */
-double get_kinetic_energy(std::vector<Body*> bodies);
+// double get_kinetic_energy(std::vector<Body*> bodies);
 
 /**
  * Calculate gravitational potential energy for bodies
  */
-double get_potential_energy(std::vector<Body*> bodies,double G);
+// double get_potential_energy(std::vector<Body*> bodies,double G);
 
 /**
  * Print total energy
  */
-void print_energy(double energy, double total_energy,double initial_energy);
+// void print_energy(double energy, double total_energy,double initial_energy);
  
  
  

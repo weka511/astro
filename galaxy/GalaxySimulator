@@ -1,0 +1,15 @@
+<NotepadPlus>
+    <Project name="Galaxy Simulator">
+        <File name="catch.hpp" />
+        <File name="galaxy.cpp" />
+        <File name="galaxy.h" />
+        <File name="particle.h" />
+        <File name="treecode.cpp" />
+        <File name="treecode.h" />
+        <File name="utils.cpp" />
+        <File name="utils.h" />
+        <File name="verlet.cpp" />
+        <File name="verlet.h" />
+        <File name="Makefile" />
+    </Project>
+</NotepadPlus>

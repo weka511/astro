@@ -28,10 +28,11 @@
 #include <getopt.h>
 #include <random>
 #include <algorithm>
-#include "tree.h"
-#include "barnes_hut.h"
 #include "galaxy.h"
+#include "treecode.h"
 #include "utils.h"
+#include "verlet.h"
+
 
 /**
  *  Long version of command line options.
@@ -194,114 +195,130 @@ int main(int argc, char **argv) {
 	if (!ends_with(path,"/"))
 		path.append("/");
 	
-	std::vector<Body*> bodies; 
-	int iter=0;
-    if (resume_flag && restore_config(path,config_file_name, bodies,  iter,  theta,  G,  dt)) {
-		std::cout <<"Resume at "<<iter <<  ", theta="<<theta<<", G="<< G <<", dt="<<  dt << ", size="<< bodies.size() << std::endl;
-		simulate(iter, max_iter, bodies,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
-	} else {
-		if (resume_flag)
-			std::cout << "Configuration file not found: starting from a new configuration" << std::endl;
-		else
-			std::cout << "Starting from a new configuration" << std::endl;
-		remove_old_configs(path);
-		bodies=createBodies(numbodies, inivel, ini_radius, mass );
-		simulate(0, max_iter, bodies,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
+	std::vector<Particle*> particles;
+	std::vector<std::vector<double>> positions= direct_sphere(3,100);
+	for (std::vector<std::vector<double>>::iterator pos=positions.begin();pos!=positions.end();pos++){
+		const double x=(*pos)[0];
+		const double y=(*pos)[1];
+		const double z=(*pos)[2];
+		particles.push_back(new Particle(x,y,x,0,0,0,0));
 	}
+
+	Node * root=Node::create(particles);
+	CentreOfMassCalculator calculator(particles);
+	root->visit(calculator);
+	calculator.display();
+	delete root;
+	
+	// std::vector<Body*> bodies; 
+	// int iter=0;
+    // if (resume_flag && restore_config(path,config_file_name, bodies,  iter,  theta,  G,  dt)) {
+		// std::cout <<"Resume at "<<iter <<  ", theta="<<theta<<", G="<< G <<", dt="<<  dt << ", size="<< bodies.size() << std::endl;
+		// simulate(iter, max_iter, bodies,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
+	// } else {
+		// if (resume_flag)
+			// std::cout << "Configuration file not found: starting from a new configuration" << std::endl;
+		// else
+			// std::cout << "Starting from a new configuration" << std::endl;
+		// remove_old_configs(path);
+		// bodies=createBodies(numbodies, inivel, ini_radius, mass );
+		// simulate(0, max_iter, bodies,  theta,  G,  dt,  img_iter, path,config_file_name,check_energy);
+	// }
+	return EXIT_SUCCESS;
 }
 
 
  /**
   * Create all bodies needed at start of run
   */
- std::vector<Body*>  createBodies(int numbodies,double inivel,double ini_radius,double mass ){
-	std::cout << "Initializing " << numbodies << " bodies" << std::endl;
-	std::vector<std::vector<double>> positions=direct_sphere(3,numbodies);
-	std::vector<Body*> product;
+ // std::vector<Body*>  createBodies(int numbodies,double inivel,double ini_radius,double mass ){
+	// std::cout << "Initializing " << numbodies << " bodies" << std::endl;
+	// std::vector<std::vector<double>> positions=direct_sphere(3,numbodies);
+	// std::vector<Body*> product;
 	
-	for (std::vector<std::vector<double>>::iterator it = positions.begin() ; it != positions.end(); ++it) {
-        const double px = (*it)[0]* 2.*ini_radius + 0.5-ini_radius;
-        const double py = (*it)[1]* 2.*ini_radius + 0.5-ini_radius;
-		const double pz = flat_flag==0 ? (*it)[2]* 2.*ini_radius + 0.5-ini_radius:0;
-        const double rpx = px-0.5;
-        const double rpy = py-0.5;
-		const double rpz = flat_flag==0 ? pz-0.5 : 0;
-        const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy)+sqr(rpz));
-        const double vx = -rpy * inivel * rnorm / ini_radius;
-        const double vy =  rpx * inivel * rnorm / ini_radius;
-		const double vz = flat_flag==0 ? (std::rand()%2==0 ? rpx : -rpx) : 0;
-        product.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
-    }
-	return product;
- }
+	// for (std::vector<std::vector<double>>::iterator it = positions.begin() ; it != positions.end(); ++it) {
+        // const double px = (*it)[0]* 2.*ini_radius + 0.5-ini_radius;
+        // const double py = (*it)[1]* 2.*ini_radius + 0.5-ini_radius;
+		// const double pz = flat_flag==0 ? (*it)[2]* 2.*ini_radius + 0.5-ini_radius:0;
+        // const double rpx = px-0.5;
+        // const double rpy = py-0.5;
+		// const double rpz = flat_flag==0 ? pz-0.5 : 0;
+        // const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy)+sqr(rpz));
+        // const double vx = -rpy * inivel * rnorm / ini_radius;
+        // const double vy =  rpx * inivel * rnorm / ini_radius;
+		// const double vz = flat_flag==0 ? (std::rand()%2==0 ? rpx : -rpx) : 0;
+        // product.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
+    // }
+	// return product;
+ // }
  
   /**
   * Execute simulation
   */
- void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name,int check_energy) {
-	bool exiting=false;
+ // void simulate(int start_iter,int max_iter,std::vector<Body*> bodies, double theta, double G, double dt, int img_iter,std::string path,std::string config_file_name,int check_energy) {
+	// bool exiting=false;
 	
-	double initial_energy=check_energy>0?get_kinetic_energy(bodies) + get_potential_energy(bodies,G) : -1;
-	double total_energy=initial_energy;
-    for (int iter=start_iter; iter<max_iter+start_iter && !exiting; ++iter) {
-        Node* root = NULL;    // The oct-tree is recomputed at each iteration.
-        for (unsigned i=0; i<bodies.size(); ++i) {
-            bodies[i] -> resetToZerothOctant();
-            root = add(bodies[i], root);
-        }
+	// double initial_energy=check_energy>0?get_kinetic_energy(bodies) + get_potential_energy(bodies,G) : -1;
+	// double total_energy=initial_energy;
+    // for (int iter=start_iter; iter<max_iter+start_iter && !exiting; ++iter) {
+        // Node* root = NULL;    // The oct-tree is recomputed at each iteration.
+        // for (unsigned i=0; i<bodies.size(); ++i) {
+            // bodies[i] -> resetToZerothOctant();
+            // root = add(bodies[i], root);
+        // }
  
-        verlet(bodies, root, theta, G, dt); // Compute forces and advance bodies.
+        // verlet(bodies, root, theta, G, dt); // Compute forces and advance bodies.
  
-        delete root;  // De-allocate the oct-tree.
+        // delete root;  // De-allocate the oct-tree.
 		
-		exiting=killed();
-        if (iter%img_iter==0||exiting) {
-            std::cout << "Writing images at iteration " << iter << std::endl;
-            save_bodies(bodies, iter/img_iter,path);
-			save_config(bodies, iter, theta, G, dt,path,config_file_name);
-        }
-		if (check_energy>0 && iter%check_energy==0){
-			double energy=get_kinetic_energy(bodies) + get_potential_energy(bodies,G);
-			print_energy(energy, total_energy,initial_energy);
-			total_energy=energy;
-		}
-    }
-	if (check_energy>0 ){
-		double energy=get_kinetic_energy(bodies) + get_potential_energy(bodies,G);
-		print_energy(energy, total_energy,initial_energy);
-		total_energy=energy;
-	}
-}
+		// exiting=killed();
+        // if (iter%img_iter==0||exiting) {
+            // std::cout << "Writing images at iteration " << iter << std::endl;
+            // save_bodies(bodies, iter/img_iter,path);
+			// save_config(bodies, iter, theta, G, dt,path,config_file_name);
+        // }
+		// if (check_energy>0 && iter%check_energy==0){
+			// double energy=get_kinetic_energy(bodies) + get_potential_energy(bodies,G);
+			// print_energy(energy, total_energy,initial_energy);
+			// total_energy=energy;
+		// }
+    // }
+	// if (check_energy>0 ){
+		// double energy=get_kinetic_energy(bodies) + get_potential_energy(bodies,G);
+		// print_energy(energy, total_energy,initial_energy);
+		// total_energy=energy;
+	// }
+// }
 
 /**
  * Print total energy
  */
-void print_energy(double energy, double total_energy,double initial_energy) {
-	std::cout<< "Energy=" << energy << "("<<(energy-total_energy)<< "}, previous=" 
-				<< total_energy << "(" << (energy-initial_energy) 
-				<< "), initial=" << initial_energy  <<std::endl;
-}
+// void print_energy(double energy, double total_energy,double initial_energy) {
+	// std::cout<< "Energy=" << energy << "("<<(energy-total_energy)<< "}, previous=" 
+				// << total_energy << "(" << (energy-initial_energy) 
+				// << "), initial=" << initial_energy  <<std::endl;
+// }
 
 /**
  * Calculate kinetic energy for bodies
  */	
-double get_kinetic_energy(std::vector<Body*> bodies) {
-	double result=0;
-	for (std::vector<Body*>::iterator it = bodies.begin() ; it != bodies.end(); ++it)
-		result+=(*it)->get_kinetic_energy();
-	return result; 
-}
+// double get_kinetic_energy(std::vector<Body*> bodies) {
+	// double result=0;
+	// for (std::vector<Body*>::iterator it = bodies.begin() ; it != bodies.end(); ++it)
+		// result+=(*it)->get_kinetic_energy();
+	// return result; 
+// }
 
 /**
  * Calculate gravitational potential energy for bodies
  */
-double get_potential_energy(std::vector<Body*> bodies,double G){
-	double total=0;
-	for (int i=1;i<bodies.size();i++)
-		for (int j=0;j<i;j++)
-			total+=bodies[i]->get_potential_energy(bodies[j]);
-	return -G*total;
-}
+// double get_potential_energy(std::vector<Body*> bodies,double G){
+	// double total=0;
+	// for (int i=1;i<bodies.size();i++)
+		// for (int j=0;j<i;j++)
+			// total+=bodies[i]->get_potential_energy(bodies[j]);
+	// return -G*total;
+// }
 
 
 double config_version=0.0;
@@ -310,147 +327,147 @@ double config_version=0.0;
  /**
   * Restore configuration from saved file
   */
-bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies, int& iter, double &theta, double &G, double &dt) {
-	std::stringstream file_name;
-    file_name << path<< name;
-	std::ifstream config_file(file_name.str().c_str());
+// bool restore_config(std::string path,std::string name,std::vector<Body*>& bodies, int& iter, double &theta, double &G, double &dt) {
+	// std::stringstream file_name;
+    // file_name << path<< name;
+	// std::ifstream config_file(file_name.str().c_str());
 
-    if(! config_file.is_open())
-        return false;
-	enum State{expect_version, expect_iteration, expect_theta, expect_g, expect_dt, expect_body, expect_eof};
-	State state=State::expect_version;
-	while(! config_file.eof())   {
-		std::string line;
-        getline(config_file,line);
-        std::stringstream ss(line);
-		std::string token;
-		switch(state) {
-			case State::expect_version:
-				token = line.substr(1+line.find("="));
-				std::cout << token << std::endl;
-				state=State::expect_iteration;
-				break;
-			case State::expect_iteration:
-				token = line.substr(1+line.find("="));
-				iter=atoi(token.c_str());
-				std::cout << iter << std::endl;
-				state=State::expect_theta;
-				break;
-			case State::expect_theta:
-				token = line.substr(1+line.find("="));
-				std::cout << decode(token) << std::endl;
-				theta=decode(token);
-				state=State::expect_g;
-				break;
-			case State::expect_g:
-				token = line.substr(1+line.find("="));
-				std::cout << decode(token) << std::endl;
-				G=decode(token);
-				state=State::expect_dt;
-				break;
-			case State::expect_dt:
-				token = line.substr(1+line.find("="));
-				std::cout << decode(token) << std::endl;
-				dt=decode(token);
-				state=State::expect_body;
-				break;
-			case State::expect_body:
-				if (line.find("End")==0)
-					state=State::expect_eof;
-				else
-					bodies.push_back(extract_body(line));
-				break;
-			case State::expect_eof:
-				if (line.length()>0){
-					std::cout<<"Unexpected text following end"<<std::endl;
-					std::cout<<line<<std::endl;
-					return false;
-				}
-			default:
-				if (line.length()>0){
-					std::cout<<"Unexpected state: "<<state<<std::endl;
-					return false;
-				}
-		}
-    }
-	if (state!=State::expect_eof) {
-		std::cout<<"Unexpected state: "<<state<<"-" <<State::expect_eof <<std::endl;
-		return false;
-	}
-	return true;
-}
+    // if(! config_file.is_open())
+        // return false;
+	// enum State{expect_version, expect_iteration, expect_theta, expect_g, expect_dt, expect_body, expect_eof};
+	// State state=State::expect_version;
+	// while(! config_file.eof())   {
+		// std::string line;
+        // getline(config_file,line);
+        // std::stringstream ss(line);
+		// std::string token;
+		// switch(state) {
+			// case State::expect_version:
+				// token = line.substr(1+line.find("="));
+				// std::cout << token << std::endl;
+				// state=State::expect_iteration;
+				// break;
+			// case State::expect_iteration:
+				// token = line.substr(1+line.find("="));
+				// iter=atoi(token.c_str());
+				// std::cout << iter << std::endl;
+				// state=State::expect_theta;
+				// break;
+			// case State::expect_theta:
+				// token = line.substr(1+line.find("="));
+				// std::cout << decode(token) << std::endl;
+				// theta=decode(token);
+				// state=State::expect_g;
+				// break;
+			// case State::expect_g:
+				// token = line.substr(1+line.find("="));
+				// std::cout << decode(token) << std::endl;
+				// G=decode(token);
+				// state=State::expect_dt;
+				// break;
+			// case State::expect_dt:
+				// token = line.substr(1+line.find("="));
+				// std::cout << decode(token) << std::endl;
+				// dt=decode(token);
+				// state=State::expect_body;
+				// break;
+			// case State::expect_body:
+				// if (line.find("End")==0)
+					// state=State::expect_eof;
+				// else
+					// bodies.push_back(extract_body(line));
+				// break;
+			// case State::expect_eof:
+				// if (line.length()>0){
+					// std::cout<<"Unexpected text following end"<<std::endl;
+					// std::cout<<line<<std::endl;
+					// return false;
+				// }
+			// default:
+				// if (line.length()>0){
+					// std::cout<<"Unexpected state: "<<state<<std::endl;
+					// return false;
+				// }
+		// }
+    // }
+	// if (state!=State::expect_eof) {
+		// std::cout<<"Unexpected state: "<<state<<"-" <<State::expect_eof <<std::endl;
+		// return false;
+	// }
+	// return true;
+// }
 
 /**
  * Retrieve position, mass, and velocities stored for one Body
  */
-Body * extract_body(std::string line){
-	enum State {expect_i,expect_x,expect_y,expect_z,expect_m,expect_vx,expect_vy,expect_vz,end_line};
-	State state=expect_i;
-	double px, py, pz, m, vx,vy,vz;
-	while (state!=end_line) {
-		int pos=line.find(",");
-		std::string token=pos>=0 ? line.substr(0,pos) : line;
-		line=line.substr(pos+1);
+// Body * extract_body(std::string line){
+	// enum State {expect_i,expect_x,expect_y,expect_z,expect_m,expect_vx,expect_vy,expect_vz,end_line};
+	// State state=expect_i;
+	// double px, py, pz, m, vx,vy,vz;
+	// while (state!=end_line) {
+		// int pos=line.find(",");
+		// std::string token=pos>=0 ? line.substr(0,pos) : line;
+		// line=line.substr(pos+1);
 	
-		switch (state){
-			case expect_i:
-				state=expect_x;
-				break;
-			case expect_x:
-				state=expect_y;
-				px=decode(token);
-				break;
-			case expect_y:
-				state=expect_z;
-				py=decode(token);
-				break;
-			case expect_z:
-				state=expect_m;
-				pz=decode(token);
-				break;
-			case expect_m:
-				state=expect_vx;
-				m=decode(token);
-				break;
-			case expect_vx:
-				vx=decode(token);
-				state=expect_vy;
-				break;
-			case expect_vy:
-				vy=decode(token);
-				state=expect_vz;
-				break;
-			case expect_vz:
-				vz=decode(token);
-				state=end_line;
-		}
-	}
-	return new Body(m,px,py,pz,vx,vy,vz);
-}
+		// switch (state){
+			// case expect_i:
+				// state=expect_x;
+				// break;
+			// case expect_x:
+				// state=expect_y;
+				// px=decode(token);
+				// break;
+			// case expect_y:
+				// state=expect_z;
+				// py=decode(token);
+				// break;
+			// case expect_z:
+				// state=expect_m;
+				// pz=decode(token);
+				// break;
+			// case expect_m:
+				// state=expect_vx;
+				// m=decode(token);
+				// break;
+			// case expect_vx:
+				// vx=decode(token);
+				// state=expect_vy;
+				// break;
+			// case expect_vy:
+				// vy=decode(token);
+				// state=expect_vz;
+				// break;
+			// case expect_vz:
+				// vz=decode(token);
+				// state=end_line;
+		// }
+	// }
+	// return new Body(m,px,py,pz,vx,vy,vz);
+// }
 
 
-void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path,std::string name) {
-	std::stringstream file_name;
-    file_name << path<< name;
-/**
- * Save configuration so it can be restarted later
- */	backup(file_name.str().c_str());
-    std::ofstream ofile(file_name.str().c_str());
-	ofile << "Version="<<config_version<<"\n";
-	ofile << "iteration=" << iter  << "\n";
-	ofile << "theta=" << encode(theta)  << "\n";
-	ofile << "G=" << encode(G)  << "\n";
-	ofile << "dt=" << encode(dt)  << "\n";
-    for (unsigned i=0; i<bodies.size(); ++i) {
-		double px, py, pz;
-		bodies[i] -> getPos(px, py,pz);
-		double vx, vy,vz;
-		bodies[i] -> getVel(vx, vy,vz);
-		double m=bodies[i]->getMass();
-		ofile <<i<<","<< encode(px)<<","<< encode(py)<<","<< encode(pz)<<","<< encode(m) <<","<< encode(vx)<<","<< encode(vy)<<","<< encode(vz)<<"\n";
-	}
-	ofile << "End\n";
-}
+// void save_config( std::vector<Body*>& bodies, int iter, double theta, double G, double dt, std::string path,std::string name) {
+	// std::stringstream file_name;
+    // file_name << path<< name;
+// /**
+ // * Save configuration so it can be restarted later
+ // */	backup(file_name.str().c_str());
+    // std::ofstream ofile(file_name.str().c_str());
+	// ofile << "Version="<<config_version<<"\n";
+	// ofile << "iteration=" << iter  << "\n";
+	// ofile << "theta=" << encode(theta)  << "\n";
+	// ofile << "G=" << encode(G)  << "\n";
+	// ofile << "dt=" << encode(dt)  << "\n";
+    // for (unsigned i=0; i<bodies.size(); ++i) {
+		// double px, py, pz;
+		// bodies[i] -> getPos(px, py,pz);
+		// double vx, vy,vz;
+		// bodies[i] -> getVel(vx, vy,vz);
+		// double m=bodies[i]->getMass();
+		// ofile <<i<<","<< encode(px)<<","<< encode(py)<<","<< encode(pz)<<","<< encode(m) <<","<< encode(vx)<<","<< encode(vy)<<","<< encode(vz)<<"\n";
+	// }
+	// ofile << "End\n";
+// }
 
 /**
   * Generate help text

@@ -138,7 +138,7 @@ bool Node::visit(Visitor & visitor) {
 		should_continue=_child[i]->visit(visitor);
 		visitor.propagate(this,_child[i]);
 	}
-	return should_continue;
+	return should_continue ? visitor.depart(this) : false;
 }
 
 CentreOfMassCalculator::CentreOfMassCalculator(std::vector<Particle*> particles) 
@@ -171,4 +171,8 @@ void CentreOfMassCalculator::display() {
 			std::cout<<"Missing index: "<<indices[i]<<std::endl;
 }
 
+bool CentreOfMassCalculator::depart(Node * node)  {
+	std::cout << "done" << std::endl;
+	return true;
+}
 
