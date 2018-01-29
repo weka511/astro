@@ -28,6 +28,7 @@ class Node {
 	  class Visitor {
 		public:
 		  virtual bool visit(Node * node)=0;
+		  virtual void propagate(Node * node,Node * child){;}
 	  };
   	enum Status {Internal=-2, Unused=-1};
 	enum {N_Children=8};
@@ -44,6 +45,13 @@ class Node {
 	bool visit(Visitor& visitor);
 	
 	int getStatus() { return _particle_index;}
+	
+	void getPhysics(double& m, double& x, double& y, double &z) {m=_m;x=_x;y=_y;z=_z;}
+	
+	void setPhysics(double m, double x, double y, double z) {_m=m,_x=x;_y=y;_z=z;}
+	
+	void accumulatePhysics(Node* other) {_m+=other->_m,_x+=other->_x;_y+=other->_y;_z+=other->_z;}
+	
 	static Node * create(std::vector<Particle*> particles);
 	
 	static get_limits(std::vector<Particle*> particles,double& xmin,double& xmax,double& ymin,double& ymax,double& zmin,double& zmax);
@@ -64,12 +72,15 @@ class Node {
 	const double _xmin, _xmax, _ymin, _ymax, _zmin, _zmax, _xmean, _ymean, _zmean;
 	
 	Node * _child[N_Children];
+	
+	double _m, _x, _y, _z;
 };
 
 class CentreOfMassCalculator : public Node::Visitor {
   public:
 	CentreOfMassCalculator(std::vector<Particle*> particles);
 	bool visit(Node * node);
+	virtual void propagate(Node * node,Node * child);
 	void display();
 	
   private:

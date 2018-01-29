@@ -47,6 +47,9 @@ class Particle {
 	void getAcc(double& ax,	double& ay, double& az) {ax=_ax;ay=_ay;az=_az;}
 	
 	void setAcc(double ax,	double ay, double az) {_ax=ax;_ay=ay;_az=az;}
+	
+	double getMass() {return _m;}
+	
   private:
 	double _x;
 	double _y;

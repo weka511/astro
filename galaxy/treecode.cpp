@@ -23,7 +23,8 @@
 Node::Node(double xmin,double xmax,double ymin,double ymax,double zmin,double zmax)
 : _particle_index(Unused),
 	_xmin(xmin), _xmax(xmax), _ymin(ymin), _ymax(ymax), _zmin(zmin), _zmax(zmax),
-	_xmean(0.5*(xmin+ xmax)), _ymean(0.5*(ymin+ ymax)), _zmean(0.5*(zmin+ zmax))	{
+	_xmean(0.5*(xmin+ xmax)), _ymean(0.5*(ymin+ ymax)), _zmean(0.5*(zmin+ zmax)),
+	_m(0.0d),_x(0.0d),_y(0.0d),_z(0.0d) {
 	for (int i=0;i<N_Children;i++)
 		_child[i]=NULL;
 }
@@ -133,8 +134,10 @@ void Node::_split_node() {
 bool Node::visit(Visitor & visitor) {
 	bool should_continue=visitor.visit(this);
 	if (_particle_index==Internal)
-		for (int i=0;i<N_Children&&should_continue;i++)
-			should_continue=_child[i]->visit(visitor);
+		for (int i=0;i<N_Children&&should_continue;i++) {
+		should_continue=_child[i]->visit(visitor);
+		visitor.propagate(this,_child[i]);
+	}
 	return should_continue;
 }
 
@@ -146,8 +149,20 @@ CentreOfMassCalculator::CentreOfMassCalculator(std::vector<Particle*> particles)
 
 bool CentreOfMassCalculator::visit(Node * node) {
 	const int index= node->getStatus();
-	if (index>=0) indices[index]=true;
+	if (index>=0) {
+		indices[index]=true;
+		double x,y,z;
+		_particles[index]->getPos(x,y,z);
+		node->setPhysics(_particles[index]->getMass(),x,y,z);
+	}
 	return true;
+}
+
+void CentreOfMassCalculator::propagate(Node * node,Node * child){
+	const int index= node->getStatus();
+	if (index==Node::Internal) {
+		node->accumulatePhysics(child);
+	}
 }
 
 void CentreOfMassCalculator::display() {
