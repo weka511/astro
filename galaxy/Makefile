@@ -35,9 +35,6 @@ all : $(TARGETS)
 
 clean :
 	${RM} *.o *.stackdump
-
-tests : $(TEST_MAIN)
-	./$(TEST_MAIN)
 	
 depend: .depend
 
