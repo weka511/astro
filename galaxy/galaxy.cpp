@@ -195,14 +195,8 @@ int main(int argc, char **argv) {
 	if (!ends_with(path,"/"))
 		path.append("/");
 	
-	std::vector<Particle*> particles;
-	std::vector<std::vector<double>> positions= direct_sphere(3,100);
-	for (std::vector<std::vector<double>>::iterator pos=positions.begin();pos!=positions.end();pos++){
-		const double x=(*pos)[0];
-		const double y=(*pos)[1];
-		const double z=(*pos)[2];
-		particles.push_back(new Particle(x,y,x,0,0,0,0));
-	}
+	std::vector<Particle*> particles = createParticles( numbodies, inivel, ini_radius, mass );
+
 
 	Node * root=Node::create(particles);
 	CentreOfMassCalculator calculator(particles);
@@ -235,26 +229,26 @@ int main(int argc, char **argv) {
  /**
   * Create all bodies needed at start of run
   */
- // std::vector<Body*>  createBodies(int numbodies,double inivel,double ini_radius,double mass ){
-	// std::cout << "Initializing " << numbodies << " bodies" << std::endl;
-	// std::vector<std::vector<double>> positions=direct_sphere(3,numbodies);
-	// std::vector<Body*> product;
+ std::vector<Particle*>  createParticles(int numbodies,double inivel,double ini_radius,double mass ){
+	std::cout << "Initializing " << numbodies << " bodies" << std::endl;
+	std::vector<std::vector<double>> positions=direct_sphere(3,numbodies);
+	std::vector<Particle*> product;
 	
-	// for (std::vector<std::vector<double>>::iterator it = positions.begin() ; it != positions.end(); ++it) {
-        // const double px = (*it)[0]* 2.*ini_radius + 0.5-ini_radius;
-        // const double py = (*it)[1]* 2.*ini_radius + 0.5-ini_radius;
-		// const double pz = flat_flag==0 ? (*it)[2]* 2.*ini_radius + 0.5-ini_radius:0;
-        // const double rpx = px-0.5;
-        // const double rpy = py-0.5;
-		// const double rpz = flat_flag==0 ? pz-0.5 : 0;
-        // const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy)+sqr(rpz));
-        // const double vx = -rpy * inivel * rnorm / ini_radius;
-        // const double vy =  rpx * inivel * rnorm / ini_radius;
-		// const double vz = flat_flag==0 ? (std::rand()%2==0 ? rpx : -rpx) : 0;
-        // product.push_back( new Body(mass, px, py, pz, vx, vy,vz) );
-    // }
-	// return product;
- // }
+	for (std::vector<std::vector<double>>::iterator it = positions.begin() ; it != positions.end(); ++it) {
+        const double px = (*it)[0]* 2.*ini_radius + 0.5-ini_radius;
+        const double py = (*it)[1]* 2.*ini_radius + 0.5-ini_radius;
+		const double pz = flat_flag==0 ? (*it)[2]* 2.*ini_radius + 0.5-ini_radius:0;
+        const double rpx = px-0.5;
+        const double rpy = py-0.5;
+		const double rpz = flat_flag==0 ? pz-0.5 : 0;
+        const double rnorm = std::sqrt(sqr(rpx)+sqr(rpy)+sqr(rpz));
+        const double vx = -rpy * inivel * rnorm / ini_radius;
+        const double vy =  rpx * inivel * rnorm / ini_radius;
+		const double vz = flat_flag==0 ? (std::rand()%2==0 ? rpx : -rpx) : 0;
+        product.push_back( new Particle( px, py, pz, vx, vy,vz, mass) );
+    }
+	return product;
+ }
  
   /**
   * Execute simulation

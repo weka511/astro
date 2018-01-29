@@ -166,13 +166,14 @@ void CentreOfMassCalculator::propagate(Node * node,Node * child){
 }
 
 void CentreOfMassCalculator::display() {
+	std::cout << "Done " << indices.size() << " bodies."<< std::endl;
 	for (int i =0;i<indices.size();i++)
 		if (!indices[i])
 			std::cout<<"Missing index: "<<indices[i]<<std::endl;
 }
 
 bool CentreOfMassCalculator::depart(Node * node)  {
-	std::cout << "done" << std::endl;
+	
 	return true;
 }
 

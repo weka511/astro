@@ -15,10 +15,15 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>
  */
 
+#ifndef _GALAXY_H
+#define _GALAXY_H
+
+#include "particle.h"
+
  /**
   * Create all bodies needed at start of run
   */
-// std::vector<Body*>  createBodies(int numbodies,double inivel,double ini_radius,double mass);
+std::vector<Particle*>  createParticles(int numbodies,double inivel,double ini_radius,double mass);
  
  /**
   * Execute simulation
@@ -59,6 +64,9 @@ void help(int numbodies,double inivel,double ini_radius,double mass,int max_iter
  * Print total energy
  */
 // void print_energy(double energy, double total_energy,double initial_energy);
+
+#endif
+
  
  
  
