@@ -210,6 +210,10 @@ int main(int argc, char **argv) {
 	calculator.display();
 	delete root;
 	
+		// run_verlet(&get_acceleration_shm, max_iter, dt,	particles,	&print_values);
+	// for (std::vector<Particle*>::iterator it = particles.begin() ; it != particles.end(); ++it) 
+		// delete (*it);
+	
 	// std::vector<Body*> bodies; 
 	// int iter=0;
     // if (resume_flag && restore_config(path,config_file_name, bodies,  iter,  theta,  G,  dt)) {
