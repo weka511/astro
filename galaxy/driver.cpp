@@ -17,7 +17,8 @@
  
  #include <iostream>
  
- 
+ #include "treecode.h"
+ #include "utils.h"
  #include "verlet.h"
 
 void get_acceleration_shm(std::vector<Particle*> particles){
@@ -39,11 +40,24 @@ bool print_values(std::vector<Particle*> particles) {
 int main(int argc, char** argv){
     int max_iter = 100000; // Number of time-iterations executed by the program.
 	double dt=0.01;
-	std::vector<Particle*> particles;
-	particles.push_back(new Particle(1,0));
-	run_verlet(&get_acceleration_shm, max_iter, dt,	particles,	&print_values);
-	for (std::vector<Particle*>::iterator it = particles.begin() ; it != particles.end(); ++it) 
-		delete (*it);
+	 std::vector<Particle*> particles;
+	// particles.push_back(new Particle(1,0));
+	std::vector<std::vector<double>> positions= direct_sphere(3,100);
+	for (std::vector<std::vector<double>>::iterator pos=positions.begin();pos!=positions.end();pos++){
+		const double x=(*pos)[0];
+		const double y=(*pos)[1];
+		const double z=(*pos)[2];
+		particles.push_back(new Particle(x,y,x,0,0,0,0));
+	}
+
+	Node * root=Node::create(particles);
+	CentreOfMassCalculator calculator(particles);
+	root->visit(calculator);
+	calculator.display();
+	delete root;
+	// run_verlet(&get_acceleration_shm, max_iter, dt,	particles,	&print_values);
+	// for (std::vector<Particle*>::iterator it = particles.begin() ; it != particles.end(); ++it) 
+		// delete (*it);
 
 	 return EXIT_SUCCESS;
 }

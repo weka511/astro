@@ -17,15 +17,24 @@
  
 #include "treecode.h"
 #include <algorithm>
+#include <iostream>
 #include <limits>
 
-Node * Node ::create(std::vector<Particle*> particles){
-	double xmin=std::numeric_limits<double>::max();
-	double xmax=-xmin;
-	double ymin=std::numeric_limits<double>::max();
-	double ymax=-ymin;
-	double zmin=std::numeric_limits<double>::max();
-	double zmax=-zmin;
+Node::Node(double xmin,double xmax,double ymin,double ymax,double zmin,double zmax)
+: _particle_index(Unused),
+	_xmin(xmin), _xmax(xmax), _ymin(ymin), _ymax(ymax), _zmin(zmin), _zmax(zmax),
+	_xmean(0.5*(xmin+ xmax)), _ymean(0.5*(ymin+ ymax)), _zmean(0.5*(zmin+ zmax))	{
+	for (int i=0;i<N_Children;i++)
+		_child[i]=NULL;
+}
+
+Node::get_limits(std::vector<Particle*> particles,double& xmin,double& xmax,double& ymin,double& ymax,double& zmin,double& zmax){
+	xmin=std::numeric_limits<double>::max();
+	xmax=-xmin;
+	ymin=std::numeric_limits<double>::max();
+	ymax=-ymin;
+	zmin=std::numeric_limits<double>::max();
+	zmax=-zmin;
 	std::for_each(particles.begin(),
 					particles.end(),
 					[&xmin,&xmax,&ymin,&ymax,&zmin,&zmax](Particle* particle){
@@ -38,6 +47,10 @@ Node * Node ::create(std::vector<Particle*> particles){
 						if (z<zmin) zmin=z;
 						if (z>zmax) zmax=z;
 					});
+}
+Node * Node::create(std::vector<Particle*> particles){
+	double xmin, xmax, ymin, ymax, zmin, zmax;
+	Node::get_limits(particles,xmin, xmax, ymin, ymax, zmin, zmax);
 	Node * product=new Node(xmin,xmax,ymin,ymax,zmin,zmax);
 	for (int index=0;index<particles.size();index++)
 		product->insert(index,particles);
@@ -85,7 +98,7 @@ int Node::_get_child_index(Particle * particle) {
 }
 
 void Node::_split_node() {
-	_particle_index=Internal;
+	_particle_index=Internal;ode:
 	double xmin, xmax, ymin, ymax, zmin, zmax;
 	for (int i=0;i<2;i++) {
 		if (i==0) {
@@ -112,7 +125,35 @@ void Node::_split_node() {
 					zmax=_zmax;
 				}
 				_child[_get_child_index(i,j,k)]=new Node(xmin, xmax, ymin, ymax, zmin, zmax);
-			}
-		}
-	}
+			}	// k
+		}		// j
+	}			// i
+} 
+
+bool Node::visit(Visitor & visitor) {
+	bool should_continue=visitor.visit(this);
+	if (_particle_index==Internal)
+		for (int i=0;i<N_Children&&should_continue;i++)
+			should_continue=_child[i]->visit(visitor);
+	return should_continue;
 }
+
+CentreOfMassCalculator::CentreOfMassCalculator(std::vector<Particle*> particles) 
+: _particles(particles) {
+	for (int i=0;i<particles.size();i++)
+		indices.push_back(false);
+}
+
+bool CentreOfMassCalculator::visit(Node * node) {
+	const int index= node->getStatus();
+	if (index>=0) indices[index]=true;
+	return true;
+}
+
+void CentreOfMassCalculator::display() {
+	for (int i =0;i<indices.size();i++)
+		if (!indices[i])
+			std::cout<<"Missing index: "<<indices[i]<<std::endl;
+}
+
+

@@ -25,15 +25,13 @@
 
 class Node {
   public:
+	  class Visitor {
+		public:
+		  virtual bool visit(Node * node)=0;
+	  };
   	enum Status {Internal=-2, Unused=-1};
 	enum {N_Children=8};
-    Node(double xmin,double xmax,double ymin,double ymax,double zmin,double zmax)
-	: _particle_index(Unused),
-		_xmin(xmin), _xmax(xmax), _ymin(ymin), _ymax(ymax), _zmin(zmin), _zmax(zmax),
-		_xmean(0.5*(xmin+ xmax)), _ymean(0.5*(ymin+ ymax)), _zmean(0.5*(zmin+ zmax))	{
-		for (int i=0;i<N_Children;i++)
-			_child[i]=NULL;
-	}
+    Node(double xmin,double xmax,double ymin,double ymax,double zmin,double zmax);
 	
 	void insert(int particle_index,std::vector<Particle*> particles);
 	
@@ -43,7 +41,13 @@ class Node {
 				delete _child[i];
 	}
 	
+	bool visit(Visitor& visitor);
+	
+	int getStatus() { return _particle_index;}
 	static Node * create(std::vector<Particle*> particles);
+	
+	static get_limits(std::vector<Particle*> particles,double& xmin,double& xmax,double& ymin,double& ymax,double& zmin,double& zmax);
+	
   private:
 	int _get_child_index(int i, int j, int k) {return 4*i+2*j+k;}
 	
@@ -60,6 +64,17 @@ class Node {
 	const double _xmin, _xmax, _ymin, _ymax, _zmin, _zmax, _xmean, _ymean, _zmean;
 	
 	Node * _child[N_Children];
+};
+
+class CentreOfMassCalculator : public Node::Visitor {
+  public:
+	CentreOfMassCalculator(std::vector<Particle*> particles);
+	bool visit(Node * node);
+	void display();
+	
+  private:
+	std::vector<Particle*> _particles;
+	std::vector<bool> indices;
 };
 
 #endif
