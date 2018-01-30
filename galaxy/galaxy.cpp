@@ -63,15 +63,18 @@ struct option long_options[] = {
 	{"inivel",  		required_argument, 	0, 				'v'},
 	{0, 				0, 					0, 				0}
 };	
-void get_acceleration_bh0(std::vector<Particle*>) {;}
-	
+
+/**
+ *  Theta-criterion of the Barnes-Hut algorithm.
+ *  I had to move this outside `main` so the lambda in `run_verlet` would compile.
+ */
+double theta = 0.5;
+
 /**
  * Main program. Parse command line options, create bodies, then run simulation.
  */
 int main(int argc, char **argv) {
 
-    // Theta-criterion of the Barnes-Hut algorithm.
-    double theta = 0.5;
     // Mass of a body.
     double mass = 1.0;
     // Initially, the bodies are distributed inside a circle of radius ini_radius.
@@ -207,7 +210,7 @@ int main(int argc, char **argv) {
 	root->visit(calculator);
 	calculator.display();
 	
-	run_verlet(&get_acceleration_bh0,
+	run_verlet([](std::vector<Particle*> particles)->void{get_acceleration_bh(particles,theta);},
 				max_iter,
 				dt,
 				particles,
