@@ -28,7 +28,9 @@
 #include <getopt.h>
 #include <random>
 #include <algorithm>
+
 #include "galaxy.h"
+#include "center-of-mass.h"
 #include "treecode.h"
 #include "utils.h"
 #include "verlet.h"

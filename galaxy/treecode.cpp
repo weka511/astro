@@ -141,39 +141,4 @@ bool Node::visit(Visitor & visitor) {
 	return should_continue ? visitor.depart(this) : false;
 }
 
-CentreOfMassCalculator::CentreOfMassCalculator(std::vector<Particle*> particles) 
-: _particles(particles) {
-	for (int i=0;i<particles.size();i++)
-		indices.push_back(false);
-}
-
-bool CentreOfMassCalculator::visit(Node * node) {
-	const int index= node->getStatus();
-	if (index>=0) {
-		indices[index]=true;
-		double x,y,z;
-		_particles[index]->getPos(x,y,z);
-		node->setPhysics(_particles[index]->getMass(),x,y,z);
-	}
-	return true;
-}
-
-void CentreOfMassCalculator::propagate(Node * node,Node * child){
-	const int index= node->getStatus();
-	if (index==Node::Internal) {
-		node->accumulatePhysics(child);
-	}
-}
-
-void CentreOfMassCalculator::display() {
-	std::cout << "Done " << indices.size() << " bodies."<< std::endl;
-	for (int i =0;i<indices.size();i++)
-		if (!indices[i])
-			std::cout<<"Missing index: "<<indices[i]<<std::endl;
-}
-
-bool CentreOfMassCalculator::depart(Node * node)  {
-	
-	return true;
-}
 

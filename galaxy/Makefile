@@ -22,8 +22,9 @@ CC=gcc
 CXX=g++
 RM=rm -f
 MKDIR=mkdir
-SRCS=	treecode.cpp	\
-		utils.cpp		\
+SRCS=	center-of-mass.cpp	\
+		treecode.cpp		\
+		utils.cpp			\
 		verlet.cpp
 		
 OBJS=$(subst .cpp,.o,$(SRCS))

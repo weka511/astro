@@ -23,6 +23,9 @@
 #include "verlet.h"
 #include "particle.h"
 
+/**
+ *  Represents one node in Barnes Hut Octree
+ */
 class Node {
   public:
 	  class Visitor {
@@ -33,6 +36,10 @@ class Node {
 	  };
   	enum Status {Internal=-2, Unused=-1};
 	enum {N_Children=8};
+	
+	/**
+	 *  Create one node for tree
+	 */
     Node(double xmin,double xmax,double ymin,double ymax,double zmin,double zmax);
 	
 	void insert(int particle_index,std::vector<Particle*> particles);
@@ -44,14 +51,25 @@ class Node {
 	}
 	
 	bool visit(Visitor& visitor);
-	
+	 
 	int getStatus() { return _particle_index;}
 	
 	void getPhysics(double& m, double& x, double& y, double &z) {m=_m;x=_x;y=_y;z=_z;}
 	
 	void setPhysics(double m, double x, double y, double z) {_m=m,_x=x;_y=y;_z=z;}
 	
-	void accumulatePhysics(Node* other) {_m+=other->_m,_x+=other->_x;_y+=other->_y;_z+=other->_z;}
+	/**
+	 *   Used to calculate centre of mass for internal nodes.
+	 */
+	void accumulatePhysics(Node* other) {
+		_m+=other->_m;
+		const int mult = other->getStatus() >=0 ? other->_m : 1;
+		_x += mult * other->_x;
+		_y += mult * other->_y;
+		_z += mult * other->_z;
+	}
+	
+	const double _xmin, _xmax, _ymin, _ymax, _zmin, _zmax, _xmean, _ymean, _zmean;
 	
 	static Node * create(std::vector<Particle*> particles);
 	
@@ -70,24 +88,13 @@ class Node {
 	
 	int _particle_index;
 	
-	const double _xmin, _xmax, _ymin, _ymax, _zmin, _zmax, _xmean, _ymean, _zmean;
+	
 	
 	Node * _child[N_Children];
 	
 	double _m, _x, _y, _z;
 };
 
-class CentreOfMassCalculator : public Node::Visitor {
-  public:
-	CentreOfMassCalculator(std::vector<Particle*> particles);
-	bool visit(Node * node);
-	virtual void propagate(Node * node,Node * child);
-	virtual bool depart(Node * node);
-	void display();
-	
-  private:
-	std::vector<Particle*> _particles;
-	std::vector<bool> indices;
-};
+
 
 #endif
