@@ -1,6 +1,8 @@
 <NotepadPlus>
     <Project name="Galaxy Simulator">
         <File name="catch.hpp" />
+        <File name="center-of-mass.cpp" />
+        <File name="center-of-mass.h" />
         <File name="galaxy.cpp" />
         <File name="galaxy.h" />
         <File name="Makefile" />
@@ -12,7 +14,5 @@
         <File name="utils.h" />
         <File name="verlet.cpp" />
         <File name="verlet.h" />
-        <File name="center-of-mass.cpp" />
-        <File name="center-of-mass.h" />
     </Project>
 </NotepadPlus>
