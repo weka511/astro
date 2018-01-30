@@ -21,20 +21,29 @@
 #include <vector>
 #include "particle.h"
 #include "treecode.h"
+#include "utils.h"
 
-void get_acceleration_bh(std::vector<Particle*>,double theta);
+void get_acceleration_bh(std::vector<Particle*>,double theta,double G);
 
 
 class BarnesHutVisitor :  public Node::Visitor{
   public:
-	BarnesHutVisitor(Particle* me,const double theta) : _me(me),_theta(theta) {}
-	virtual bool visit(Node * node);
-	virtual void propagate(Node * node,Node * child);
-	virtual bool depart(Node * node);
-	void store_accelerations();
+	BarnesHutVisitor(Particle* me,const double theta, const double G) : _me(me),_theta2(sqr(theta)),_G(G),_acc_x(0),_acc_y(0),_acc_z(0) {
+		_me->getPos(_x,_y,_z);
+	}
+	virtual Node::Visitor::Status visit(Node * node);
+	void store_accelerations(Particle*me);
   private:
+	void _accumulate_acceleration(double m,double x,double y,double z,double dsq);
 	Particle * _me;
-	const double _theta;
+	const double _theta2;
+	double _x;
+	double _y;
+	double _z;
+	double _G;
+	double _acc_x;
+	double _acc_y;
+	double _acc_z;
 };
 
 #endif

@@ -48,6 +48,8 @@ Node::get_limits(std::vector<Particle*> particles,double& xmin,double& xmax,doub
 						if (z<zmin) zmin=z;
 						if (z>zmax) zmax=z;
 					});
+	xmin=ymin=zmin=std::min(xmin,std::min(ymin,zmin));  // because Barnes Hut requires cubes
+	xmax=ymax=zmax=std::max(xmax,std::max(ymax,zmax));
 }
 Node * Node::create(std::vector<Particle*> particles){
 	double xmin, xmax, ymin, ymax, zmin, zmax;
@@ -132,8 +134,9 @@ void Node::_split_node() {
 } 
 
 bool Node::visit(Visitor & visitor) {
-	bool should_continue=visitor.visit(this);
-	if (_particle_index==Internal)
+	Node::Visitor::Status status=visitor.visit(this);
+	bool should_continue=status != Node::Visitor::Status::Stop;
+	if (_particle_index==Internal && status==Node::Visitor::Status::Continue)
 		for (int i=0;i<N_Children&&should_continue;i++) {
 		should_continue=_child[i]->visit(visitor);
 		visitor.propagate(this,_child[i]);

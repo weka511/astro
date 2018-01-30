@@ -16,33 +16,60 @@
  */
  
 #include <algorithm>
+#include <string>
+#include <cmath>
 #include "barnes-hut.h"
 #include "center-of-mass.h"
 
-void get_acceleration_bh(std::vector<Particle*> particles,double theta) {
+
+void get_acceleration_bh(std::vector<Particle*> particles,double theta,double G) {
 	Node * root=Node::create(particles);
 	CentreOfMassCalculator calculator(particles);
 	root->visit(calculator);
 	calculator.display();
 	std::for_each(particles.begin(),
 				particles.end(),
-				[root,theta](Particle*me){
-					BarnesHutVisitor visitor(me,theta);
+				[root,theta,G](Particle*me){
+					BarnesHutVisitor visitor(me,theta,G);
 					root->visit(visitor);
-					visitor.store_accelerations();
+					visitor.store_accelerations(me);
 				});
 	delete root;
 }
 
-bool BarnesHutVisitor::visit(Node * node) {
+Node::Visitor::Status BarnesHutVisitor::visit(Node * node) {
+	const int index= node->getStatus();
+	double m,x,y,z;
+	node->getPhysics(m,x,y,z);
+	double dsq;
+	switch (node->getStatus()) {
+		case Node::Internal:
+			x/=m;y/=m;z/=m;
+			dsq=sqr(x-_x) + sqr(y-_y) + sqr(z-_z);
+			if (sqr(node->getSide())/dsq<_theta2) {
+				_accumulate_acceleration(m,x,y,z,dsq);
+				return Node::Visitor::Status::Sideways;
+			} else
+				return Node::Visitor::Status::Continue;
+		case Node::Unused:
+			return Node::Visitor::Status::Continue;
+		default: 
+			dsq=sqr(x-_x) + sqr(y-_y) + sqr(z-_z);
+			_accumulate_acceleration(m,x,y,z,dsq);
+			return Node::Visitor::Status::Continue;
+	}
+
+
 }
 
-void BarnesHutVisitor::propagate(Node * node,Node * child){
+
+void BarnesHutVisitor::store_accelerations(Particle*me) {
+	me->setAcc(_acc_x,_acc_y,_acc_z);
 }
 
-bool BarnesHutVisitor::depart(Node * node) {
-}
-
-void BarnesHutVisitor::store_accelerations() {
-	
+void BarnesHutVisitor::_accumulate_acceleration(double m,double x,double y,double z,double dsq){
+	const double d_factor=pow(dsq,-3/2);
+	_acc_x+=_G*m*(x-_x)*d_factor;
+	_acc_y+=_G*m*(y-_y)*d_factor;
+	_acc_z+=_G*m*(z-_z)*d_factor;
 }

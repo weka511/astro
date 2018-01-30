@@ -70,6 +70,9 @@ struct option long_options[] = {
  */
 double theta = 0.5;
 
+ // The "gravitational constant" is chosen so as to get a pleasant output.
+ double G = 4.e-6;
+	
 /**
  * Main program. Parse command line options, create bodies, then run simulation.
  */
@@ -81,8 +84,7 @@ int main(int argc, char **argv) {
     double ini_radius = 0.1;
     // Initial maximum velocity of the bodies.
     double inivel = 0.1;
-    // The "gravitational constant" is chosen so as to get a pleasant output.
-    double G = 4.e-6;
+
     // Discrete time step.
     double dt = 1.e-3;
     // outside the initial radius are removed).
@@ -204,10 +206,7 @@ int main(int argc, char **argv) {
 	
 	std::vector<Particle*> particles = createParticles( numbodies, inivel, ini_radius, mass );
 
-
-
-	
-	run_verlet([](std::vector<Particle*> particles)->void{get_acceleration_bh(particles,theta);},
+	run_verlet([](std::vector<Particle*> particles)->void{get_acceleration_bh(particles,theta,G);},
 				max_iter,
 				dt,
 				particles,

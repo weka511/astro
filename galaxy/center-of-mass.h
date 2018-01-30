@@ -24,7 +24,7 @@
 class CentreOfMassCalculator : public Node::Visitor {
   public:
 	CentreOfMassCalculator(std::vector<Particle*> particles);
-	bool visit(Node * node);
+	Node::Visitor::Status visit(Node * node);
 	virtual void propagate(Node * node,Node * child);
 	virtual bool depart(Node * node);
 	void display();

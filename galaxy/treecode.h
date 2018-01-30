@@ -30,9 +30,10 @@ class Node {
   public:
 	  class Visitor {
 		public:
-		  virtual bool visit(Node * node)=0;
-		  virtual void propagate(Node * node,Node * child){;}
-		  virtual bool depart(Node * node) {return true;};
+			enum Status{Stop, Continue, Sideways};
+			virtual Status visit(Node * node)=0;
+			virtual void propagate(Node * node,Node * child){;}
+			virtual bool depart(Node * node) {return true;};
 	  };
   	enum Status {Internal=-2, Unused=-1};
 	enum {N_Children=8};
@@ -75,6 +76,7 @@ class Node {
 	
 	static get_limits(std::vector<Particle*> particles,double& xmin,double& xmax,double& ymin,double& ymax,double& zmin,double& zmax);
 	
+	double getSide() {return _xmax - _xmin;}
   private:
 	int _get_child_index(int i, int j, int k) {return 4*i+2*j+k;}
 	

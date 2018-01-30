@@ -15,6 +15,9 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>
  */
  
+#ifndef _UTILS_H
+#define _UTILS_H
+
  /**
   * Encode a floating value so it can be stored and retrieved without loss of significant digits
   */
@@ -44,5 +47,7 @@ bool ends_with(std::string const & value, std::string const & ending);
 
 void remove_old_configs(std::string path);
  
-double sqr(double x) {return x*x;}
+double sqr(double x);
+
+#endif
  

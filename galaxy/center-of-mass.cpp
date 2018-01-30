@@ -27,7 +27,7 @@ CentreOfMassCalculator::CentreOfMassCalculator(std::vector<Particle*> particles)
 		indices.push_back(false);
 }
 
-bool CentreOfMassCalculator::visit(Node * node) {
+Node::Visitor::Status CentreOfMassCalculator::visit(Node * node) {
 	const int index= node->getStatus();
 	if (index>=0) {
 		indices[index]=true;
@@ -35,7 +35,7 @@ bool CentreOfMassCalculator::visit(Node * node) {
 		_particles[index]->getPos(x,y,z);
 		node->setPhysics(_particles[index]->getMass(),x,y,z);
 	}
-	return true;
+	return Node::Visitor::Status::Continue;
 }
 
 void CentreOfMassCalculator::propagate(Node * node,Node * child){
