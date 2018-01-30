@@ -29,6 +29,7 @@
 #include <random>
 #include <algorithm>
 
+#include "barnes-hut.h"
 #include "galaxy.h"
 #include "center-of-mass.h"
 #include "treecode.h"
@@ -62,6 +63,7 @@ struct option long_options[] = {
 	{"inivel",  		required_argument, 	0, 				'v'},
 	{0, 				0, 					0, 				0}
 };	
+void get_acceleration_bh0(std::vector<Particle*>) {;}
 	
 /**
  * Main program. Parse command line options, create bodies, then run simulation.
@@ -204,6 +206,13 @@ int main(int argc, char **argv) {
 	CentreOfMassCalculator calculator(particles);
 	root->visit(calculator);
 	calculator.display();
+	
+	run_verlet(&get_acceleration_bh0,
+				max_iter,
+				dt,
+				particles,
+				[](std::vector<Particle*> particles){return true;});
+	
 	delete root;
 	
 		// run_verlet(&get_acceleration_shm, max_iter, dt,	particles,	&print_values);

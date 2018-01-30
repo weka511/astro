@@ -22,7 +22,8 @@ CC=gcc
 CXX=g++
 RM=rm -f
 MKDIR=mkdir
-SRCS=	center-of-mass.cpp	\
+SRCS=	barnes-hut.cpp		\
+		center-of-mass.cpp	\
 		treecode.cpp		\
 		utils.cpp			\
 		verlet.cpp

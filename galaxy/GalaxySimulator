@@ -1,5 +1,7 @@
 <NotepadPlus>
     <Project name="Galaxy Simulator">
+        <File name="barnes-hut.cpp" />
+        <File name="barnes-hut.h" />
         <File name="catch.hpp" />
         <File name="center-of-mass.cpp" />
         <File name="center-of-mass.h" />
