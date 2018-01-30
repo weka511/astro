@@ -10,6 +10,7 @@
 | |catch.hpp | [Catch2](https://github.com/catchorg/Catch2) Unit testing framework |
 | center-of-mass.cpp |center-of-mass.h| Find centre of mass for internal nodes|
 | galaxy.cpp |galaxy.h| Simulate Galaxy using Barnes Hut|
+|Galaxy Simulator.xml||Notepad++ Workspace|
 | Makefile || Build Barnes Hut simulation |
 | make_3d.py | |Plot output from galaxy |
 | make_img.py || Plot output from galaxy |
