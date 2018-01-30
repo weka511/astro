@@ -205,10 +205,7 @@ int main(int argc, char **argv) {
 	std::vector<Particle*> particles = createParticles( numbodies, inivel, ini_radius, mass );
 
 
-	Node * root=Node::create(particles);
-	CentreOfMassCalculator calculator(particles);
-	root->visit(calculator);
-	calculator.display();
+
 	
 	run_verlet([](std::vector<Particle*> particles)->void{get_acceleration_bh(particles,theta);},
 				max_iter,
@@ -216,7 +213,7 @@ int main(int argc, char **argv) {
 				particles,
 				[](std::vector<Particle*> particles){return true;});
 	
-	delete root;
+	
 	
 		// run_verlet(&get_acceleration_shm, max_iter, dt,	particles,	&print_values);
 	// for (std::vector<Particle*>::iterator it = particles.begin() ; it != particles.end(); ++it) 
