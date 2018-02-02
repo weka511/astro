@@ -24,7 +24,3 @@ Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.
 |--------------------------|---------------------------------------------------------------------|
 | jacobi.py |  Zero velocity Surfaces for the Jacobi Integral |
 | jacobi3d.py |  Potential surfaces |
-
-## Barnes Hut
-
-The [galaxy](https://github.com/weka511/astro/tree/master/galaxy) folder contains a [Barnes Hut](https://en.wikipedia.org/wiki/Barnes%E2%80%93Hut_simulation) simulation of a galaxy
