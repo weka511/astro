@@ -20,7 +20,8 @@ I have started working on some code for orbital calculatione, based on [Kotovich
 
 Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.org/core/books/solar-system-dynamics/108745217E4A18190CBA340ED5E477A2)
 
-| File | Purpose |
-|--------------------------|---------------------------------------------------------------------|
-| jacobi.py |  Zero velocity Surfaces for the Jacobi Integral |
-| jacobi3d.py |  Potential surfaces |
+|#| File | Purpose |
+|--|--------------------------|---------------------------------------------------------------------|
+|1|1.5|Exercise 1.5|
+|3| jacobi.py |  Zero velocity Surfaces for the Jacobi Integral |
+|-| jacobi3d.py |  Potential surfaces |
