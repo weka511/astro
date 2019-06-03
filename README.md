@@ -23,8 +23,9 @@ Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.
 |#| File | Purpose |
 |--|--------------------------|---------------------------------------------------------------------|
 |1|Structure of the Solar System|
-|1.3|Satellites of Uranus|
-|1.5|Identify commensurability and estimate probability of this particular value occurring by chance.|
+|1.3.py|Satellites of Uranus|
+|1.4.py|Satellites of Saturn|
+|1.5.py|Identify commensurability and estimate probability of this particular value occurring by chance.|
 |2|The 2 Body Problem|
 |3|The Restricted 3 Body Problem|
 |jacobi.py|Zero velocity Surfaces for the Jacobi Integral|
