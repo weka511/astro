@@ -1,9 +1,6 @@
-# astro
-Astronomical Calculations inspired by Mike Brown's course [Science of the Solar System](https://www.coursera.org/learn/solar-system/home/info)
+# Astronomical Calculations inspired by Mike Brown's course [Science of the Solar System](https://www.coursera.org/learn/solar-system/home/info)
 
-## Orbital calculations
-
-I have started working on some code for orbital calculatione, based on [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084)
+## Orbital calculations: [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084)
 
 | File | Purpose |
 |--------------------------|---------------------------------------------------------------------|
@@ -16,9 +13,7 @@ I have started working on some code for orbital calculatione, based on [Kotovich
 | tracking.py | Record results in logfile so they can be played back, and analyses can be restarted |
 | Lorentz.py | This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor |
 
-## Murray and Dermott
-
-Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.org/core/books/solar-system-dynamics/108745217E4A18190CBA340ED5E477A2)
+## Examples from [Murray and Dermott, Solar System Dynamics](https://www.cambridge.org/core/books/solar-system-dynamics/108745217E4A18190CBA340ED5E477A2)
 
 |File| Description |
 |--------------------|------------------------------------------------------------|
@@ -27,6 +22,6 @@ Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.
 |saturn.py|1.4 Satellites of Saturn|
 |uranus.py|1.3 Satellites of Uranus|
 |-|2. The 2 Body Problem|
-|-|3.The Restricted 3 Body Problem|
+|-|3. The Restricted 3 Body Problem|
 |jacobi.py|Zero velocity Surfaces for the Jacobi Integral|
 |jacobi3d.py|Potential surfaces|
