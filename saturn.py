@@ -15,35 +15,45 @@
 
 import random, matplotlib.pyplot as plt, math
 
-
+  
 def get_mean_motion_ratios(data,max_p=100):
-     cs = []
+     
+     # get_bounds
+     #
+     # calculate p and p' from Murray and Dermott, Section 1.7.
+     # We use r0 for the lower bound (MD p'/(p'+1)) and r1 for the upper 
+     def get_bounds(n_ratio):
+          if 1/3<n_ratio and n_ratio < 1/2: # See MD Section 1.7
+               return (1/3,1/2)
+          r0      = 0
+          r1      = None
+          for p in range(max_p):
+               r = p/(p+1)
+               if r<n_ratio:
+                    r0 = r
+               if r>n_ratio:
+                    r1 = r
+                    return (r0,r1)
+               
+     rcs = []
      for j in range(len(data)):
           _,T1 = data[j]
           n1   = 360/T1
           for i in range(j):
                _,T2    = data[i]
                n2      = 360/T2
-               n_ratio = n1/n2
-               p0      = 0
-               p1      = None
-               for p in range(max_p):
-                    r = p/(p+1)
-                    if r<n_ratio:
-                         p0 = r
-                    if r>n_ratio:
-                         p1=r
-                         break
-
-               a = (n_ratio-p0)/(p1-p0)
-               b = 0 if a<=0.5 else 1
-               c = 2*math.pi * (a-b)
-               print (p0,n_ratio,p1,a,b,c)
-               cs.append((p,c))
-     plt.hist([c for _,c in cs])
-     plt.hist([abs(c) for _,c in cs if abs(c)>0.5])
+               (r0,r1) =get_bounds(n1/n2)
+               a = (n1/n2-r0)/(r1-r0)   # Murray & Dermott (1.19)
+               b = 0 if a<=0.5 else 1   # Murray & Dermott (1.20)
+               c = 2 * math.pi * (a-b)    # Murray & Dermott (1.21)
+               rcs.append(((r0,r1),c))
+     cs = sorted([abs(c) for _,c in rcs])
+     for i in range(len(cs)):
+          print (i,cs[i])
+     plt.hist(cs,bins=100)
+     #n,bins,_=plt.hist([abs(c) for _,c in cs],bins=100,cumulative=True)     
      plt.title('Distribution of c')
-     print (len(set([p for p,_ in cs])))
+     print (len(set([r for r,_ in rcs])))
      
 if __name__=='__main__':
      with open('data/saturn.dat') as data_file:
