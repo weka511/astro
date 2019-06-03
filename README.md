@@ -22,6 +22,7 @@
 |1.4|saturn.py|Satellites of Saturn|
 |1.5|commensurability.py|Identify commensurability and estimate probability of this particular value occurring by chance.|
 |2||The Two Body Problem|
+|2.2|earth_mars.py|Earth Mars Distance)|
 |3||The Restricted Three Body Problem|
 ||jacobi.py|Zero velocity Surfaces for the Jacobi Integral|
 ||jacobi3d.py|Potential surfaces|
