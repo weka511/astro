@@ -52,7 +52,7 @@ def monte_carlo(n,N,target_commensurabilities,T=20,seed=None,maxp=10):
 if __name__=='__main__':
      N = 100
      from numpy import mean,std
-     with open('data/1.5.txt') as data:
+     with open('data/commensurability.dat') as data:
           periods            = [float(line.strip()) for line in data]
           commensurabilities = identify_commensurabilities(periods)
           for i,j,ratio,p in commensurabilities:
