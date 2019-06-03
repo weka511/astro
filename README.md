@@ -20,7 +20,7 @@ I have started working on some code for orbital calculatione, based on [Kotovich
 
 Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.org/core/books/solar-system-dynamics/108745217E4A18190CBA340ED5E477A2)
 
-|#| Description |
+|File| Description |
 |--------------------|------------------------------------------------------------|
 |-|1. Structure of the Solar System|
 |commensurability.py|1.5 Identify commensurability and estimate probability of this particular value occurring by chance.|
