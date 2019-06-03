@@ -25,7 +25,7 @@ def generate_orbit(T1=1.413, L=1.546, U=2.101, range_i=range(1,3)):
 
 if __name__=='__main__':
     import argparse
-    parser = argparse.ArgumentParser(description='Calculate proabbility of delta_n<0.1 for problem 1.3.')    
+    parser = argparse.ArgumentParser(description='Calculate probability of delta_n<0.1 for problem 1.3.')    
     parser.add_argument('-N',type=int, help='Number of sets of orbital periods',default=100000)
     parser.add_argument('--seed','-s',help='Seed for random number generator',default=None)
     args = parser.parse_args()
