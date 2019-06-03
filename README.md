@@ -14,7 +14,7 @@ I have started working on some code for orbital calculatione, based on [Kotovich
 | restricted.py| Restricted 3 body problem |
 | Threebody.py | Hamiltonian for 2 Dimensional, but otherwise general,  3 body problem |
 | tracking.py | Record results in logfile so they can be played back, and analyses can be restarted |
-| Lorentz.py | This tests the ImplicitRungeKutts Integrator by calculating the evolution of the Lorentz Attractor |
+| Lorentz.py | This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor |
 
 ## Murray and Dermott
 
@@ -22,6 +22,6 @@ Code based on [Murray and Dermott, Solar System Dynamics](https://www.cambridge.
 
 |#| File | Purpose |
 |--|--------------------------|---------------------------------------------------------------------|
-|1|1.5|Exercise 1.5|
+|1|1.5|Identify commensurability and estimate probability of this particular values occurring by chance.|
 |3| jacobi.py |  Zero velocity Surfaces for the Jacobi Integral |
 |-| jacobi3d.py |  Potential surfaces |
