@@ -20,14 +20,11 @@ def get_average_interval(earth,mars):
      print (mars)
 
 
+
+     
 if __name__=='__main__':
-     from utilities import get_data_file_name
+     from utilities import get_data_file_name,get_planetary_data
     
-     with open(get_data_file_name()) as data_file:
-          data = {}
-          for line in data_file:
-               parts = line.strip().split(',')  
-               data[parts[0]] = [abs(float(part)) for part in parts[1:]]
-               
-          get_average_interval(data['Earth'],data['Mars'])   
+     data = get_planetary_data(get_data_file_name())    
+     get_average_interval(data['Earth'],data['Mars'])   
             

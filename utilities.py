@@ -13,14 +13,30 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-'''Some useful functions that don't fit anywhere else'''
+#Some useful functions that don't fit anywhere else
 
 import string, time, math,__main__ as main,os
+
+# get_data_file_name
+#
+# Construct data file name from name of main program
 
 def get_data_file_name(path='data',ext='dat'):
     base = os.path.splitext(os.path.basename(main.__file__))[0]
     return os.path.join(path,'{0}.{1}'.format(base,ext))
 
+# get_planetary_data
+#
+# Construct map containing elements for planets
+
+def get_planetary_data(data_file_name):
+    with open(data_file_name) as data_file:
+        data = {}
+        for line in data_file:
+            parts = line.strip().split(',')  
+            data[parts[0]] = [abs(float(part)) for part in parts[1:]]
+        return data 
+    
 def slip_zip(x):
     '''Given a list, return a new list of triples, with the list 'slipped', e.g.
     [1,2,3,4,5] becomes
