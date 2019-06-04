@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2019 Greenweaves Software Limited
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -79,26 +79,24 @@ class Tracking(object):
 
 if __name__=='__main__':
     import math, restricted,rki
-    tracking=Tracking('run')
-        
-    old_trace= tracking.get_status()
-    
-    nn=100000
-    h = 0.001
-    M1 = 250000
-    epsilon=0.1
-    M2 = 1.0
-    G = 1.0
-    L = 25.0
-    R2 = L*M1/(M1+M2)
-    x2 = R2
-    y2 = 0
-    x1 = -L*M2/(M1+M2)
-    y1 = 0.0
-    x3 = 0.5*(x1+x2)*(1+epsilon)
-    y3 = L* math.sqrt(3.0)/2.0
-    omega = math.sqrt(G*(M1+M2)/(L*L*L))
-    x=[]
+    tracking  = Tracking('run')
+    old_trace = tracking.get_status() 
+    nn        = 100000
+    h         = 0.001
+    M1        = 250000
+    epsilon   = 0.1
+    M2        = 1.0
+    G         = 1.0
+    L         = 25.0
+    R2        = L*M1/(M1+M2)
+    x2        = R2
+    y2        = 0
+    x1        = -L*M2/(M1+M2)
+    y1       = 0.0
+    x3        = 0.5*(x1+x2)*(1+epsilon)
+    y3        = L* math.sqrt(3.0)/2.0
+    omega    = math.sqrt(G*(M1+M2)/(L*L*L))
+    x        = []
     if len(old_trace)==0:
         x=[
             x1, y1,
@@ -112,15 +110,12 @@ if __name__=='__main__':
         for i in range(12):
             x.append(old_trace[len(old_trace)-12+i])
 
-    trace=[]
-    
-    rk = rki.ImplicitRungeKutta4(lambda (x): restricted.dx(x,1,M1,M2),200,1e-18)
-    
-    driver = rki.Driver(rk,1.e-8,0.5,1.0,1e-12)
-    
-    trace=trace+x
+    trace  = []
+    rk     = rki.ImplicitRungeKutta4(lambda x: restricted.dx(x,1,M1,M2),200,1e-18)
+    driver = rki.Driver(rk,1.e-8,0.5,1.0,1e-12)  
+    trace  = trace+x
     for i in range(nn):
-        x= driver.step(x)
-        trace=trace+x
+        x     = driver.step(x)
+        trace = trace+x
     tracking.output_status(trace)
     
