@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2019 Greenweaves Software Limited
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,18 +15,18 @@
 
 if __name__=='__main__':
     import tracking, matplotlib.pyplot as plt
-    log=tracking.Tracking('run')
-    x1s=[]
-    y1s=[]
-    x2s=[]
-    y2s=[]    
-    x3s=[]
-    y3s=[]
-    sampling_period=1
+    log             = tracking.Tracking('run')
+    x1s             = []
+    y1s             = []
+    x2s             = []
+    y2s             = []    
+    x3s             = []
+    y3s             = []
+    sampling_period = 1
     for name in log.get_reader():
-        print name
+        print (name)
         xs = log.get_one_status(name)
-        i=0
+        i   = 0
         while 12*i<len(xs):
             if i%sampling_period==0:
                 x1s.append(xs[12*i])
@@ -36,4 +36,5 @@ if __name__=='__main__':
                 x3s.append(xs[12*i+4])
                 y3s.append(xs[12*i+5])
             i+=1
-    plt.plot( x3s,y3s,'ro', x1s,y1s,'bo', x2s,y2s,'go')  
+    plt.plot( x3s,y3s,'ro', x1s,y1s,'bo', x2s,y2s,'go')
+    plt.show()
