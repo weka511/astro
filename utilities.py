@@ -90,9 +90,3 @@ def get_r_velocity(zdot,theta):
 def get_theta_dot(zdot,theta,r):
     [xdot,ydot]=zdot
     return (math.cos(theta)*ydot - math.sin(theta)*xdot)/r
-
-
-
-
-
-
