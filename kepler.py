@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2019 Greenweaves Software Limited
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,10 +33,10 @@ class Kepler(integrators.Hamiltonian):
     
     def invert(self,kepler):
         super(Kepler,self).invert(kepler)  #FIXME
-        r = -self.k/self.eta[0]
-        L = self.eta[2]
+        r         = -self.k/self.eta[0]
+        L         = self.eta[2]
         p_squared = 2*self.m*self.eta[1]-L*L/(r*r)        
-        p=utilities.signum(x[2])*math.sqrt(p_squared) if p_squared>0 else 0
+        p         = utilities.signum(x[2])*math.sqrt(p_squared) if p_squared>0 else 0
         self.x[0] = r
         self.x[2] = p
         self.x[3] = L
@@ -47,7 +47,7 @@ class Kepler(integrators.Hamiltonian):
         return [self.x[2]/self.m,L/(self.m*r*r), L*L/(self.m*r*r*r) - self.k / (r*r),0]    
 
     def d_eta(self):
-        term=self.k*self.x[2]/(self.m*self.x[0]*self.x[0])
+        term = self.k*self.x[2]/(self.m*self.x[0]*self.x[0])
         return [term,-term,0]
 
     def hamiltonian(self):
@@ -55,32 +55,34 @@ class Kepler(integrators.Hamiltonian):
                self.x[3]*self.x[3]/(2*self.m*self.x[0]*self.x[0])-self.k/self.x[0]
 
     def display(self):
-        print "x",self.x
-        print "eta",self.eta
+        print ("x",self.x)
+        print ("eta",self.eta)
 
 if __name__=='__main__':
     import matplotlib.pyplot as plt
-    u=[]
-    v=[]
-    w=[]
-    z=[]
-    h=0.001
-    k = 1
-    r = 1.0000
-    p = 0.0001
-    m = 0.001
-    L = math.sqrt((m/r*r*r ))
-    x=[r,0,p,L]
-    kepler=Kepler(x,m,k)
-    nn=1000000
-    step = 1
-    print kepler.hamiltonian()
-    integrator = integrators.Integrate2(h,kepler)
+    
+    u           = []
+    v           = []
+    w           = []
+    z           = []
+    h           = 0.001
+    k           = 1
+    r           = 1.0000
+    p           = 0.0001
+    m           = 0.001
+    L           = math.sqrt((m/r*r*r ))
+    x           = [r,0,p,L]
+    kepler      = Kepler(x,m,k)
+    nn          = 1000000
+    step        = 1
+    hamiltonian = kepler.hamiltonian()
+    integrator  = integrators.Integrate2(h,kepler)
     
     for i in range(nn):
         integrator.integrate()
         u.append(kepler.x[0]*math.cos(kepler.x[1]))
         v.append(kepler.x[0]*math.sin(kepler.x[1]))
+        
     plt.plot(u,v)
-  
-    print kepler.hamiltonian()
+    print (hamiltonian,kepler.hamiltonian(),kepler.hamiltonian()-hamiltonian)
+    plt.show()
