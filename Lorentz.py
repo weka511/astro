@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2019 Greenweaves Software Limited
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,19 +16,19 @@
 # This tests the ImplicitRungeKutts Inntegrator by calculating the
 # evolution of the Lorentz Attractor
 
-
-
 class Lorentz:
     def __init__(self,sigma,rho,beta):
-        self.sigma=sigma
-        self.rho=rho
-        self.beta=beta
+        self.sigma = sigma
+        self.rho   = rho
+        self.beta  = beta
+        
     def dx(self,x):
         return [
             self.sigma*(x[1]-x[0]),      \
             x[0]*(self.rho-x[2])-x[1],   \
             x[0]*x[1]-self.beta*x[2]
         ]
+    
     def __str__(self):
         return 'sigma={0},rho={1}.beta={2}'.format(self.sigma,self.rho,self.beta)
        
@@ -37,25 +37,25 @@ if __name__=='__main__':
     from mpl_toolkits.mplot3d import Axes3D
     import rki
     
-    nn=10000
+    nn         = 10000
     resolution = 1
-    h=0.01
-    lorentz=Lorentz(10,28,8.0/3.0)
-    rk=rki.ImplicitRungeKutta4(lambda x: lorentz.dx(x),10,0.0000001)
-    v=[1,0,1]
-    xs=[]
-    ys=[]
-    zs=[]
+    h          = 0.01
+    lorentz    = Lorentz(10,28,8.0/3.0)
+    rk         = rki.ImplicitRungeKutta4(lambda x: lorentz.dx(x),10,0.0000001)
+    v          = [1,0,1]
+    xs         = []
+    ys         = []
+    zs         = []
     for i in range(nn):
-        v= rk.step(h,v)
+        v = rk.step(h,v)
         if i%resolution==0:
             xs.append(v[0])
             ys.append(v[1])
             zs.append(v[2])
         
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')    
-    ax.scatter(xs, ys, zs)
+    ax  = fig.add_subplot(111, projection='3d')    
+    ax.scatter(xs, ys, zs,s=1,edgecolors ='face')
     
     ax.set_xlabel('X')
     ax.set_ylabel('Y')
