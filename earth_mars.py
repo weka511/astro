@@ -13,17 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-def get_average_interval():
-     pass
+
+
+def get_average_interval(earth,mars):
+     print (earth)
+     print (mars)
+
 
 if __name__=='__main__':
-     with open('data/earth_mars.dat') as data_file:
-          data = []
+     from utilities import get_data_file_name
+    
+     with open(get_data_file_name()) as data_file:
+          data = {}
           for line in data_file:
-               parts = line.strip().split(',')
-               name  = parts[0]
-               a     = abs(float(parts[1]))
-               data.append((name,a))
+               parts = line.strip().split(',')  
+               data[parts[0]] = [abs(float(part)) for part in parts[1:]]
                
-          get_average_interval()   
+          get_average_interval(data['Earth'],data['Mars'])   
             

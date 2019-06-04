@@ -1,4 +1,4 @@
-# Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2019 Greenweaves Software Limited
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,8 +15,11 @@
 
 '''Some useful functions that don't fit anywhere else'''
 
-import string, time, math
+import string, time, math,__main__ as main,os
 
+def get_data_file_name(path='data',ext='dat'):
+    base = os.path.splitext(os.path.basename(main.__file__))[0]
+    return os.path.join(path,'{0}.{1}'.format(base,ext))
 
 def slip_zip(x):
     '''Given a list, return a new list of triples, with the list 'slipped', e.g.
