@@ -6,7 +6,7 @@
 |--------------------------|---------------------------------------------------------------------|
 |kepler.py|Hamiltonian for integrating Kepler problem|
 |integrators.py|Simple integrator based on Kotovich & Bowman|
-|plot_points.py|Display data that has been stored by tracking.p |
+|plot_points.py|Display data that has been stored by tracking.py|
 |rki.py|Implicit Runge Ketta (symplectic) integrators|
 |restricted.py|Restricted 3 body problem|
 |Threebody.py|Hamiltonian for 2 Dimensional, but otherwise general,  3 body problem|
