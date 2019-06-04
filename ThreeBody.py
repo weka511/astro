@@ -193,7 +193,7 @@ if __name__=='__main__':
     
     nn = 80000
     mm = 1000
-    print hamiltonian.hamiltonian()
+    print (hamiltonian.hamiltonian())
     for i in range(nn):
         integrator.integrate()
         if i>mm:
@@ -208,5 +208,5 @@ if __name__=='__main__':
             z.append(hamiltonian.x[2]*math.sin(hamiltonian.x[3]))
             
     plt.plot(u,v,'b',w,z,'r',r,s,'g',p,q,'m')
-    print hamiltonian.hamiltonian()
+    print (hamiltonian.hamiltonian())
  
