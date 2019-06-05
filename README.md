@@ -22,6 +22,7 @@
 |1.4|saturn.py|Satellites of Saturn|
 |1.5|commensurability.py|Identify commensurability and estimate probability of this particular value occurring by chance.|
 |2||The Two Body Problem|
+||Jupiter.tex|Calculations to support values for *orbital.py*|
 |2.2|earth_mars.py|Earth Mars Distance)|
 ||orbital.py|Orbital calculations|
 |3||The Restricted Three Body Problem|
