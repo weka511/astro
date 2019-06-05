@@ -1,5 +1,5 @@
 \documentclass[]{article}
-\usepackage{amsmath,amssymb}
+\usepackage{amsmath,amssymb,gensymb}
 %opening
 \title{Formula for calculating $(P_j)_{1,1}$}
 \author{Simon Crase}
@@ -7,10 +7,6 @@
 \begin{document}
 
 \maketitle
-
-\begin{abstract}
-Supporting Formulae for the spreadsheet calculation. 
-\end{abstract}
 
 
 From Solar System Dynamics, (2.119) and (2.120):
@@ -61,4 +57,25 @@ Whence:
 \begin{align}
 (P_j)_{1,1} =& \cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega
 \end{align}
+
+The values for $\Omega$, $I$, and $\omega$ in the following table were taken from SSD.
+\begin{center}
+	\begin{tabular}{|l|l|l|l|l|}
+		\hline
+		&&	radians&$\cos$&$\sin$\\ \hline
+		$\Omega$&100.535\degree	&1.754666763&	-0.182836128&	0.983143403\\ \hline
+		$I$&1.30537\degree&	0.022783004&	0.999740479&	0.022781034\\ \hline
+		$\omega$&14.7392\degree&	0.257247569&	0.967093913&	0.25441966\\ \hline
+	\end{tabular}
+\end{center}
+
+Whence:
+
+\begin{align*}
+(P_j)_{1,1} =& \cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega \\
+=& -0.182836128 \times 	0.967093913 - 0.983143403 \times 0.999740479 \times 	0.25441966\\
+=& -0.176819706 - 0.250066096\\
+=& -0.426885803
+\end{align*}
+
 \end{document}
