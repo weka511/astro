@@ -1,5 +1,5 @@
 \documentclass[]{article}
-\usepackage{amsmath,amssymb,gensymb}
+\usepackage{amsmath,amssymb,gensymb,mathtools}
 %opening
 \title{Formula for calculating $(P_j)_{1,1}$}
 \author{Simon Crase}
@@ -8,9 +8,14 @@
 
 \maketitle
 
+\begin{abstract}
+	
+\end{abstract}
+
+\section{}
 
 From Solar System Dynamics, (2.119) and (2.120):
-\begin{align}
+\begin{align*}
 P_1 =& \begin{pmatrix}
 \cos \omega & - \sin \omega & 0\\
 \sin \omega & cos \omega & 0\\
@@ -22,15 +27,14 @@ P_2 = \begin{pmatrix}
 0 & \cos I & - \sin I\\
 0 & \sin I & \cos I
 \end{pmatrix}
-\\
 P_3 =& \begin{pmatrix}
 \cos \Omega & - \sin \Omega & 0\\
 \sin \Omega & cos \Omega & 0\\
 0 & 0  & 1
 \end{pmatrix}
-\end{align}
+\end{align*}
 
-\begin{align}
+\begin{align*}
 P_j \triangleq& P_3 P_2 P_1\\
  =& P_3 \begin{pmatrix}
 1 & 0 & 0\\
@@ -51,14 +55,15 @@ P_j \triangleq& P_3 P_2 P_1\\
 \cos \omega & -\sin \omega & 0\\
 \cos I \sin \omega & \cos I \cos \omega & - \sin I\\
 \sin I \sin \omega & \sin I \cos \omega & cos I
-\end{pmatrix}
-\end{align}
-Whence:
-\begin{align}
-(P_j)_{1,1} =& \cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega
-\end{align}
+\end{pmatrix}\\
+=&\begin{pmatrix*}[l]
+\cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega&-\cos \Omega \sin \omega - \sin \Omega \cos I \cos \omega& \sin \Omega \sin I\\
+\sin \Omega \cos \omega + \cos \Omega \cos I \sin \omega& - \sin \Omega \sin \omega + \cos \Omega \cos I \cos \omega& - \cos \Omega \sin I \\
+\sin I \sin \omega & \sin I \cos \omega & cos I
+\end{pmatrix*}
+\end{align*}
 
-The values for $\Omega$, $I$, and $\omega$ in the following table were taken from SSD.
+The values for $\Omega$, $I$, and $\omega$ in the following table were taken from SSD, and the remaining columns were calculated by Excel.
 \begin{center}
 	\begin{tabular}{|l|l|l|l|l|}
 		\hline
