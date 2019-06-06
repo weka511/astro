@@ -1,0 +1,115 @@
+\documentclass[]{article}
+\usepackage{amsmath,amssymb,gensymb,mathtools}
+%opening
+\title{Formula for calculating $(P_j)_{1,1}$}
+\author{Simon Crase}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+	
+\end{abstract}
+
+\section{}
+
+From Solar System Dynamics, (2.119) and (2.120):
+\begin{align*}
+P_1 =& \begin{pmatrix}
+\cos \omega & - \sin \omega & 0\\
+\sin \omega & cos \omega & 0\\
+0 & 0  & 1
+\end{pmatrix}
+\text{, }
+P_2 = \begin{pmatrix}
+1 & 0 & 0\\
+0 & \cos I & - \sin I\\
+0 & \sin I & \cos I
+\end{pmatrix}
+P_3 =& \begin{pmatrix}
+\cos \Omega & - \sin \Omega & 0\\
+\sin \Omega & cos \Omega & 0\\
+0 & 0  & 1
+\end{pmatrix}
+\end{align*}
+
+\begin{align*}
+P_j \triangleq& P_3 P_2 P_1\\
+ =& P_3 \begin{pmatrix}
+1 & 0 & 0\\
+0 & \cos I & - \sin I\\
+0 & \sin I & cos I
+\end{pmatrix}
+\begin{pmatrix}
+\cos \omega & - \sin \omega & 0\\
+\sin \omega & cos \omega & 0\\
+0 & 0  & 1
+\end{pmatrix} \\
+=& \begin{pmatrix}
+\cos \Omega & - \sin \Omega & 0\\
+\sin \Omega & cos \Omega & 0\\
+0 & 0  & 1
+\end{pmatrix}
+\begin{pmatrix}
+\cos \omega & -\sin \omega & 0\\
+\cos I \sin \omega & \cos I \cos \omega & - \sin I\\
+\sin I \sin \omega & \sin I \cos \omega & cos I
+\end{pmatrix}\\
+=&\begin{pmatrix*}[l]
+\cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega&-\cos \Omega \sin \omega - \sin \Omega \cos I \cos \omega& \sin \Omega \sin I\\
+\sin \Omega \cos \omega + \cos \Omega \cos I \sin \omega& - \sin \Omega \sin \omega + \cos \Omega \cos I \cos \omega& - \cos \Omega \sin I \\
+\sin I \sin \omega & \sin I \cos \omega & cos I
+\end{pmatrix*}\numberthis \label{eq:Pj}
+\end{align*}
+
+\begin{align*}
+\begin{bmatrix*}[c]
+X\\
+Y\\
+Z
+\end{bmatrix*}
+=&P_3 P_2 P_1\begin{bmatrix*}[c]
+r \cos f\\
+r \sin f\\
+0
+\end{bmatrix*}\\
+=&r \begin{bmatrix*}[l]
+(\cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega) \cos f -(\cos \Omega \sin \omega + \sin \Omega \cos I \cos \omega) \sin f\\
+(\sin \Omega \cos \omega + \cos \Omega \cos I \sin \omega) \cos f - (\sin \Omega \sin \omega - \cos \Omega \cos I \cos \omega) \sin f\\
+\sin I \sin \omega \cos f + \sin I \cos \omega \sin f
+\end{bmatrix*}\\
+=&r \begin{bmatrix*}[l]
+\cos \Omega (\cos \omega \cos f-\sin \omega \sin f) -\sin\Omega \cos I (\sin \omega \cos f + \cos \omega \sin f)\\
+\sin \Omega (\cos \omega \cos f - \sin \omega \sin f) + \cos\Omega \cos I (\sin \omega \cos f + \cos \omega \sin f) \\
+\sin I (\sin \omega \cos f + \cos \omega \sin f)
+\end{bmatrix*}\\
+=&r \begin{bmatrix*}[l]
+\cos \Omega \cos (\omega + f) - \sin \Omega \cos I \sin(\omega + f)\\
+\sin \Omega \cos (\omega + f) + \cos \Omega \cos I \sin (\omega + f)\\
+\sin I \sin (\omega + f)
+\end{bmatrix*} \numberthis \label{eq:XYZ}
+\end{align*}
+Equation (\ref{eq:XYZ}) agrees with (2.122) in SSD.
+
+The values for $\Omega$, $I$, and $\omega$ in the following table were taken from SSD, and the remaining columns were calculated by Excel.
+\begin{center}
+	\begin{tabular}{|l|l|l|l|l|}
+		\hline
+		&&	radians&$\cos$&$\sin$\\ \hline
+		$\Omega$&100.535\degree	&1.754666763&	-0.182836128&	0.983143403\\ \hline
+		$I$&1.30537\degree&	0.022783004&	0.999740479&	0.022781034\\ \hline
+		$\omega$&14.7392\degree&	0.257247569&	0.967093913&	0.25441966\\ \hline
+	\end{tabular}
+\end{center}
+
+Substituting in (\ref{eq:Pj})
+
+\begin{align*}
+(P_j)_{1,1} =& \cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega \\
+=& -0.182836128 \times 	0.967093913 - 0.983143403 \times 0.999740479 \times 	0.25441966\\
+=& -0.176819706 - 0.250066096\\
+=& -0.426885803
+\end{align*}
+
+\end{document}
