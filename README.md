@@ -28,3 +28,9 @@
 |3||The Restricted Three Body Problem|
 ||jacobi.py|Zero velocity Surfaces for the Jacobi Integral|
 ||jacobi3d.py|Potential surfaces|
+
+## Miscellaneous
+
+| File | Purpose |
+|--------------------------|---------------------------------------------------------------------|
+|astro.bib|Biblography|
