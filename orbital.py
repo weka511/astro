@@ -13,8 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-from numpy import matmul,sign
-from math import cos,sin,radians,isclose,degrees,pi
+from numpy import matmul,sign,arctan2
+from math import cos,sin,radians,isclose,degrees,pi,sqrt
 
 def compose(omega=0,I=0,Omega=0):
     cos_omega = cos(omega)
@@ -40,7 +40,17 @@ def compose(omega=0,I=0,Omega=0):
    
     return matmul(P3, matmul(P2, P1))
 
-
+def get_XYZ(omega=0,I=0,Omega=0,f=0,r=1):
+    cos_Omega   = cos(Omega)
+    sin_Omega   = sin(Omega)
+    cos_I       = cos(I)
+    sin_I       = sin(I)
+    cos_omega_f = cos(omega + f)
+    sin_omega_f = sin(omega + f)
+    return (r * (cos_Omega*cos_omega_f - sin_Omega*sin_omega_f*cos_I),
+            r * (sin_Omega*cos_omega_f + cos_Omega*sin_omega_f*cos_I),
+            r * sin_omega_f*sin_I)
+    
 def kepler(eccentricy=0,mean_anomaly=0,tolerance=0.1e-12,N=10000,k=0.85):
     M = mean_anomaly % (2 * pi)
     E = M + sign(sin(M)*k*eccentricy)
@@ -54,21 +64,34 @@ if __name__=='__main__':
     import unittest
     
     class TestJupiter(unittest.TestCase):
+        
         # test_mult
         #
         # This test uses Murray & Dermott (2.124)
-        
-        def test_mult(self):
+        def test_compose(self):
             rotation = compose(omega=radians(14.7392 -100.535 ),I=radians(1.30537),Omega=radians(100.535))
-            self.assertAlmostEqual(0.966839,rotation[0][0],places=5)
-            self.assertAlmostEqual(-0.254401,rotation[0][1],places=6)
-            self.assertAlmostEqual(0.0223971,rotation[0][2],places=6)
-            self.assertAlmostEqual(0.254373,rotation[1][0],places=5)
-            self.assertAlmostEqual(0.967097,rotation[1][1],places=6)
-            self.assertAlmostEqual(0.00416519,rotation[1][2],places=6)
-            self.assertAlmostEqual(-0.0227198,rotation[2][0],places=6)
-            self.assertAlmostEqual(0.00167014,rotation[2][1],places=7)
-            self.assertAlmostEqual(0.99974,rotation[2][2],places=6)
+            self.assertAlmostEqual(0.966839,   rotation[0][0], places=5)
+            self.assertAlmostEqual(-0.254401,  rotation[0][1], places=6)
+            self.assertAlmostEqual(0.0223971,  rotation[0][2], places=6)
+            self.assertAlmostEqual(0.254373,   rotation[1][0], places=5)
+            self.assertAlmostEqual(0.967097,   rotation[1][1], places=6)
+            self.assertAlmostEqual(0.00416519, rotation[1][2], places=6)
+            self.assertAlmostEqual(-0.0227198, rotation[2][0], places=6)
+            self.assertAlmostEqual(0.00167014, rotation[2][1], places=7)
+            self.assertAlmostEqual(0.99974,    rotation[2][2], places=6)
+        
+        # test_mult
+        #
+        # This test uses Murray & Dermott (2.124)            
+        def test_get_XYZ(self):
+            x     = -5.39027
+            y     = -0.818277
+            r     = sqrt(x*x + y * y)
+            f     = arctan2(y,x)
+            X,Y,Z = get_XYZ(omega=radians(14.7392 -100.535 ),I=radians(1.30537),Omega=radians(100.535),r=r,f=f)
+            self.assertAlmostEqual(-5.00336, X, places=5)
+            self.assertAlmostEqual(-2.16249, Y, places=5)
+            self.assertAlmostEqual(0.121099, Z, places=6)
             
     class TestKepler(unittest.TestCase):
         def test_kepler_inverse(self):
