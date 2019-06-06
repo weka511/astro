@@ -17,22 +17,22 @@ from numpy import matmul,sign
 from math import cos,sin,radians,isclose,degrees,pi
 
 def compose(omega=0,I=0,Omega=0):
-    cos_omega = cos(radians(omega))
-    sin_omega = sin(radians(omega))
+    cos_omega = cos(omega)
+    sin_omega = sin(omega)
    
     P1        = [[cos_omega, -sin_omega, 0],\
                  [sin_omega,  cos_omega, 0],\
                  [0,          0,         1]]
     
-    cos_I     = cos(radians(I))
-    sin_I     = sin(radians(I))
+    cos_I     = cos(I)
+    sin_I     = sin(I)
    
     P2        = [[1,          0,      0],     \
                  [0,          cos_I, -sin_I], \
                  [0,          sin_I,  cos_I]]
     
-    cos_Omega = cos(radians(Omega))
-    sin_Omega = sin(radians(Omega))
+    cos_Omega = cos(Omega)
+    sin_Omega = sin(Omega)
     
     P3        =  [[cos_Omega, -sin_Omega, 0],\
                   [sin_Omega,  cos_Omega, 0],\
@@ -41,12 +41,12 @@ def compose(omega=0,I=0,Omega=0):
     return matmul(P3, matmul(P2, P1))
 
 
-def kepler(eccentricy=0,mean_anomaly=0,tolerance=0.1e-7,N=10000,k=0.85):
+def kepler(eccentricy=0,mean_anomaly=0,tolerance=0.1e-12,N=10000,k=0.85):
     M = mean_anomaly % (2 * pi)
-    
     E = M + sign(sin(M)*k*eccentricy)
+    
     for i in range(N):
-        correction = (E - eccentricy*sin(E) - M)/(1-eccentricy*cos(E))
+        correction = (E - eccentricy*sin(E) - M)/(1 - eccentricy * cos(E))
         if abs(correction)<tolerance: return E
         E -= correction
     
@@ -55,10 +55,14 @@ if __name__=='__main__':
     
     class TestJupiter(unittest.TestCase):
         def test_mult(self):
-            print(compose(omega=14.7392,I=1.30537,Omega=100.535))
+            rotation = compose(omega=radians(14.7392),I=radians(1.30537),Omega=radians(100.535))
+            self.assertAlmostEqual(-0.426885803,rotation[0][0],places=7)
+            self.assertAlmostEqual(0.0223971,rotation[0][2],places=6)
+            self.assertAlmostEqual(0.00416519,rotation[1][2],places=7)
+            self.assertAlmostEqual(0.99974,rotation[2][2],places=6)
             
     class TestKepler(unittest.TestCase):
-        def test_kepler(self):
+        def test_kepler_inverse(self):
             eccentric_anomaly = kepler(eccentricy=0.205635,mean_anomaly=1.2)
             M = eccentric_anomaly - 0.205635 * sin(eccentric_anomaly)
             self.assertAlmostEqual(1.2,M)
