@@ -54,11 +54,20 @@ if __name__=='__main__':
     import unittest
     
     class TestJupiter(unittest.TestCase):
+        # test_mult
+        #
+        # This test uses Murray & Dermott (2.124)
+        
         def test_mult(self):
-            rotation = compose(omega=radians(14.7392),I=radians(1.30537),Omega=radians(100.535))
-            self.assertAlmostEqual(-0.426885803,rotation[0][0],places=7)
+            rotation = compose(omega=radians(14.7392 -100.535 ),I=radians(1.30537),Omega=radians(100.535))
+            self.assertAlmostEqual(0.966839,rotation[0][0],places=5)
+            self.assertAlmostEqual(-0.254401,rotation[0][1],places=6)
             self.assertAlmostEqual(0.0223971,rotation[0][2],places=6)
-            self.assertAlmostEqual(0.00416519,rotation[1][2],places=7)
+            self.assertAlmostEqual(0.254373,rotation[1][0],places=5)
+            self.assertAlmostEqual(0.967097,rotation[1][1],places=6)
+            self.assertAlmostEqual(0.00416519,rotation[1][2],places=6)
+            self.assertAlmostEqual(-0.0227198,rotation[2][0],places=6)
+            self.assertAlmostEqual(0.00167014,rotation[2][1],places=7)
             self.assertAlmostEqual(0.99974,rotation[2][2],places=6)
             
     class TestKepler(unittest.TestCase):
