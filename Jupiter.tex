@@ -3,7 +3,7 @@
 %opening
 \title{Formula for calculating $(P_j)_{1,1}$}
 \author{Simon Crase}
-
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 \begin{document}
 
 \maketitle
@@ -60,9 +60,26 @@ P_j \triangleq& P_3 P_2 P_1\\
 \cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega&-\cos \Omega \sin \omega - \sin \Omega \cos I \cos \omega& \sin \Omega \sin I\\
 \sin \Omega \cos \omega + \cos \Omega \cos I \sin \omega& - \sin \Omega \sin \omega + \cos \Omega \cos I \cos \omega& - \cos \Omega \sin I \\
 \sin I \sin \omega & \sin I \cos \omega & cos I
-\end{pmatrix*}
+\end{pmatrix*}\numberthis
 \end{align*}
 
+\begin{align*}
+\begin{bmatrix*}[c]
+X\\
+Y\\
+Z
+\end{bmatrix*}
+=&P_3 P_2 P_1\begin{bmatrix*}[c]
+r \cos f\\
+r \sin f\\
+0
+\end{bmatrix*}\\
+=&r \begin{bmatrix*}[l]
+(\cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega) \cos f -(\cos \Omega \sin \omega + \sin \Omega \cos I \cos \omega) \sin f\\
+(\sin \Omega \cos \omega + \cos \Omega \cos I \sin \omega) \cos f - (\sin \Omega \sin \omega + \cos \Omega \cos I \cos \omega) \sin f\\
+\sin I \sin \omega \cos f + \sin I \cos \omega \sin f
+\end{bmatrix*}
+\end{align*}
 The values for $\Omega$, $I$, and $\omega$ in the following table were taken from SSD, and the remaining columns were calculated by Excel.
 \begin{center}
 	\begin{tabular}{|l|l|l|l|l|}
