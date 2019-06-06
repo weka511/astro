@@ -60,7 +60,7 @@ P_j \triangleq& P_3 P_2 P_1\\
 \cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega&-\cos \Omega \sin \omega - \sin \Omega \cos I \cos \omega& \sin \Omega \sin I\\
 \sin \Omega \cos \omega + \cos \Omega \cos I \sin \omega& - \sin \Omega \sin \omega + \cos \Omega \cos I \cos \omega& - \cos \Omega \sin I \\
 \sin I \sin \omega & \sin I \cos \omega & cos I
-\end{pmatrix*}\numberthis
+\end{pmatrix*}\numberthis \label{eq:Pj}
 \end{align*}
 
 \begin{align*}
@@ -76,10 +76,22 @@ r \sin f\\
 \end{bmatrix*}\\
 =&r \begin{bmatrix*}[l]
 (\cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega) \cos f -(\cos \Omega \sin \omega + \sin \Omega \cos I \cos \omega) \sin f\\
-(\sin \Omega \cos \omega + \cos \Omega \cos I \sin \omega) \cos f - (\sin \Omega \sin \omega + \cos \Omega \cos I \cos \omega) \sin f\\
+(\sin \Omega \cos \omega + \cos \Omega \cos I \sin \omega) \cos f - (\sin \Omega \sin \omega - \cos \Omega \cos I \cos \omega) \sin f\\
 \sin I \sin \omega \cos f + \sin I \cos \omega \sin f
-\end{bmatrix*}
+\end{bmatrix*}\\
+=&r \begin{bmatrix*}[l]
+\cos \Omega (\cos \omega \cos f-\sin \omega \sin f) -\sin\Omega \cos I (\sin \omega \cos f + \cos \omega \sin f)\\
+\sin \Omega (\cos \omega \cos f - \sin \omega \sin f) + \cos\Omega \cos I (\sin \omega \cos f + \cos \omega \sin f) \\
+\sin I (\sin \omega \cos f + \cos \omega \sin f)
+\end{bmatrix*}\\
+=&r \begin{bmatrix*}[l]
+\cos \Omega \cos (\omega + f) - \sin \Omega \cos I \sin(\omega + f)\\
+\sin \Omega \cos (\omega + f) + \cos \Omega \cos I \sin (\omega + f)\\
+\sin I \sin (\omega + f)
+\end{bmatrix*} \numberthis \label{eq:XYZ}
 \end{align*}
+Equation (\ref{eq:XYZ}) agrees with (2.122) in SSD.
+
 The values for $\Omega$, $I$, and $\omega$ in the following table were taken from SSD, and the remaining columns were calculated by Excel.
 \begin{center}
 	\begin{tabular}{|l|l|l|l|l|}
@@ -91,7 +103,7 @@ The values for $\Omega$, $I$, and $\omega$ in the following table were taken fro
 	\end{tabular}
 \end{center}
 
-Whence:
+Substituting in (\ref{eq:Pj})
 
 \begin{align*}
 (P_j)_{1,1} =& \cos \Omega \cos \omega - \sin \Omega \cos I \sin \omega \\
