@@ -41,26 +41,23 @@ def get_average_interval(earth,mars):
      fig = plt.figure()
      ax = fig.add_subplot(111, projection='3d')     
      Xs,Ys,Zs = orbit (earth)
-     ax.scatter(Xs, Ys, Zs, c='b', edgecolor='face',s=1)
+     ax.scatter(Xs, Ys, Zs, c='b', edgecolor='face',s=1,label='Earth')
      Xm,Ym,Zm = orbit (mars,lambda_dot=217103.78,Nr=53)
-     ax.scatter(Xm,Ym,Zm,c='r',edgecolor='face',s=1) 
+     ax.scatter(Xm,Ym,Zm,c='r',edgecolor='face',s=1,label='Mars') 
      ax.set_xlabel('X')
      ax.set_ylabel('Y')
      ax.set_zlabel('Z') 
+     ax.legend()
      
      plt.figure()
-     ds = []
-     for i in range(len(Xs)):
-          ds.append(sqrt((Xs[i]-Xm[i])**2 + (Ys[i]-Ym[i])**2 + (Zs[i]-Zm[i])**2))
-          
-     plt.plot(ds,c='g')
+     ds = [sqrt((Xs[i]-Xm[i])**2 + (Ys[i]-Ym[i])**2 + (Zs[i]-Zm[i])**2) for i in range(len(Xs))]
+     plt.plot(ds,'g',label='Distance')
   
-     mins = []
-     for i in range(1,len(ds)-1):
-          if ds[i-1] > ds[i] and ds[i]<ds[i+1]:
-               mins.append((i,ds[i]))
-     plt.scatter([i for i,_ in mins],[d for _,d in mins])
-     print (max([d for _,d in mins])/min([d for _,d in mins]))
+     mins = [(i,ds[i]) for i in range(1,len(ds)-1) if ds[i-1] > ds[i] and ds[i]<ds[i+1]]
+
+     plt.scatter([i for i,_ in mins],[d for _,d in mins],label='Distance at Opposition')
+     plt.legend()
+     print ('Ratio={0:2f}'.format(max([d for _,d in mins])/min([d for _,d in mins])))
 
      
 if __name__=='__main__':
