@@ -70,16 +70,32 @@ def get_semimajor_axis(T=0,a0=5.20336301,a_dot=60377/1e8):
 def get_varpi(T=0,varpi0=14.75385,varpi_dot=839.93):
     return varpi0+varpi_dot * T / 3600
 
+# get_true_anomaly
+#
+# Solve equation 2.43 by the Newton-Raphson method to estimate f.
+# 
+def get_true_anomaly(E,e,N=100,tolerance=1e-12):
+    cos_f = (cos(E)-e)/(1-e*cos(E))
+    f     = E  # E and F should be in same quadrant, so use E as starting value
+    for i in range(N):
+        if abs(f) < tolerance: return f
+        correction = (cos(f)-cos_f)/sin(f)
+        f += correction
+        if (abs(correction)<tolerance):
+            return f
+        
+        
 # get_xy
 #
 # Compute 2D position using 2.41
 
 def get_xy(T=0,lambdaT=0,eccentricity=0.0484007,a=5.20332,varpi = 14.7392):
     M = lambdaT - varpi
-    E = kepler(eccentricity=eccentricity,mean_anomaly=radians(M))
+    E = get_eccentric_anomaly(eccentricity=eccentricity,mean_anomaly=radians(M))
+    #f                 = get_true_anomaly(eccentric_anomaly,eccentricity)
     return a*(cos(E)-eccentricity),a*sqrt(1-eccentricity*eccentricity)*sin(E)
 
-def kepler(eccentricity=0,mean_anomaly=0,tolerance=0.1e-12,N=10000,k=0.85):
+def get_eccentric_anomaly(eccentricity=0,mean_anomaly=0,tolerance=0.1e-12,N=10000,k=0.85):
     M = mean_anomaly % (2 * pi)
     E = M + sign(sin(M)*k*eccentricity)
     
@@ -154,8 +170,8 @@ if __name__=='__main__':
             N = 25
             for i in range(N):
                 mean_anomaly = 2 * pi /N
-                eccentric_anomaly = kepler(eccentricity=0.205635,mean_anomaly=mean_anomaly)
-                M                 = eccentric_anomaly - 0.205635 * sin(eccentric_anomaly)
+                E            = get_eccentric_anomaly(eccentricity=0.205635,mean_anomaly=mean_anomaly)
+                M            = E - 0.205635 * sin(E)
                 self.assertAlmostEqual(mean_anomaly,M)
             
         # test_kepler_jupiter
@@ -163,8 +179,9 @@ if __name__=='__main__':
         # See paragraph before MD 2.123
         def test_kepler_jupiter(self):
             self.assertAlmostEqual(radians(189.059),
-                                   kepler(mean_anomaly=radians(189.495),
-                                          eccentricity=0.0484007),
+                                   get_eccentric_anomaly(
+                                       mean_anomaly=radians(189.495),
+                                       eccentricity=0.0484007),
                                    places=4)
             
     unittest.main()
