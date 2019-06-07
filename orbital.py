@@ -73,8 +73,14 @@ def get_varpi(T=0,varpi0=14.75385,varpi_dot=839.93):
 # get_true_anomaly
 #
 # Solve equation 2.43 by the Newton-Raphson method to estimate f.
-# 
-def get_true_anomaly(E,e,N=100,tolerance=1e-12):
+#
+# Parameters: E         Eccentric anomally
+#             e         Eccentricity
+#             N         Maximum number of iterations
+#             tolerance Used to assess correction: throws Assetion Error 
+#                       if correction still exceeds tolerance after N iterations
+
+def get_true_anomaly(E,e,N=1000,tolerance=1e-12):
     cos_f = (cos(E)-e)/(1-e*cos(E))
     f     = E  # E and F should be in same quadrant, so use E as starting value
     for i in range(N):
@@ -84,6 +90,7 @@ def get_true_anomaly(E,e,N=100,tolerance=1e-12):
         if (abs(correction)<tolerance):
             return f
         
+    assert False,'Correction {0} is still greater than tolerance {1} after {2} iterations.'.format(correction,tolerance,N)        
         
 # get_xy
 #
@@ -95,15 +102,27 @@ def get_xy(T=0,lambdaT=0,eccentricity=0.0484007,a=5.20332,varpi = 14.7392):
     #f                 = get_true_anomaly(eccentric_anomaly,eccentricity)
     return a*(cos(E)-eccentricity),a*sqrt(1-eccentricity*eccentricity)*sin(E)
 
+# get_eccentric_anomaly
+#
+# Calculate eccentric anomaly by solveing kepler's equation - 2.52
+#
+# Parameters:
+#             eccentricity  Eccentricty of orbit
+#             mean_anomaly  Mean anomaly
+#             tolerance     Used to assess correction: throws Assetion Error 
+#                           if correction still exceeds tolerance after N iterations
+#             N             Maximum number of iterations
+#             k             Paramter used in Danby's starting value - MD 2.64
 def get_eccentric_anomaly(eccentricity=0,mean_anomaly=0,tolerance=0.1e-12,N=10000,k=0.85):
     M = mean_anomaly % (2 * pi)
-    E = M + sign(sin(M)*k*eccentricity)
+    E = M + sign(sin(M)*k*eccentricity)  # Danby's starting value - MD 2.64
     
     for i in range(N):
         correction = (E - eccentricity*sin(E) - M)/(1 - eccentricity * cos(E))
         if abs(correction)<tolerance*(M+E)*0.5: return E
         E -= correction
-
+        
+    assert False,'Correction {0} is still greater than tolerance {1} after {2} iterations.'.format(correction,tolerance,N) 
 
 if __name__=='__main__':
     import unittest
@@ -183,5 +202,5 @@ if __name__=='__main__':
                                        mean_anomaly=radians(189.495),
                                        eccentricity=0.0484007),
                                    places=4)
-            
+    
     unittest.main()
