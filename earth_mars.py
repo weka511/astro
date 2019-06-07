@@ -36,29 +36,54 @@ def orbit(planet,N=10000,lambda_dot=1293740.63,Nr=99):
           Ys.append(W[1])
           Zs.append(W[2])
      return (Xs,Ys,Zs)
-     
+ 
+ 
+def is_minimum(a,b,c):
+     return a>b and b < c
+
+ 
 def get_average_interval(earth,mars):
-     fig = plt.figure()
-     ax = fig.add_subplot(111, projection='3d')     
      Xs,Ys,Zs = orbit (earth)
-     ax.scatter(Xs, Ys, Zs, c='b', edgecolor='face',s=1,label='Earth')
      Xm,Ym,Zm = orbit (mars,lambda_dot=217103.78,Nr=53)
-     ax.scatter(Xm,Ym,Zm,c='r',edgecolor='face',s=1,label='Mars') 
-     ax.set_xlabel('X')
-     ax.set_ylabel('Y')
-     ax.set_zlabel('Z') 
-     ax.legend()
+     distances = [sqrt((Xs[i]-Xm[i])**2 + (Ys[i]-Ym[i])**2 + (Zs[i]-Zm[i])**2) for i in range(len(Xs))]
+     conjunctions = [(i,distances[i]) for i in range(1,len(distances)-1) if is_minimum(distances[i-1],distances[i],distances[i+1])]
+     print ('Ratio={0:2f}'.format(max([d for _,d in conjunctions])/min([d for _,d in conjunctions])))
      
-     plt.figure()
-     ds = [sqrt((Xs[i]-Xm[i])**2 + (Ys[i]-Ym[i])**2 + (Zs[i]-Zm[i])**2) for i in range(len(Xs))]
-     plt.plot(ds,'g',label='Distance')
-  
-     mins = [(i,ds[i]) for i in range(1,len(ds)-1) if ds[i-1] > ds[i] and ds[i]<ds[i+1]]
-
-     plt.scatter([i for i,_ in mins],[d for _,d in mins],label='Distance at Opposition')
-     plt.legend()
-     print ('Ratio={0:2f}'.format(max([d for _,d in mins])/min([d for _,d in mins])))
-
+     fig = plt.figure(figsize=(20, 20), dpi=80)
+     plt.title('Earth Mars')
+     ax1 = fig.add_subplot(231, projection='3d',aspect='equal')     
+ 
+     ax1.scatter(Xs, Ys, Zs, c='b', edgecolor='face',s=1,label='Earth')
+    
+     ax1.scatter(Xm,Ym,Zm,c='r',edgecolor='face',s=1,label='Mars') 
+     ax1.set_xlabel('X')
+     ax1.set_ylabel('Y')
+     ax1.set_zlabel('Z') 
+     ax1.legend()
+     
+     ax2 = fig.add_subplot(232,aspect='equal') 
+     ax2.scatter(Xs, Ys, c='b', edgecolor='face',s=1,label='Earth')
+     ax2.scatter(Xm, Ym,c='r',edgecolor='face',s=1,label='Mars') 
+     ax2.set_xlabel('X')
+     ax2.set_ylabel('Y')
+     
+     ax3 = fig.add_subplot(233) 
+     ax3.scatter(Ys, Zs, c='b', edgecolor='face',s=1,label='Earth')
+     ax3.scatter(Ym,Zm,c='r',edgecolor='face',s=1,label='Mars')
+     ax3.set_xlabel('Y')
+     ax3.set_ylabel('Z')
+     
+     ax4 = fig.add_subplot(234) 
+     ax4.scatter(Xs, Zs, c='b', edgecolor='face',s=1,label='Earth')
+     ax4.scatter(Xm,Zm,c='r',edgecolor='face',s=1,label='Mars')
+     ax4.set_xlabel('X')
+     ax4.set_ylabel('Z')
+     
+     ax5 = fig.add_subplot(235) 
+     ax5.plot(distances,'g',label='Distance')
+     ax5.scatter([i for i,_ in conjunctions],[d for _,d in conjunctions],c='m',label='Conjunction')
+     ax5.legend()
+     plt.savefig(get_data_file_name(path='images',ext='png'))
      
 if __name__=='__main__':
      from utilities import get_data_file_name,get_planetary_data
