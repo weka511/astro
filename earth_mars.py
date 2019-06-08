@@ -13,6 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+# Murray and Dermott, Exercise 2.2
+#
+# 1. Determine average times or orbital conjunction between earth & Mars
+# 2. Show that the minimum distance varies by factor of almost 2.
+# ...
+
 from orbital import get_xy,get_lambda,compose
 from math import pi,radians,sqrt
 import matplotlib.pyplot as plt
@@ -50,20 +56,17 @@ def get_average_interval(earth,mars):
      print ('Ratio={0:2f}'.format(max([d for _,d in conjunctions])/min([d for _,d in conjunctions])))
      
      fig = plt.figure(figsize=(20, 20), dpi=80)
-     plt.title('Earth Mars')
+     
      ax1 = fig.add_subplot(231, projection='3d',aspect='equal')     
- 
      ax1.scatter(Xs, Ys, Zs, c='b', edgecolor='face',s=1,label='Earth')
-    
      ax1.scatter(Xm,Ym,Zm,c='r',edgecolor='face',s=1,label='Mars') 
      ax1.set_xlabel('X')
      ax1.set_ylabel('Y')
      ax1.set_zlabel('Z') 
-     ax1.legend()
      
      ax2 = fig.add_subplot(232,aspect='equal') 
-     ax2.scatter(Xs, Ys, c='b', edgecolor='face',s=1,label='Earth')
-     ax2.scatter(Xm, Ym,c='r',edgecolor='face',s=1,label='Mars') 
+     p21 = ax2.scatter(Xs, Ys, c='b', edgecolor='face',s=1,label='Earth')
+     p22 = ax2.scatter(Xm, Ym,c='r',edgecolor='face',s=1,label='Mars') 
      ax2.set_xlabel('X')
      ax2.set_ylabel('Y')
      
@@ -80,14 +83,17 @@ def get_average_interval(earth,mars):
      ax4.set_ylabel('Z')
      
      ax5 = fig.add_subplot(235) 
-     ax5.plot(distances,'g',label='Distance')
-     ax5.scatter([i for i,_ in conjunctions],[d for _,d in conjunctions],c='m',label='Conjunction')
+     p51 = ax5.plot(distances,'g',label='Distance')
+     p52 = ax5.scatter([i for i,_ in conjunctions],[d for _,d in conjunctions],c='m',label='Conjunction')
      ax5.legend()
-     plt.savefig(get_data_file_name(path='images',ext='png'))
+     
+     fig.legend([p21,p22],['Earth','Mars'],'upper center')
      
 if __name__=='__main__':
      from utilities import get_data_file_name,get_planetary_data
     
      data = get_planetary_data(get_data_file_name())    
-     get_average_interval(data['Earth'],data['Mars'])   
+     get_average_interval(data['Earth'],data['Mars']) 
+     plt.savefig(get_data_file_name(path='images',ext='png'))
+     
      plt.show()       
