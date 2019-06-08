@@ -14,7 +14,7 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 from numpy import matmul,sign,arctan2
-from math import cos,sin,radians,isclose,degrees,pi,sqrt
+from math import cos,sin,radians,isclose,degrees,pi,sqrt,floor
 
 def compose(omega=0,I=0,Omega=0):
     cos_omega = cos(omega)
@@ -124,11 +124,42 @@ def get_eccentric_anomaly(eccentricity=0,mean_anomaly=0,tolerance=0.1e-12,N=1000
         
     assert False,'Correction {0} is still greater than tolerance {1} after {2} iterations.'.format(correction,tolerance,N) 
 
+# get_julian_date
+#
+# Calculate Julian Date MD A.1, A.2 and A-3.
+#
+# Parameters: Y  Year (NB there is no year 0 - we got from 10 to 1
+#             M  Month:  1-12
+#             D  Day:    1-31    
+#             UT Universal Time:  
+def get_julian_date(Y,M,D,UT):
+    # is_gregorian
+    #
+    # Verify that date is within Gregoruan Era
+    def is_gregorian():
+        if Y<1582: return False
+        if Y>1582: return True
+        assert Y==1582
+        if M<10: return False
+        if M>10: return True
+        assert M==10
+        if D <= 4: return False
+        if D >= 15: return True
+        assert False,'There is no such date as {0}-{1}-{2}'.format(Y,M,D)
+    y,m = (Y-1,M+12) if M<=2 else (Y,M)
+    B   = floor(y/400) - floor(y/100) if is_gregorian() else -2
+    return floor(365.25 * y) + floor(30.6001*(m+1)) + B + 1720996.5 + D +UT/24
+
 if __name__=='__main__':
     import unittest
     
+    class TestJulian(unittest.TestCase):
+        def test_toJulian(self):
+            self.assertAlmostEqual(2431855.933,get_julian_date(1946,2,4,10.4),places=3)
+            self.assertAlmostEqual(0,get_julian_date(-4712,1,1,12),places=3) #noon at start of 4713 BC
+            
     class TestJupiter(unittest.TestCase):
-        
+    
         # test_mult
         #
         # This test uses Murray & Dermott (2.124)
