@@ -14,7 +14,7 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 from numpy import matmul,sign,arctan2
-from math import cos,sin,radians,isclose,degrees,pi,sqrt,floor
+from math import cos,sin,radians,isclose,degrees,pi,sqrt,floor,modf
 
 def compose(omega=0,I=0,Omega=0):
     cos_omega = cos(omega)
@@ -132,7 +132,7 @@ def get_eccentric_anomaly(eccentricity=0,mean_anomaly=0,tolerance=0.1e-12,N=1000
 #             M  Month:  1-12
 #             D  Day:    1-31    
 #             UT Universal Time:  
-def get_julian_date(Y,M,D,UT):
+def get_julian_date(Y,M,D,UT=12):
     # is_gregorian
     #
     # Verify that date is within Gregoruan Era
@@ -150,13 +150,46 @@ def get_julian_date(Y,M,D,UT):
     B   = floor(y/400) - floor(y/100) if is_gregorian() else -2
     return floor(365.25 * y) + floor(30.6001*(m+1)) + B + 1720996.5 + D +UT/24
 
+# get_calendar_date
+#
+# Convert Julian Date to Calendar Date, MD A.4-A.13
+
+def get_calendar_date(JD):
+    frac_JD,a = modf(JD + 0.5)
+    c         = a + 1524
+    if a>=2299161:
+        b     = floor((a-1867216.25)/36524.25)
+        c     = a + b-floor(b/4)+1525
+    d         = floor((c-122.1)/365.25)
+    e         = floor(365.25*d)
+    f         = floor((c-e)/30.6001)
+    D         = c - e -floor(30.6001*f) + frac_JD
+    M         = f - 1 - 12 * floor(f/14)
+    Y         = d -4715-floor((7+M)/10)
+    return (Y,M,D)
+
 if __name__=='__main__':
     import unittest
     
     class TestJulian(unittest.TestCase):
+        
         def test_toJulian(self):
             self.assertAlmostEqual(2431855.933,get_julian_date(1946,2,4,10.4),places=3)
+            
+        def test_toJulian0(self):
             self.assertAlmostEqual(0,get_julian_date(-4712,1,1,12),places=3) #noon at start of 4713 BC
+            
+        def test_toCalendar(self):
+            Y,M,D = get_calendar_date(2434903.75)
+            self.assertEqual(1954,Y)
+            self.assertEqual(6,M)
+            self.assertEqual(10.25,D)
+            
+        def test_toCalendar0(self):
+            Y,M,D = get_calendar_date(0)
+            self.assertEqual(-4712,Y)
+            self.assertEqual(1,M)
+            self.assertEqual(1.5,D)        
             
     class TestJupiter(unittest.TestCase):
     
