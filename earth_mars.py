@@ -19,20 +19,21 @@
 # 2. Show that the minimum distance varies by factor of almost 2.
 # ...
 
-from orbital import get_xy,get_lambda,compose
+from orbital import get_xy,get_lambda,compose,get_julian_date
 from math import pi,radians,sqrt
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from numpy import matmul
 
-def orbit(planet,N=10000,lambda_dot=1293740.63,Nr=99):
+def orbit(planet,N=10000,lambda_dot=1293740.63,Nr=99,From=0,To=10,Incr=10):
      a,e,I,varpi,Omega,lambda0 = planet
      Xs = []
      Ys = []
      Zs = []
      
-     for i in range(N):
-          T = 0.0001 * i
+     t = From
+     while t < To+Incr:
+          T = t/36525
           x,y = get_xy(T=T, 
                        lambdaT = get_lambda(T,lambda0=lambda0,lambda_dot=lambda_dot,Nr=Nr), 
                        eccentricity = e,a=a,varpi=radians(varpi))
@@ -41,6 +42,7 @@ def orbit(planet,N=10000,lambda_dot=1293740.63,Nr=99):
           Xs.append(W[0])
           Ys.append(W[1])
           Zs.append(W[2])
+          t +=Incr
      return (Xs,Ys,Zs)
  
  
@@ -48,9 +50,9 @@ def is_minimum(a,b,c):
      return a>b and b < c
 
  
-def get_average_interval(earth,mars):
-     Xs,Ys,Zs = orbit (earth)
-     Xm,Ym,Zm = orbit (mars,lambda_dot=217103.78,Nr=53)
+def get_average_interval(earth,mars,From=get_julian_date(1985,1,1),To=get_julian_date(2002,12,31)):
+     Xs,Ys,Zs = orbit (earth,From=From,To=To)
+     Xm,Ym,Zm = orbit (mars,lambda_dot=217103.78,Nr=53,From=From,To=To)
      distances = [sqrt((Xs[i]-Xm[i])**2 + (Ys[i]-Ym[i])**2 + (Zs[i]-Zm[i])**2) for i in range(len(Xs))]
      conjunctions = [(i,distances[i]) for i in range(1,len(distances)-1) if is_minimum(distances[i-1],distances[i],distances[i+1])]
      print ('Ratio={0:2f}'.format(max([d for _,d in conjunctions])/min([d for _,d in conjunctions])))
