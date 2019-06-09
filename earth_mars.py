@@ -148,15 +148,28 @@ def find_conjunctions(earth,
      ax5.legend()
      
      fig.legend([p21,p22],['Earth','Mars'],'upper center')
-     
+ 
+def get_date(string):
+     parts = string.split('-')
+     return (int(parts[0]),int(parts[1]),int(parts[2]))
+             
 if __name__=='__main__':
      from utilities import get_data_file_name,get_planetary_data
-    
-     data = get_planetary_data(get_data_file_name())    
+     from argparse import ArgumentParser
+     parser = ArgumentParser('Find Conjunctions between Earth and Mars')
+     parser.add_argument('--from',dest='from_date',default='1985-1-1',help='First date in range')
+     parser.add_argument('--to',dest='to_date',default='2002-12-31',help='Last date in range')
+     parser.add_argument('--incr',type=int,default=10,help='step size')
+     parser.add_argument('--2D',dest='is2D',action='store_true',help='Ignore inclindations')
+     args     = parser.parse_args()
+     data     = get_planetary_data(get_data_file_name()) 
+     f1,f2,f3 = get_date(args.from_date)
+     t1,t2,t3 = get_date(args.to_date)
      find_conjunctions(data['Earth'],data['Mars'],
-                          From=get_julian_date(1985,1,1),
-                          To=get_julian_date(2002,12,31),
-                          Incr=10) 
+                          From = get_julian_date(f1,f2,f3),
+                          To   = get_julian_date(t1,t2,t3),
+                          Incr = args.incr,
+                          is2D = args.is2D) 
      plt.savefig(get_data_file_name(path='images',ext='png'))
      
      plt.show()       
