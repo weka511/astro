@@ -17,53 +17,101 @@
 #
 # 1. Determine average times or orbital conjunction between earth & Mars
 # 2. Show that the minimum distance varies by factor of almost 2.
-# 3. Determine prbital motions over the period 1982-2002. Neglection the 
-#    relative orbital inclinations, ehoe that the cosest opposition occurred
-#    in September 1988, and the farthest in February 1995, and determine
-#    the minomim distances at thse times.
+# 3. Determine prbital motions over the period 1982-2002. Neglecting the 
+#    relative orbital inclinations, show that the closest opposition occurred
+#    in September 1988, and the furthest in February 1995, and determine
+#    the minimum distances at these times.
 
-from orbital import get_xy,get_lambda,compose,get_julian_date,get_calendar_date
+from orbital import get_xy,get_mean_longitude,compose,get_julian_date,get_calendar_date
 from math import pi,radians,sqrt,floor
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from numpy import matmul
 
-def orbit(planet,N=10000,lambda_dot=1293740.63,Nr=99,From=0,To=10,Incr=1):
+# Times
+#
+# Generator used for iterating over times
+
+def Times(From=0,To=10,Incr=1):
+     t = From
+     while t < To +Incr:
+          yield t,t/36525
+          t+=Incr
+
+# orbit
+#
+# Calculate positions in orbit
+
+def orbit(planet,lambda_dot=1293740.63,Nr=99,From=0,To=10,Incr=1,is2D=False):
      a,e,I,varpi,Omega,lambda0 = planet
+     if is2D: I=0
      Xs = []
      Ys = []
      Zs = []
      ts = []
-#     I=0
-     t = From
-     while t < To+Incr:
-          T = t/36525   # convert to Julian centuries
+     Rotation  = compose(omega = radians(varpi - Omega), #MD 2.118
+                         I     = radians(I),
+                         Omega = radians(Omega))
+     
+     for t,T in Times(From=From,To=To,Incr=Incr):
           x,y = get_xy(T=T, 
-                       lambdaT = get_lambda(T,lambda0=lambda0,lambda_dot=lambda_dot,Nr=Nr), 
-                       eccentricity = e,a=a,varpi=radians(varpi))
-          P = compose(omega=radians(varpi - Omega), I=radians(I), Omega=radians(Omega))
-          W = matmul(P,[[x],[y],[0]])
+                       lambdaT = get_mean_longitude(T,
+                                                    lambda0=lambda0,
+                                                    lambda_dot=lambda_dot,
+                                                    Nr=Nr), 
+                       eccentricity = e,
+                       a=a,
+                       varpi=radians(varpi))
+ 
+          W   = matmul(Rotation,[[x],[y],[0]])
           Xs.append(W[0])
           Ys.append(W[1])
           Zs.append(W[2])
           ts.append(t)
-          t +=Incr
+ 
      return (Xs,Ys,Zs,ts)
  
- 
+# is_minimum
+#
+# Verify that value if a minimum
+#
+#    Parameters:
+#       a
+#       b
+#       c
+#
+# Returns: True iff b is less than bot a and c
+
 def is_minimum(a,b,c):
      return a>b and b < c
 
- 
-def get_average_interval(earth,mars,From=get_julian_date(1985,1,1),To=get_julian_date(2002,12,31),Incr=10):
-     Xs,Ys,Zs,ts = orbit (earth,From=From,To=To,Incr=Incr)
-     Xm,Ym,Zm,_ = orbit (mars,lambda_dot=217103.78,Nr=53,From=From,To=To,Incr=Incr)
-     distances = [sqrt((Xs[i]-Xm[i])**2 + (Ys[i]-Ym[i])**2 + (Zs[i]-Zm[i])**2) for i in range(len(Xs))]
-     conjunctions = [(i,ts[i],distances[i]) for i in range(1,len(distances)-1) if is_minimum(distances[i-1],distances[i],distances[i+1])]
-     print ('Ratio={0:2f}'.format(max([d for _,_,d in conjunctions])/min([d for _,_,d in conjunctions])))
+# get_distance
+#
+# Get Euclidean distance between two points
+
+def get_distance(x0,y0,z0,x1,y1,z1):
+     return sqrt((x0-x1)*(x0-x1) + (y0-y1)*(y0-y1) + (z0-z1)*(z0-z1))
+     
+# find_conjunctions
+#
+# Find conjunctions in the oribits of two planets
+
+def find_conjunctions(earth,
+                      mars,
+                      From=get_julian_date(1985,1,1),
+                      To=get_julian_date(2002,12,31),
+                      Incr=10,
+                      is2D=False):
+     Xs,Ys,Zs,ts  = orbit (earth,From=From,To=To,Incr=Incr,is2D=is2D)
+     Xm,Ym,Zm,_   = orbit (mars,lambda_dot=217103.78,Nr=53,From=From,To=To,Incr=Incr,is2D=is2D)
+     distances    = [get_distance(Xs[i],Ys[i],Zs[i],Xm[i],Ym[i],Zm[i]) for i in range(len(Xs))]
+     conjunctions = [(i,ts[i],distances[i]) for i in range(1,len(distances)-1)
+                     if is_minimum(distances[i-1],distances[i],distances[i+1])]
+     print ('Ratio(Largest/Smallest)={0:2f}'.format(max([d for _,_,d in conjunctions])/min([d for _,_,d in conjunctions])))
      for _,t,d in conjunctions:
           Y,M,D = get_calendar_date(t)
           print ('{0:02d}-{1:02d}-{2}: {3:.4f} AU'.format(int(floor(D)),M,Y,d))
+          
      fig = plt.figure(figsize=(20, 20), dpi=80)
      
      ax1 = fig.add_subplot(231, projection='3d',aspect='equal')     
@@ -94,6 +142,9 @@ def get_average_interval(earth,mars,From=get_julian_date(1985,1,1),To=get_julian
      ax5 = fig.add_subplot(235) 
      p51 = ax5.plot(ts,distances,'g',label='Distance')
      p52 = ax5.scatter([t for _,t,_ in conjunctions],[d for _,_,d in conjunctions],c='m',label='Conjunction')
+     ax5.set_xticklabels([])
+     ax5.set_ylabel('Distance(AU)')
+     ax5.set_xlabel('t')
      ax5.legend()
      
      fig.legend([p21,p22],['Earth','Mars'],'upper center')
@@ -102,7 +153,10 @@ if __name__=='__main__':
      from utilities import get_data_file_name,get_planetary_data
     
      data = get_planetary_data(get_data_file_name())    
-     get_average_interval(data['Earth'],data['Mars']) 
+     find_conjunctions(data['Earth'],data['Mars'],
+                          From=get_julian_date(1985,1,1),
+                          To=get_julian_date(2002,12,31),
+                          Incr=10) 
      plt.savefig(get_data_file_name(path='images',ext='png'))
      
      plt.show()       

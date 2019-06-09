@@ -13,26 +13,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-from numpy import matmul,sign,arctan2
+from numpy import matmul,sign,arctan2,clip
 from math import cos,sin,radians,isclose,degrees,pi,sqrt,floor,modf
 
+# compose
+#
+# Rotate coordinates in 3D: MS 2.119, 2.120, & 2.121
+#
+# Parameters:
+#    omega
+#    I
+#    Omega
 def compose(omega=0,I=0,Omega=0):
     cos_omega = cos(omega)
     sin_omega = sin(omega)
-   
+    cos_I     = cos(I)
+    sin_I     = sin(I)
+    cos_Omega = cos(Omega)
+    sin_Omega = sin(Omega)
+    
     P1        = [[cos_omega, -sin_omega, 0],\
                  [sin_omega,  cos_omega, 0],\
                  [0,          0,         1]]
-    
-    cos_I     = cos(I)
-    sin_I     = sin(I)
    
     P2        = [[1,          0,      0],     \
                  [0,          cos_I, -sin_I], \
                  [0,          sin_I,  cos_I]]
-    
-    cos_Omega = cos(Omega)
-    sin_Omega = sin(Omega)
     
     P3        =  [[cos_Omega, -sin_Omega, 0],\
                   [sin_Omega,  cos_Omega, 0],\
@@ -40,6 +46,16 @@ def compose(omega=0,I=0,Omega=0):
    
     return matmul(P3, matmul(P2, P1))
 
+# get_XYZ
+#
+# Calculate position of particle in 3D: MD 2.122
+#
+# Parameters:
+#     omega
+#     I
+#     Omega
+#     f
+#     r=1
 def get_XYZ(omega=0,I=0,Omega=0,f=0,r=1):
     cos_Omega   = cos(Omega)
     sin_Omega   = sin(Omega)
@@ -51,24 +67,53 @@ def get_XYZ(omega=0,I=0,Omega=0,f=0,r=1):
             r * (sin_Omega*cos_omega_f + cos_Omega*sin_omega_f*cos_I),
             r * sin_omega_f*sin_I)
 
-def get_lambda(T=0,lambda0=34.40438,lambda_dot=557078.35,Nr=8):
-    lambdaT = lambda0 + (lambda_dot/3600 + 360 * Nr) *T
-    if lambdaT< 0:
-        while lambdaT<0:
-            lambdaT+=360
-    else:
-        while lambdaT>360:
-            lambdaT-=360
-    return lambdaT
+# get_lambda
+#
+# Calculate mean longitude: MD A.19
+#
+# Parameters:
+#       T
+#       lambda0
+#       lambda_dot=557078.35
+#       Nr
+def get_mean_longitude(T=0,lambda0=34.40438,lambda_dot=557078.35,Nr=8):
+    return (lambda0 + (lambda_dot/3600 + 360 * Nr) *T)%360
 
+# get_eccentricity
+#
+# Calculate eccentricity: MD A.15
+#
+# Parameters:
+#     T
+#     e0
+#     e_dot
+#
 def get_eccentricity(T=0,e0=0.04839266,e_dot=-12280/1e8):
     return e0 + e_dot * T
+
+#  get_semimajor_axis
+#
+# Calculate semi-major axis: MD A.14
+#
+# Parameters:
+#     T
+#     a0
+#     a_dot
 
 def get_semimajor_axis(T=0,a0=5.20336301,a_dot=60377/1e8):
     return a0 + a_dot * T
 
+#  get_varpi
+#
+# Calculate longitude of perihelion:  MD A.17
+#
+# Parameters:
+#     T
+#     varpi0
+#     varpi_dot
+
 def get_varpi(T=0,varpi0=14.75385,varpi_dot=839.93):
-    return varpi0+varpi_dot * T / 3600
+    return varpi0 + varpi_dot * T / 3600
 
 # get_true_anomaly
 #
@@ -95,11 +140,17 @@ def get_true_anomaly(E,e,N=1000,tolerance=1e-12):
 # get_xy
 #
 # Compute 2D position using 2.41
+#
+#    Parameters:
+#        T
+#        lambdaT
+#        eccentricity
+#        a
+#        varpi
 
 def get_xy(T=0,lambdaT=0,eccentricity=0.0484007,a=5.20332,varpi = 14.7392):
-    M = lambdaT - varpi
+    M = lambdaT - varpi #MD: pargraph before 2.123
     E = get_eccentric_anomaly(eccentricity=eccentricity,mean_anomaly=radians(M))
-    #f                 = get_true_anomaly(eccentric_anomaly,eccentricity)
     return a*(cos(E)-eccentricity),a*sqrt(1-eccentricity*eccentricity)*sin(E)
 
 # get_eccentric_anomaly
@@ -225,14 +276,14 @@ if __name__=='__main__':
             self.assertAlmostEqual(-0.06266423,(2449256.189-2451545.0)/36525) # check Julian centuries
             
         def test_get_lambda(self):
-            self.assertAlmostEqual(204.234,get_lambda(T=-0.06266423),places=3)
+            self.assertAlmostEqual(204.234,get_mean_longitude(T=-0.06266423),places=3)
             
         def test_get_xy(self):
-            x,y = get_xy(T          = -0.06266423,
-                         lambdaT    = get_lambda(T=-0.06266423),
+            x,y = get_xy(T            = -0.06266423,
+                         lambdaT      = get_mean_longitude(T=-0.06266423),
                          eccentricity = get_eccentricity(T=-0.06266423),
-                         a          = get_semimajor_axis(-0.06266423),
-                         varpi      = get_varpi(-0.06266423))
+                         a            = get_semimajor_axis(-0.06266423),
+                         varpi        = get_varpi(-0.06266423))
             self.assertAlmostEqual(-5.39027,x,places=5)
             self.assertAlmostEqual(-0.818277,y,places=5)
             
