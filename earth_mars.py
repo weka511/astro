@@ -26,11 +26,16 @@ from orbital import get_xy,get_mean_longitude,compose,get_julian_date,get_calend
 from math import pi,radians,sqrt,floor
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
-from numpy import matmul
+from numpy import matmul, mean, std
+from utilities import get_date
 
 # Times
 #
 # Generator used for iterating over times
+#
+#         From        Starting time (Julian days)
+#         To          End time (Julian days)
+#         Incr        Interval from one sample to the next
 
 def Times(From=0,To=10,Incr=1):
      t = From
@@ -38,30 +43,45 @@ def Times(From=0,To=10,Incr=1):
           yield t,t/36525
           t+=Incr
 
-# orbit
+# create_orbit
 #
 # Calculate positions in orbit
+#
+#     Parameters:
+#         planet      Elements for planet
+#         lambda_dot  Used to calculate mean longitude
+#         Nr          Used to calculate mean longitude
+#         From        Starting time (Julian centuries)
+#         To          End time (Julian centuries)
+#         Incr        Interval from one sample to the next
+#         is2D        Used to force a 2D calculcation
 
-def orbit(planet,lambda_dot=1293740.63,Nr=99,From=0,To=10,Incr=1,is2D=False):
+def create_orbit(planet,
+                lambda_dot = 1293740.63,
+                Nr         = 99,
+                From       = 0,
+                To         = 10,
+                Incr       = 1,
+                is2D       = False):
      a,e,I,varpi,Omega,lambda0 = planet
-     if is2D: I=0
-     Xs = []
-     Ys = []
-     Zs = []
-     ts = []
-     Rotation  = compose(omega = radians(varpi - Omega), #MD 2.118
-                         I     = radians(I),
-                         Omega = radians(Omega))
+     if is2D: I                = 0
+     Xs                        = []
+     Ys                        = []
+     Zs                        = []
+     ts                        = []
+     Rotation                  = compose(omega = radians(varpi - Omega), #MD 2.118
+                                         I     = radians(I),
+                                         Omega = radians(Omega))
      
      for t,T in Times(From=From,To=To,Incr=Incr):
-          x,y = get_xy(T=T, 
+          x,y = get_xy(T       = T, 
                        lambdaT = get_mean_longitude(T,
-                                                    lambda0=lambda0,
-                                                    lambda_dot=lambda_dot,
-                                                    Nr=Nr), 
-                       eccentricity = e,
-                       a=a,
-                       varpi=radians(varpi))
+                                                    lambda0    = lambda0,
+                                                    lambda_dot = lambda_dot,
+                                                    Nr         = Nr), 
+                       e       = e,
+                       a       = a,
+                       varpi   = radians(varpi))
  
           W   = matmul(Rotation,[[x],[y],[0]])
           Xs.append(W[0])
@@ -94,7 +114,7 @@ def get_distance(x0,y0,z0,x1,y1,z1):
      
 # find_conjunctions
 #
-# Find conjunctions in the oribits of two planets
+# Find conjunctions in the orbits of two planets
 
 def find_conjunctions(earth,
                       mars,
@@ -102,24 +122,44 @@ def find_conjunctions(earth,
                       To=get_julian_date(2002,12,31),
                       Incr=10,
                       is2D=False):
-     Xs,Ys,Zs,ts  = orbit (earth,From=From,To=To,Incr=Incr,is2D=is2D)
-     Xm,Ym,Zm,_   = orbit (mars,lambda_dot=217103.78,Nr=53,From=From,To=To,Incr=Incr,is2D=is2D)
+     Xs,Ys,Zs,ts  = create_orbit (earth,lambda_dot=1293740.63,Nr=99,From=From,To=To,Incr=Incr,is2D=is2D)
+     Xm,Ym,Zm,_   = create_orbit (mars,lambda_dot=217103.78,Nr=53,From=From,To=To,Incr=Incr,is2D=is2D)
      distances    = [get_distance(Xs[i],Ys[i],Zs[i],Xm[i],Ym[i],Zm[i]) for i in range(len(Xs))]
      conjunctions = [(i,ts[i],distances[i]) for i in range(1,len(distances)-1)
                      if is_minimum(distances[i-1],distances[i],distances[i+1])]
-     print ('Ratio(Largest/Smallest)={0:2f}'.format(max([d for _,_,d in conjunctions])/min([d for _,_,d in conjunctions])))
+     times        = [t for _,t,_ in conjunctions]
+     intervals =    [12*(times[i]-times[i-1])/365 for i in range(1,len(times))]
+     print ('Average time between conjunctions = {0:.2f} months, sigma = {1:.2f} months.'.format(mean(intervals),std(intervals)))
+     print ('Ratio(Largest/Smallest)={0:.2f}'.format(max([d for _,_,d in conjunctions])/min([d for _,_,d in conjunctions])))
      for _,t,d in conjunctions:
           Y,M,D = get_calendar_date(t)
           print ('{0:02d}-{1:02d}-{2}: {3:.4f} AU'.format(int(floor(D)),M,Y,d))
-          
+     
+     Y0 = -1
+     XX = []
+     YY = []
+     ZZ = []
+     for i in range(len(ts)):
+          Y,M,D = get_calendar_date(ts[i])
+          if Y != Y0:
+               XX.append(Xs[i])
+               YY.append(Ys[i])
+               ZZ.append(Zs[i])
+               Y0 = Y
+               
      fig = plt.figure(figsize=(20, 20), dpi=80)
      
+     # 3D Plot
+     
      ax1 = fig.add_subplot(231, projection='3d',aspect='equal')     
-     ax1.scatter(Xs, Ys, Zs, c='b', edgecolor='face',s=1,label='Earth')
-     ax1.scatter(Xm,Ym,Zm,c='r',edgecolor='face',s=1,label='Mars') 
+     ax1.scatter(Xs, Ys, Zs, c='b', edgecolor='face', s=1)
+     ax1.scatter(XX, YY, ZZ, c='k', edgecolor='face', s=25,marker='x')
+     ax1.scatter(Xm, Ym, Zm, c='r', edgecolor='face', s=1) 
      ax1.set_xlabel('X')
      ax1.set_ylabel('Y')
      ax1.set_zlabel('Z') 
+     
+     # 2D plot X & Y
      
      ax2 = fig.add_subplot(232,aspect='equal') 
      p21 = ax2.scatter(Xs, Ys, c='b', edgecolor='face',s=1,label='Earth')
@@ -127,17 +167,23 @@ def find_conjunctions(earth,
      ax2.set_xlabel('X')
      ax2.set_ylabel('Y')
      
+     # 2D plot Y & Z
+     
      ax3 = fig.add_subplot(233) 
      ax3.scatter(Ys, Zs, c='b', edgecolor='face',s=1,label='Earth')
      ax3.scatter(Ym,Zm,c='r',edgecolor='face',s=1,label='Mars')
      ax3.set_xlabel('Y')
      ax3.set_ylabel('Z')
      
+     # 2D plots - X & Z
+     
      ax4 = fig.add_subplot(234) 
      ax4.scatter(Xs, Zs, c='b', edgecolor='face',s=1,label='Earth')
      ax4.scatter(Xm,Zm,c='r',edgecolor='face',s=1,label='Mars')
      ax4.set_xlabel('X')
      ax4.set_ylabel('Z')
+     
+     # Plot conjunctions
      
      ax5 = fig.add_subplot(235) 
      p51 = ax5.plot(ts,distances,'g',label='Distance')
@@ -148,10 +194,8 @@ def find_conjunctions(earth,
      ax5.legend()
      
      fig.legend([p21,p22],['Earth','Mars'],'upper center')
- 
-def get_date(string):
-     parts = string.split('-')
-     return (int(parts[0]),int(parts[1]),int(parts[2]))
+
+
              
 if __name__=='__main__':
      from utilities import get_data_file_name,get_planetary_data

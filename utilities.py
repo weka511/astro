@@ -90,3 +90,9 @@ def get_r_velocity(zdot,theta):
 def get_theta_dot(zdot,theta,r):
     [xdot,ydot]=zdot
     return (math.cos(theta)*ydot - math.sin(theta)*xdot)/r
+
+# Parse date from string
+
+def get_date(string):
+    parts = string.split('-')
+    return (int(parts[0]),int(parts[1]),int(parts[2]))

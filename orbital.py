@@ -21,9 +21,10 @@ from math import cos,sin,radians,isclose,degrees,pi,sqrt,floor,modf
 # Rotate coordinates in 3D: MS 2.119, 2.120, & 2.121
 #
 # Parameters:
-#    omega
-#    I
-#    Omega
+#    omega  Argument of pericentre
+#    I      Inclination       
+#    Omega  Longitude of ascending node
+
 def compose(omega=0,I=0,Omega=0):
     cos_omega = cos(omega)
     sin_omega = sin(omega)
@@ -51,11 +52,11 @@ def compose(omega=0,I=0,Omega=0):
 # Calculate position of particle in 3D: MD 2.122
 #
 # Parameters:
-#     omega
-#     I
-#     Omega
-#     f
-#     r=1
+#    omega  Argument of pericentre
+#    I      Inclination       
+#    Omega  Longitude of ascending node
+#    f      True anomaly
+#    r      radius
 def get_XYZ(omega=0,I=0,Omega=0,f=0,r=1):
     cos_Omega   = cos(Omega)
     sin_Omega   = sin(Omega)
@@ -72,20 +73,20 @@ def get_XYZ(omega=0,I=0,Omega=0,f=0,r=1):
 # Calculate mean longitude: MD A.19
 #
 # Parameters:
-#       T
-#       lambda0
-#       lambda_dot=557078.35
+#       T          Number of Julian centuries since start of epoch
+#       lambda0    mean longitude at T = 0 in degrees
+#       lambda_dot Rate of change of mean longitude in arc seconds per century 
 #       Nr
 def get_mean_longitude(T=0,lambda0=34.40438,lambda_dot=557078.35,Nr=8):
-    return (lambda0 + (lambda_dot/3600 + 360 * Nr) *T)%360
+    return radians(lambda0 + (lambda_dot/3600 + 360 * Nr) *T) % (2 * pi)
 
 # get_eccentricity
 #
 # Calculate eccentricity: MD A.15
 #
 # Parameters:
-#     T
-#     e0
+#     T        Number of Julian centuries since start of epoch
+#     e0       Eccentricity at t=0
 #     e_dot
 #
 def get_eccentricity(T=0,e0=0.04839266,e_dot=-12280/1e8):
@@ -96,8 +97,8 @@ def get_eccentricity(T=0,e0=0.04839266,e_dot=-12280/1e8):
 # Calculate semi-major axis: MD A.14
 #
 # Parameters:
-#     T
-#     a0
+#     T        Number of Julian centuries since start of epoch
+#     a0       Semi-major axis at start of epoch
 #     a_dot
 
 def get_semimajor_axis(T=0,a0=5.20336301,a_dot=60377/1e8):
@@ -108,12 +109,12 @@ def get_semimajor_axis(T=0,a0=5.20336301,a_dot=60377/1e8):
 # Calculate longitude of perihelion:  MD A.17
 #
 # Parameters:
-#     T
-#     varpi0
+#     T          Number of Julian centuries since start of epoch
+#     varpi0     Longitude at start of epoch
 #     varpi_dot
 
-def get_varpi(T=0,varpi0=14.75385,varpi_dot=839.93):
-    return varpi0 + varpi_dot * T / 3600
+def get_longitude_of_perihelion(T=0,varpi0=14.75385,varpi_dot=839.93):
+    return radians(varpi0 + varpi_dot * T / 3600)
 
 # get_true_anomaly
 #
@@ -142,35 +143,35 @@ def get_true_anomaly(E,e,N=1000,tolerance=1e-12):
 # Compute 2D position using 2.41
 #
 #    Parameters:
-#        T
-#        lambdaT
-#        eccentricity
-#        a
+#        T               Number of Julian centuries since start of epoch
+#        lambdaT         Mean longitude
+#        e               eccentricity
+#        a               Semi-major axis
 #        varpi
 
-def get_xy(T=0,lambdaT=0,eccentricity=0.0484007,a=5.20332,varpi = 14.7392):
-    M = lambdaT - varpi #MD: pargraph before 2.123
-    E = get_eccentric_anomaly(eccentricity=eccentricity,mean_anomaly=radians(M))
-    return a*(cos(E)-eccentricity),a*sqrt(1-eccentricity*eccentricity)*sin(E)
+def get_xy(T=0,lambdaT=0,e=0.0484007,a=5.20332,varpi = 14.7392):
+    M = lambdaT - varpi #MD: paragraph before 2.123
+    E = get_eccentric_anomaly(e=e,M=M)
+    return a*(cos(E)-e),a*sqrt(1-e*e)*sin(E)
 
 # get_eccentric_anomaly
 #
 # Calculate eccentric anomaly by solveing kepler's equation - 2.52
 #
 # Parameters:
-#             eccentricity  Eccentricty of orbit
-#             mean_anomaly  Mean anomaly
+#             e             Eccentricty of orbit
+#             M  Mean anomaly
 #             tolerance     Used to assess correction: throws Assetion Error 
 #                           if correction still exceeds tolerance after N iterations
 #             N             Maximum number of iterations
 #             k             Paramter used in Danby's starting value - MD 2.64
-def get_eccentric_anomaly(eccentricity=0,mean_anomaly=0,tolerance=0.1e-12,N=10000,k=0.85):
-    M = mean_anomaly % (2 * pi)
-    E = M + sign(sin(M)*k*eccentricity)  # Danby's starting value - MD 2.64
+def get_eccentric_anomaly(e=0,M=0,tolerance=0.1e-12,N=10000,k=0.85):
+   
+    E = M + sign(sin(M)*k*e)  # Danby's starting value - MD 2.64
     
     for i in range(N):
-        correction = (E - eccentricity*sin(E) - M)/(1 - eccentricity * cos(E))
-        if abs(correction)<tolerance*(M+E)*0.5: return E
+        correction = (E - e * sin(E) - M)/(1 - e * cos(E))
+        if abs(correction)<tolerance: return E # *(M+E)*0.5
         E -= correction
         
     assert False,'Correction {0} is still greater than tolerance {1} after {2} iterations.'.format(correction,tolerance,N) 
@@ -186,7 +187,7 @@ def get_eccentric_anomaly(eccentricity=0,mean_anomaly=0,tolerance=0.1e-12,N=1000
 def get_julian_date(Y,M,D,UT=12):
     # is_gregorian
     #
-    # Verify that date is within Gregoruan Era
+    # Verify that date is within Gregorian Era
     def is_gregorian():
         if Y<1582: return False
         if Y>1582: return True
@@ -275,26 +276,30 @@ if __name__=='__main__':
         def test_get_T(self):
             self.assertAlmostEqual(-0.06266423,(2449256.189-2451545.0)/36525) # check Julian centuries
             
-        def test_get_lambda(self):
-            self.assertAlmostEqual(204.234,get_mean_longitude(T=-0.06266423),places=3)
+        def test_get_mean_longitude(self):
+            self.assertAlmostEqual(radians(204.234),get_mean_longitude(T=-0.06266423),places=3)
             
         def test_get_xy(self):
             x,y = get_xy(T            = -0.06266423,
                          lambdaT      = get_mean_longitude(T=-0.06266423),
-                         eccentricity = get_eccentricity(T=-0.06266423),
+                         e            = get_eccentricity(T=-0.06266423),
                          a            = get_semimajor_axis(-0.06266423),
-                         varpi        = get_varpi(-0.06266423))
+                         varpi        = get_longitude_of_perihelion(-0.06266423))
             self.assertAlmostEqual(-5.39027,x,places=5)
             self.assertAlmostEqual(-0.818277,y,places=5)
             
         def test_eccentricty(self):
-            self.assertAlmostEqual(0.0484007,get_eccentricity(T=-0.06266423),places=6)
+            self.assertAlmostEqual(0.0484007,
+                                   get_eccentricity(T=-0.06266423),places=6)
             
         def test_semimajor_axis(self):
-            self.assertAlmostEqual(5.20332,get_semimajor_axis(T=-0.06266423),places=4)
+            self.assertAlmostEqual(5.20332,
+                                   get_semimajor_axis(T=-0.06266423),places=4)
             
-        def test_varpi(self):
-            self.assertAlmostEqual(14.7392,get_varpi(T=-0.06266423),places=4)        
+        def test_get_longitude_of_perihelion(self):
+            self.assertAlmostEqual(radians(14.7392),
+                                   get_longitude_of_perihelion(T=-0.06266423),
+                                   places=4)        
                
     class TestKepler(unittest.TestCase):
         # test_kepler_inverse
@@ -304,7 +309,7 @@ if __name__=='__main__':
             N = 25
             for i in range(N):
                 mean_anomaly = 2 * pi /N
-                E            = get_eccentric_anomaly(eccentricity=0.205635,mean_anomaly=mean_anomaly)
+                E            = get_eccentric_anomaly(e=0.205635,M=mean_anomaly)
                 M            = E - 0.205635 * sin(E)
                 self.assertAlmostEqual(mean_anomaly,M)
             
@@ -314,8 +319,8 @@ if __name__=='__main__':
         def test_kepler_jupiter(self):
             self.assertAlmostEqual(radians(189.059),
                                    get_eccentric_anomaly(
-                                       mean_anomaly=radians(189.495),
-                                       eccentricity=0.0484007),
+                                       M=radians(189.495),
+                                       e=0.0484007),
                                    places=4)
     
     unittest.main()
