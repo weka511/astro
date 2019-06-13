@@ -23,7 +23,7 @@
 |1.5|commensurability.py|Identify commensurability and estimate probability of this particular value occurring by chance.|
 |2||The Two Body Problem|
 ||orbit_space.tex|Calculations to support values for *orbital.py*|
-|2.2|earth_mars.py|Earth Mars Distance)|
+|2.2|earth_mars.py|Earth Mars Distance at opposition|
 ||orbital.py|Orbital calculations|
 |3||The Restricted Three Body Problem|
 ||jacobi.py|Zero velocity Surfaces for the Jacobi Integral|

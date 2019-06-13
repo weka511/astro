@@ -77,8 +77,11 @@ def get_XYZ(omega=0,I=0,Omega=0,f=0,r=1):
 #       lambda0    mean longitude at T = 0 in degrees
 #       lambda_dot Rate of change of mean longitude in arc seconds per century 
 #       Nr
+#
+# Returns: mean longitude in radians
+
 def get_mean_longitude(T=0,lambda0=34.40438,lambda_dot=557078.35,Nr=8):
-    return radians(lambda0 + (lambda_dot/3600 + 360 * Nr) *T) % (2 * pi)
+    return radians(lambda0 + (lambda_dot/3600 + 360 * Nr) *T)
 
 # get_eccentricity
 #
@@ -144,15 +147,15 @@ def get_true_anomaly(E,e,N=1000,tolerance=1e-12):
 #
 #    Parameters:
 #        T               Number of Julian centuries since start of epoch
-#        lambdaT         Mean longitude
+#        lambdaT         Mean longitude in radians
 #        e               eccentricity
 #        a               Semi-major axis
-#        varpi
+#        varpi           longitude of perihelion in radians
 
 def get_xy(T=0,lambdaT=0,e=0.0484007,a=5.20332,varpi = 14.7392):
     M = lambdaT - varpi #MD: paragraph before 2.123
     E = get_eccentric_anomaly(e=e,M=M)
-    return a*(cos(E)-e),a*sqrt(1-e*e)*sin(E)
+    return a * (cos(E) - e),a * sqrt(1 - e*e)*sin(E)
 
 # get_eccentric_anomaly
 #
@@ -165,16 +168,100 @@ def get_xy(T=0,lambdaT=0,e=0.0484007,a=5.20332,varpi = 14.7392):
 #                           if correction still exceeds tolerance after N iterations
 #             N             Maximum number of iterations
 #             k             Paramter used in Danby's starting value - MD 2.64
-def get_eccentric_anomaly(e=0,M=0,tolerance=0.1e-12,N=10000,k=0.85):
+def get_eccentric_anomaly(e=0,M=0,rel_tol=1e-7, abs_tol=1e-9,N=10000,k=0.85):
    
-    E = M + sign(sin(M)*k*e)  # Danby's starting value - MD 2.64
+    E = M + sign(sin(M) * k * e)  # Danby's starting value - MD 2.64
     
     for i in range(N):
         correction = (E - e * sin(E) - M)/(1 - e * cos(E))
-        if abs(correction)<tolerance: return E # *(M+E)*0.5
+        if isclose(correction,0,rel_tol=rel_tol,abs_tol=abs_tol): return E
         E -= correction
         
-    assert False,'Correction {0} is still greater than tolerance {1} after {2} iterations.'.format(correction,tolerance,N) 
+    assert False, 'Correction {0} is still greater than tolerance {1} after {2} iterations.'.format(correction,
+        max(rel_tol * abs(correction), abs_tol),N) 
+    
+# Times
+#
+# Generator used for iterating over times
+#
+#         From        Starting time (Julian days)
+#         To          End time (Julian days)
+#         Incr        Interval from one sample to the next
+
+def Times(From=0,To=10,Incr=1,Epoch=2451545.0):
+    t = From
+    while t < To +Incr:
+        yield t,(t-Epoch)/36525
+        t+=Incr
+
+# create_orbit
+#
+# Calculate positions in orbit
+#
+#     Parameters:
+#         planet      Elements for planet
+#         lambda_dot  Used to calculate mean longitude
+#         Nr          Used to calculate mean longitude
+#         From        Starting time (Julian centuries)
+#         To          End time (Julian centuries)
+#         Incr        Interval from one sample to the next
+#         is2D        Used to force a 2D calculcation
+
+def create_orbit(planet,
+                 lambda_dot = 1293740.63,
+                 Nr         = 99,
+                 From       = 0,
+                 To         = 10,
+                 Incr       = 1,
+                 is2D       = False):
+    a,e,I,varpi,Omega,lambda0 = planet
+    if is2D: I                = 0
+    Xs                        = []
+    Ys                        = []
+    Zs                        = []
+    ts                        = []
+    Rotation                  = compose(omega = radians(varpi - Omega), #MD 2.118
+                                         I     = radians(I),
+                                         Omega = radians(Omega))
+
+    for t,T in Times(From=From,To=To,Incr=Incr):
+        x,y = get_xy(T       = T, 
+                       lambdaT = get_mean_longitude(T,
+                                                    lambda0    = lambda0,
+                                                    lambda_dot = lambda_dot,
+                                                    Nr         = Nr), 
+                       e       = e,
+                       a       = a,
+                       varpi   = radians(varpi))
+
+        W   = matmul(Rotation,[[x],[y],[0]])
+        Xs.append(W[0][0])
+        Ys.append(W[1][0])
+        Zs.append(W[2][0])
+        ts.append(t)
+
+    return (Xs,Ys,Zs,ts)
+
+# is_minimum
+#
+# Verify that value if a minimum
+#
+#    Parameters:
+#       a
+#       b
+#       c
+#
+# Returns: True iff b is less than both a and c
+
+def is_minimum(a,b,c):
+    return a>b and b < c
+
+# get_distance
+#
+# Get Euclidean distance between two points
+
+def get_distance(x0,y0,z0,x1,y1,z1):
+    return sqrt((x0-x1)*(x0-x1) + (y0-y1)*(y0-y1) + (z0-z1)*(z0-z1))
 
 # get_julian_date
 #
@@ -277,7 +364,7 @@ if __name__=='__main__':
             self.assertAlmostEqual(-0.06266423,(2449256.189-2451545.0)/36525) # check Julian centuries
             
         def test_get_mean_longitude(self):
-            self.assertAlmostEqual(radians(204.234),get_mean_longitude(T=-0.06266423),places=3)
+            self.assertAlmostEqual(radians(204.234),get_mean_longitude(T=-0.06266423)%(2*pi),places=3)
             
         def test_get_xy(self):
             x,y = get_xy(T            = -0.06266423,
@@ -322,5 +409,28 @@ if __name__=='__main__':
                                        M=radians(189.495),
                                        e=0.0484007),
                                    places=4)
+            
+    class TestOrbit(unittest.TestCase):
+        
+        def test_perihelion(self): # see https://www.timeanddate.com/astronomy/perihelion-aphelion-solstice.html 
+            Xs,Ys,Zs,Ts     = create_orbit(( 1.00000011, 0.01671022, 0.00005, 102.94719, 348.93936, 100.46435),
+                                       lambda_dot = 1293740.63,
+                                       Nr         = 99,
+                                       From       = get_julian_date(2018,12,31),
+                                       To         = get_julian_date(2019,12,31),
+                                       Incr       = 1)
+            
+            solar_distances = [get_distance(Xs[i],Ys[i],Zs[i],0,0,0) for i in range(len(Ts))]
+            
+            minima          = [i for i in range(1,len(solar_distances)-1)
+                               if is_minimum(solar_distances[i-1],
+                                             solar_distances[i],
+                                             solar_distances[i+1])]
+            Y,M,D           = get_calendar_date(Ts[minima[0]])
+            
+            self.assertEqual(1,len(minima))
+            self.assertEqual(2019,Y)
+            self.assertEqual(1,M)
+            self.assertEqual(3.5,D)
     
     unittest.main()

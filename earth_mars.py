@@ -22,96 +22,13 @@
 #    in September 1988, and the furthest in February 1995, and determine
 #    the minimum distances at these times.
 
-from orbital import get_xy,get_mean_longitude,compose,get_julian_date,get_calendar_date
+from orbital import get_xy,get_mean_longitude,compose,get_julian_date,get_calendar_date,create_orbit,is_minimum,get_distance
 from math import pi,radians,sqrt,floor
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from numpy import matmul, mean, std
 from utilities import get_date
-
-# Times
-#
-# Generator used for iterating over times
-#
-#         From        Starting time (Julian days)
-#         To          End time (Julian days)
-#         Incr        Interval from one sample to the next
-
-def Times(From=0,To=10,Incr=1):
-     t = From
-     while t < To +Incr:
-          yield t,t/36525
-          t+=Incr
-
-# create_orbit
-#
-# Calculate positions in orbit
-#
-#     Parameters:
-#         planet      Elements for planet
-#         lambda_dot  Used to calculate mean longitude
-#         Nr          Used to calculate mean longitude
-#         From        Starting time (Julian centuries)
-#         To          End time (Julian centuries)
-#         Incr        Interval from one sample to the next
-#         is2D        Used to force a 2D calculcation
-
-def create_orbit(planet,
-                lambda_dot = 1293740.63,
-                Nr         = 99,
-                From       = 0,
-                To         = 10,
-                Incr       = 1,
-                is2D       = False):
-     a,e,I,varpi,Omega,lambda0 = planet
-     if is2D: I                = 0
-     Xs                        = []
-     Ys                        = []
-     Zs                        = []
-     ts                        = []
-     Rotation                  = compose(omega = radians(varpi - Omega), #MD 2.118
-                                         I     = radians(I),
-                                         Omega = radians(Omega))
-     
-     for t,T in Times(From=From,To=To,Incr=Incr):
-          x,y = get_xy(T       = T, 
-                       lambdaT = get_mean_longitude(T,
-                                                    lambda0    = lambda0,
-                                                    lambda_dot = lambda_dot,
-                                                    Nr         = Nr), 
-                       e       = e,
-                       a       = a,
-                       varpi   = radians(varpi))
- 
-          W   = matmul(Rotation,[[x],[y],[0]])
-          Xs.append(W[0])
-          Ys.append(W[1])
-          Zs.append(W[2])
-          ts.append(t)
- 
-     return (Xs,Ys,Zs,ts)
- 
-# is_minimum
-#
-# Verify that value if a minimum
-#
-#    Parameters:
-#       a
-#       b
-#       c
-#
-# Returns: True iff b is less than bot a and c
-
-def is_minimum(a,b,c):
-     return a>b and b < c
-
-# get_distance
-#
-# Get Euclidean distance between two points
-
-def get_distance(x0,y0,z0,x1,y1,z1):
-     return sqrt((x0-x1)*(x0-x1) + (y0-y1)*(y0-y1) + (z0-z1)*(z0-z1))
-     
+    
 # find_conjunctions
 #
 # Find conjunctions in the orbits of two planets
@@ -134,18 +51,6 @@ def find_conjunctions(earth,
      for _,t,d in conjunctions:
           Y,M,D = get_calendar_date(t)
           print ('{0:02d}-{1:02d}-{2}: {3:.4f} AU'.format(int(floor(D)),M,Y,d))
-     
-     Y0 = -1
-     XX = []
-     YY = []
-     ZZ = []
-     for i in range(len(ts)):
-          Y,M,D = get_calendar_date(ts[i])
-          if Y != Y0:
-               XX.append(Xs[i])
-               YY.append(Ys[i])
-               ZZ.append(Zs[i])
-               Y0 = Y
                
      fig = plt.figure(figsize=(20, 20), dpi=80)
      
@@ -153,7 +58,6 @@ def find_conjunctions(earth,
      
      ax1 = fig.add_subplot(231, projection='3d',aspect='equal')     
      ax1.scatter(Xs, Ys, Zs, c='b', edgecolor='face', s=1)
-     ax1.scatter(XX, YY, ZZ, c='k', edgecolor='face', s=25,marker='x')
      ax1.scatter(Xm, Ym, Zm, c='r', edgecolor='face', s=1) 
      ax1.set_xlabel('X')
      ax1.set_ylabel('Y')
