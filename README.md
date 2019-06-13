@@ -23,8 +23,8 @@
 |1.5|commensurability.py|Identify commensurability and estimate probability of this particular value occurring by chance.|
 |2||The Two Body Problem|
 ||orbit_space.tex|Calculations to support values for *orbital.py*|
-|2.2|earth_mars.py|Earth Mars Distance at opposition|
-||orbital.py|Orbital calculations|
+|2.2|earth_mars.py| 1. Determine average times or orbital conjunction between earth & Mars. 2. Show that the minimum distance varies by factor of almost 2. 3. Determine prbital motions over the period 1982-2002. Neglecting     relative orbital inclinations, show that the closest opposition occurred in September 1988, and the furthest in February 1995, and determine the minimum distances at these times.|
+||orbital.py|Orbital calculations to support *earth_mars.py*|
 |3||The Restricted Three Body Problem|
 ||jacobi.py|Zero velocity Surfaces for the Jacobi Integral|
 ||jacobi3d.py|Potential surfaces|
