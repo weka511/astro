@@ -62,3 +62,16 @@ target/
 
 # Emacs backups
 *~
+
+# Tex intermediate files
+*.aux
+*.bbl
+*.blg
+*.pdf
+*.synctex.gz
+*.lof
+*.toc
+*.glg
+*.glo
+*.gls
+*.ist
