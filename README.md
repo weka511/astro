@@ -34,3 +34,12 @@ Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolu
  File | Purpose 
 --------------------------|---------------------------------------------------------------------
 astro.bib|Bibliography
+
+## Data files
+
+File | Description
+---------------------------|---------------------------------------------------------------------
+commensurability.dat|
+earth_mars.dat|
+saturn.csv| Orbital periods for exercise 1.4
+
