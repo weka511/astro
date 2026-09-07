@@ -18,7 +18,7 @@
 |#|File| Description |
 |----|--------------------|------------------------------------------------------------|
 |1|-| Structure of the Solar System|
-|1.3|uranus.py|Satellites of Uranus|
+|1.3|uranus.py|Murray & Dermott, Exercise 1.3. Create a number of random sets of orbital periods orbital periods for a model satellite system, similar to the three inner satellites of Uranus. For each set, calculate the mean motion for each satellite and check n1-3n2+2n3.|
 |1.4|saturn.py|Satellites of Saturn|
 |1.5|commensurability.py|Identify commensurability and estimate probability of value occurring by chance.|
 |2||The Two Body Problem|
