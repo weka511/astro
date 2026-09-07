@@ -16,7 +16,7 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 '''
-Murray & Dermott, Exercise 1.3. Setellites of Saturn
+Murray & Dermott, Exercise 1.3. Satellites of Saturn
 '''
 
 from argparse import ArgumentParser
@@ -31,8 +31,8 @@ def get_bounds(n_ratio, max_p=100):
      calculate p and p' from Murray and Dermott, Section 1.7.
      We use r0 for the lower bound (MD p'/(p'+1)) and r1 for the upper
      '''
-     if 1/3 < n_ratio and n_ratio < 1/2: # See MD Section 1.7
-          return (1/3, 1/2)
+     if 1/3 < n_ratio and n_ratio < 1/2:  return (1/3, 1/2)
+     
      r0 = 0
      r1 = None
      for p in range(max_p):
@@ -85,7 +85,7 @@ def main():
 
      rcs = get_mean_motion_ratios(
                create_data(
-                    (Path(args.data)/'saturn').with_suffix('.csv')))
+                    (Path(args.data)/Path(__file__).stem).with_suffix('.csv')))
      cs = sorted([abs(c) for _, c in rcs])
      for i in range(len(cs)):
           print(i, cs[i])
