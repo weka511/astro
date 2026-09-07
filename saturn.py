@@ -20,6 +20,7 @@ Murray & Dermott, Exercise 1.3. Setellites of Saturn
 '''
 
 from argparse import ArgumentParser
+from csv import reader
 from pathlib import Path
 from matplotlib.pyplot import figure, show
 import numpy as np
@@ -65,32 +66,36 @@ def parse_args():
      parser.add_argument('--figs', default='./figs', help=f'Path to plots')
      return parser.parse_args()
 
-
-def create_data(data_file):
-     data = []
-     for line in data_file:
-          parts = line.strip().split(',')
-          name = parts[0]
-          T = abs(float(parts[1]))
-          data.append((name, T))
-     return data
-
+def create_data(data_path):
+     '''
+     Read data file
+     
+     Parameters:
+         data_path
+     '''
+     with open(data_path) as data_file:
+          product = []
+          data_reader = reader(data_file)
+          for row in data_reader:
+               product.append([row[0],abs(float(row[1]))])     
+     return product
 
 def main():
      args = parse_args()
 
-     with open(Path(args.data)/'saturn.dat') as data_file:
-          rcs = get_mean_motion_ratios(create_data(data_file))
-          cs = sorted([abs(c) for _, c in rcs])
-          for i in range(len(cs)):
-               print(i, cs[i])
-          fig = figure(figsize=(6, 6))
-          ax = fig.add_subplot(1, 1, 1)
-          ax.hist(cs, bins=100)
-          #n,bins,_=plt.hist([abs(c) for _,c in cs],bins=100,cumulative=True)
-          ax.set_title('Distribution of c')
-          print(len(set([r for r, _ in rcs])))
-          fig.savefig(Path(args.figs)/Path(__file__).stem)
+     rcs = get_mean_motion_ratios(
+               create_data(
+                    (Path(args.data)/'saturn').with_suffix('.csv')))
+     cs = sorted([abs(c) for _, c in rcs])
+     for i in range(len(cs)):
+          print(i, cs[i])
+     fig = figure(figsize=(6, 6))
+     ax = fig.add_subplot(1, 1, 1)
+     ax.hist(cs, bins=100,density=True)
+     ax.set_title('Distribution of c')
+     ax.set_xlabel('c')
+     print(len(set([r for r, _ in rcs])))
+     fig.savefig(Path(args.figs)/Path(__file__).stem)
 
      show()
 
