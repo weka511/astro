@@ -73,9 +73,11 @@ def get_XYZ(omega=0,I=0,Omega=0,f=0,r=1):
     sin_I = np.sin(I)
     cos_omega_f = np.cos(omega + f)
     sin_omega_f = np.sin(omega + f)
-    return np.array([r * (cos_Omega*cos_omega_f - sin_Omega*sin_omega_f*cos_I),
-            r * (sin_Omega*cos_omega_f + cos_Omega*sin_omega_f*cos_I),
-            r * sin_omega_f*sin_I])
+    return r*np.array([
+                    cos_Omega*cos_omega_f - sin_Omega*sin_omega_f*cos_I,
+                    sin_Omega*cos_omega_f + cos_Omega*sin_omega_f*cos_I,
+                    sin_omega_f*sin_I
+    ])
 
 
 def get_mean_longitude(T=0,lambda0=34.40438,lambda_dot=557078.35,Nr=8):
@@ -270,7 +272,7 @@ def get_distance(x0,y0,z0,x1,y1,z1):
 
 def get_julian_date(Y,M,D,UT=12):
     '''
-    Calculate Julian Date MD A.1, A.2 and A-3.
+    Calculate Julian Date MD Appendex A
    
     Parameters: 
         Y  Year (NB there is no year 0 - we got from 10 to 1
@@ -280,39 +282,51 @@ def get_julian_date(Y,M,D,UT=12):
     '''
     def is_gregorian():
         '''
-        Verify that date is within Gregorian Era
+        Verify that date is within Gregorian Era. The Julian calendar day Thursday,
+        4 October 1582 was followed by the first day of the Gregorian calendar, 
+        Friday, 15 October 1582 (Wikipedia).
         '''
-        if Y<1582: return False
-        if Y>1582: return True
-        assert Y==1582
-        if M<10: return False
-        if M>10: return True
-        assert M==10
+        if Y < 1582: return False
+        if Y > 1582: return True
+        assert Y == 1582
+        if M < 10: return False
+        if M > 10: return True
+        assert M == 10
         if D <= 4: return False
         if D >= 15: return True
         raise ValueError(f'There is no such date as {Y}-{M}-{D}')
         
-    y,m = (Y-1,M+12) if M<=2 else (Y,M)
-    B   = floor(y/400) - floor(y/100) if is_gregorian() else -2
-    return floor(365.25 * y) + floor(30.6001*(m+1)) + B + 1720996.5 + D +UT/24
+    y,m = (Y-1,M+12) if M <= 2 else (Y,M)                                        # A.1
+    B = floor(y/400) - floor(y/100) if is_gregorian() else -2                    # A.2
+    return floor(365.25 * y) + floor(30.6001*(m+1)) + B + 1720996.5 + D + UT/24  # A.3
 
 def get_calendar_date(JD):
     '''
-    Convert Julian Date to Calendar Date, MD A.4-A.13
-    '''
-    frac_JD,a = modf(JD + 0.5)
-    c = a + 1524
+    Convert Julian Date to Calendar Date, MD Appendex A
     
-    if a>=2299161:
-        b     = floor((a-1867216.25)/36524.25)
-        c     = a + b - floor(b/4) + 1525
+    Parameters:
+         JD     Julian Date
+         
+    Returns:
+         Y,M,D
+    '''
+    frac_JD,a = modf(JD + 0.5)    # A.4
+    
+    # Deal with transition between calendars
+    
+    if a < 2299161:               # A.5
+        c = a + 1524              # A.5
+    else:
+        b = floor((a-1867216.25)/36524.25) # A.6
+        c = a + b - floor(b/4) + 1525      # A.7
         
-    d = floor((c-122.1)/365.25)
-    e = floor(365.25*d)
-    f = floor((c-e)/30.6001)
-    D = c - e -floor(30.6001*f) + frac_JD
-    M = f - 1 - 12 * floor(f/14)
-    Y = d - 4715-floor((7+M)/10)
+    d = floor((c-122.1)/365.25)                # A.8
+    e = floor(365.25*d)                        # A.9
+    f = floor((c-e)/30.6001)                   # A.10
+    D = c - e - floor(30.6001*f) + frac_JD     # A.11
+    M = f - 1 - 12*floor(f/14)                 # A.12
+    Y = d - 4715 - floor((7+M)/10)             # A.13
+    
     return (Y,M,D)
 
     
