@@ -30,6 +30,12 @@ def get_bounds(n_ratio):
      '''
      calculate p and p' from Murray and Dermott, Section 1.7.
      We use r0 for the lower bound (MD p'/(p'+1)) and r1 for the upper
+     
+     Parameters:
+         n_ratio
+         
+     Returns:
+         r0,r1, integer ratios, r0 < n_ration < r1
      '''  
      r0 = 0
      r1 = 0
@@ -113,7 +119,7 @@ def main():
                create_data(
                     (Path(args.data)/Path(__file__).stem).with_suffix('.csv')))
 
-     labels,cc,bar_colours = get_bar(mean_motion_ratios)
+     labels,cc,bar_colours = get_bar(mean_motion_ratios,tolerance=args.tolerance)
  
      
      cs = sorted([abs(c) for _,_,_,_,c in mean_motion_ratios])
@@ -123,13 +129,13 @@ def main():
      ax1.set_title('Distribution of c')
      ax1.set_xlabel('c')
      ax2 = fig.add_subplot(2, 1, 2)
-     #cc = [c for c in cs if c <args.tolerance]
+
      ax2.bar(labels,cc,color=bar_colours)
-   
+     
+     fig.tight_layout(h_pad=2)
      fig.savefig(Path(args.figs)/Path(__file__).stem)
 
      show()
 
 if __name__ == '__main__':
      main()
-
