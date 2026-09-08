@@ -16,7 +16,9 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 '''
-Murray & Dermott, Exercise 1.3. Satellites of Saturn
+Murray & Dermott, Exercise 1.4. Taking the orbital periods lisyted in Table A.9 but excluding Epimetheus,
+Telesto, Calypso and Helen, use the criteria geiven in Section 1.7 to show there are 28 ratios of mean 
+motions to consider in the Saturn System.
 '''
 
 from argparse import ArgumentParser
