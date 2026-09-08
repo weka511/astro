@@ -15,6 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+'''
+Murray & Dermott, Exercise 1.5. Identify commensurability and estimate probability of value occurring by chance.
+'''
 from argparse import ArgumentParser
 from pathlib import Path
 from matplotlib.pyplot import figure, show
@@ -51,6 +54,8 @@ def parse_args():
      parser.add_argument('-N', type=int, help='Number of Monte Carlo calculations', default=100)
      parser.add_argument('--seed', '-s', help='Seed for random number generator', default=None)
      parser.add_argument('--figs', default='./figs', help=f'Path to plots')
+     parser.add_argument('--data', default='./data', help=f'Path to data files')
+     parser.add_argument('--show', default=False, action='store_true', help='Controls whether plot will be displayed')
      return parser.parse_args()
 
 
@@ -58,7 +63,7 @@ def main():
      args = parse_args()
      rng = np.random.default_rng(args.seed)
 
-     with open('data/commensurability.dat') as data:
+     with open((Path(args.data)/Path(__file__).stem).with_suffix('.dat')) as data:
           periods = [float(line.strip()) for line in data]
           commensurabilities = identify_commensurabilities(periods)
 
@@ -69,7 +74,8 @@ def main():
           ax.set_title('N={0}, mean= {1:.3f}, std= {2:.3f}'.format(args.N, np.mean(probs), np.std(probs)))
           fig.savefig(Path(args.figs)/Path(__file__).stem)
 
-     show()
+     if args.show:
+          show()
 
 
 if __name__ == '__main__':

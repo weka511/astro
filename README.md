@@ -20,7 +20,7 @@ Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolu
 1|-| Structure of the Solar System
 1.3|uranus.py|Murray & Dermott, Exercise 1.3. Create a number of random sets of orbital periods orbital periods for a model satellite system, similar to the three inner satellites of Uranus. For each set, calculate the mean motion for each satellite and check n1-3n2+2n3.
 1.4|saturn.py|Murray & Dermott, Exercise 1.4. Taking the orbital periods lisyted in Table A.9 but excluding Epimetheus, Telesto, Calypso and Helen, use the criteria geiven in Section 1.7 to show there are 28 ratios of mean motions to consider in the Saturn System.
-1.5|commensurability.py|Identify commensurability and estimate probability of value occurring by chance.
+1.5|commensurability.py|Murray & Dermott, Exercise 1.5. Identify commensurability and estimate probability of value occurring by chance.
 2||The Two Body Problem
 ||orbit_space.tex|Calculations to support values for *orbital.py*
 2.2|earth_mars.py| Times of orbital conjunction between earth & Mars.
