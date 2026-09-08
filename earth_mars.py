@@ -27,7 +27,7 @@ Murray and Dermott, Exercise 2.2
 '''
 
 from argparse import ArgumentParser
-from orbital import get_xy,get_mean_longitude,compose,get_julian_date,get_calendar_date,create_orbit,is_minimum,get_distance
+from orbital import get_xy,get_mean_longitude,get_julian_date,get_calendar_date,create_orbit,is_minimum,get_distance
 import numpy as np
 from math import floor
 from matplotlib.pyplot import figure, show
