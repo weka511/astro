@@ -58,25 +58,24 @@ def parse_args():
      parser.add_argument('--show', default=False, action='store_true', help='Controls whether plot will be displayed')
      return parser.parse_args()
 
-
+def get_data(file_path):
+     with open(file_path) as data:
+          return [float(line.strip()) for line in data]
+          
 def main():
      args = parse_args()
      rng = np.random.default_rng(args.seed)
-
-     with open((Path(args.data)/Path(__file__).stem).with_suffix('.dat')) as data:
-          periods = [float(line.strip()) for line in data]
-          commensurabilities = identify_commensurabilities(periods)
-
-          probs = [monte_carlo(len(periods), 1000, commensurabilities, seed=None, rng=rng) for i in range(args.N)]
-          fig = figure()
-          ax = fig.add_subplot(1,1,1)
-          ax.hist(probs)
-          ax.set_title('N={0}, mean= {1:.3f}, std= {2:.3f}'.format(args.N, np.mean(probs), np.std(probs)))
-          fig.savefig(Path(args.figs)/Path(__file__).stem)
+     periods = get_data((Path(args.data)/Path(__file__).stem).with_suffix('.dat'))
+     commensurabilities = identify_commensurabilities(periods)
+     probs = [monte_carlo(len(periods), args.N, commensurabilities, seed=None, rng=rng) for i in range(args.N)]
+     fig = figure()
+     ax = fig.add_subplot(1,1,1)
+     ax.hist(probs)
+     ax.set_title('N={0}, mean= {1:.3f}, std= {2:.3f}'.format(args.N, np.mean(probs), np.std(probs)))
+     fig.savefig(Path(args.figs)/Path(__file__).stem)
 
      if args.show:
           show()
-
 
 if __name__ == '__main__':
      main()

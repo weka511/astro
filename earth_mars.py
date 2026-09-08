@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2019 Greenweaves Software Limited
+# Copyright (C) 2019-2026 Greenweaves Software Limited
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,32 +15,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-# Murray and Dermott, Exercise 2.2
-#
-# 1. Determine average times or orbital conjunction between earth & Mars
-# 2. Show that the minimum distance varies by factor of almost 2.
-# 3. Determine prbital motions over the period 1982-2002. Neglecting the 
-#    relative orbital inclinations, show that the closest opposition occurred
-#    in September 1988, and the furthest in February 1995, and determine
-#    the minimum distances at these times.
+'''
+Murray and Dermott, Exercise 2.2
 
+ 1. Determine average times or orbital conjunction between earth & Mars
+ 2. Show that the minimum distance varies by factor of almost 2.
+ 3. Determine prbital motions over the period 1982-2002. Neglecting the 
+    relative orbital inclinations, show that the closest opposition occurred
+    in September 1988, and the furthest in February 1995, and determine
+    the minimum distances at these times.
+'''
+
+from argparse import ArgumentParser
 from orbital import get_xy,get_mean_longitude,compose,get_julian_date,get_calendar_date,create_orbit,is_minimum,get_distance
-from math import pi,radians,sqrt,floor
-import matplotlib.pyplot as plt
+import numpy as np
+from math import floor
+from matplotlib.pyplot import figure, show
 from mpl_toolkits.mplot3d import Axes3D
-from numpy import matmul, mean, std
-from utilities import get_date
-    
-# find_conjunctions
-#
-# Find conjunctions in the orbits of two planets
+from utilities import get_date, get_data_file_name,get_planetary_data
 
 def find_conjunctions(earth,
                       mars,
                       From=get_julian_date(1985,1,1),
                       To=get_julian_date(2002,12,31),
                       Incr=10,
-                      is2D=False):
+                      is2D=False,
+                      fig = None):
+     '''
+     Find conjunctions in the orbits of two planets
+     '''
      Xs,Ys,Zs,ts  = create_orbit (earth,lambda_dot=1293740.63,Nr=99,From=From,To=To,Incr=Incr,is2D=is2D)
      Xm,Ym,Zm,_   = create_orbit (mars,lambda_dot=217103.78,Nr=53,From=From,To=To,Incr=Incr,is2D=is2D)
      distances    = [get_distance(Xs[i],Ys[i],Zs[i],Xm[i],Ym[i],Zm[i]) for i in range(len(Xs))]
@@ -48,14 +51,12 @@ def find_conjunctions(earth,
                      if is_minimum(distances[i-1],distances[i],distances[i+1])]
      times        = [t for _,t,_ in conjunctions]
      intervals =    [12*(times[i]-times[i-1])/365 for i in range(1,len(times))]
-     print ('Average time between conjunctions = {0:.2f} months, sigma = {1:.2f} months.'.format(mean(intervals),std(intervals)))
+     print ('Average time between conjunctions = {0:.2f} months, sigma = {1:.2f} months.'.format(np.mean(intervals),np.std(intervals)))
      print ('Ratio(Largest/Smallest)={0:.2f}'.format(max([d for _,_,d in conjunctions])/min([d for _,_,d in conjunctions])))
      for _,t,d in conjunctions:
           Y,M,D = get_calendar_date(t)
           print ('{0:02d}-{1:02d}-{2}: {3:.4f} AU'.format(int(floor(D)),M,Y,d))
                
-     fig = plt.figure(figsize=(20, 20), dpi=80)
-     
      # 3D Plot
      
      ax1 = fig.add_subplot(231, projection='3d',aspect='equal')     
@@ -99,27 +100,29 @@ def find_conjunctions(earth,
      ax5.set_xlabel('t')
      ax5.legend()
      
-     fig.legend([p21,p22],['Earth','Mars'],'upper center')
+     fig.legend([p21,p22],['Earth','Mars'])#'upper center')
 
-
-             
-if __name__=='__main__':
-     from utilities import get_data_file_name,get_planetary_data
-     from argparse import ArgumentParser
+def parse_args():
      parser = ArgumentParser('Find Conjunctions between Earth and Mars')
      parser.add_argument('--from',dest='from_date',default='1985-1-1',help='First date in range')
      parser.add_argument('--to',dest='to_date',default='2002-12-31',help='Last date in range')
      parser.add_argument('--incr',type=int,default=10,help='step size')
      parser.add_argument('--2D',dest='is2D',action='store_true',help='Ignore inclindations')
-     args     = parser.parse_args()
-     data     = get_planetary_data(get_data_file_name()) 
+     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
+     return parser.parse_args()
+     
+if __name__=='__main__':
+     args = parse_args()
+     data = get_planetary_data(get_data_file_name()) 
      f1,f2,f3 = get_date(args.from_date)
      t1,t2,t3 = get_date(args.to_date)
+     fig = figure(figsize=(20, 20), dpi=80)
      find_conjunctions(data['Earth'],data['Mars'],
                           From = get_julian_date(f1,f2,f3),
-                          To   = get_julian_date(t1,t2,t3),
-                          Incr = args.incr,
-                          is2D = args.is2D) 
-     plt.savefig(get_data_file_name(path='images',ext='png'))
+                          To= get_julian_date(t1,t2,t3),
+                          Incr= args.incr,
+                          is2D= args.is2D,
+                          fig=fig) 
+     fig.savefig(get_data_file_name(path=args.figs,ext='png'))
      
-     plt.show()       
+     show()       

@@ -46,7 +46,6 @@ def create_orbital_periods(T1=1.413, L=1.546, U=2.101, n=4, rng=np.random.defaul
         product[i] = ratio * product[i - 1]
     return product
 
-
 def parse_args():
     parser = ArgumentParser(description='Calculate probability of delta_n<0.1 for problem 1.3.')
     parser.add_argument('-N', type=int, help='Number of sets of orbital periods', default=100000)
@@ -54,7 +53,6 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--tolerance',type=float,default=0.1,help='Tolerance for delta_n') 
     return parser.parse_args()
-
 
 def main():
     args = parse_args()
