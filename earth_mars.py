@@ -27,17 +27,16 @@ Murray and Dermott, Exercise 2.2
 '''
 
 from argparse import ArgumentParser
-from orbital import get_xy,get_mean_longitude,get_julian_date,get_calendar_date,create_orbit,is_minimum,get_distance
+from orbital import get_xy,get_mean_longitude,Calendar,create_orbit,is_minimum,get_distance
 import numpy as np
 from math import floor
 from matplotlib.pyplot import figure, show
 from mpl_toolkits.mplot3d import Axes3D
 from utilities import get_date, get_data_file_name,get_planetary_data
 
-def find_conjunctions(earth,
-                      mars,
-                      From=get_julian_date(1985,1,1),
-                      To=get_julian_date(2002,12,31),
+def find_conjunctions(earth,mars,
+                      From=Calendar.get_julian_date(1985,1,1),
+                      To=Calendar.get_julian_date(2002,12,31),
                       Incr=10,
                       is2D=False,
                       fig = None):
@@ -54,7 +53,7 @@ def find_conjunctions(earth,
      print ('Average time between conjunctions = {0:.2f} months, sigma = {1:.2f} months.'.format(np.mean(intervals),np.std(intervals)))
      print ('Ratio(Largest/Smallest)={0:.2f}'.format(max([d for _,_,d in conjunctions])/min([d for _,_,d in conjunctions])))
      for _,t,d in conjunctions:
-          Y,M,D = get_calendar_date(t)
+          Y,M,D = Calendar.get_calendar_date(t)
           print ('{0:02d}-{1:02d}-{2}: {3:.4f} AU'.format(int(floor(D)),M,Y,d))
                
      # 3D Plot
@@ -118,8 +117,8 @@ if __name__=='__main__':
      t1,t2,t3 = get_date(args.to_date)
      fig = figure(figsize=(20, 20), dpi=80)
      find_conjunctions(data['Earth'],data['Mars'],
-                          From = get_julian_date(f1,f2,f3),
-                          To= get_julian_date(t1,t2,t3),
+                          From = Calendar.get_julian_date(f1,f2,f3),
+                          To= Calendar.get_julian_date(t1,t2,t3),
                           Incr= args.incr,
                           is2D= args.is2D,
                           fig=fig) 
