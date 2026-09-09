@@ -20,20 +20,8 @@ Some useful functions that don't fit anywhere else
 '''
 
 from csv import reader
-import string
-import time
-import math
-import __main__ as main
-import os
-
-
-
-def get_data_file_name(path='data',ext='csv'):
-    '''
-    Construct data file name from name of main program
-    '''
-    base = os.path.splitext(os.path.basename(main.__file__))[0]
-    return os.path.join(path,'{0}.{1}'.format(base,ext))
+from pathlib import Path
+import numpy as np
 
 
 def get_planetary_data(data_file_name):
@@ -43,27 +31,30 @@ def get_planetary_data(data_file_name):
     with open(data_file_name) as data_file:
         data = {}
         data_reader = reader(data_file)
-        for row in data_reader:        
+        for row in data_reader:
             data[row[0]] = [abs(float(datum)) for datum in row[1:]]
-        return data 
-    
+        return data
 
 
 def signum(x):
     '''Determine sign of its argument. Returne -1, 0, or +1.'''
-    if x<0: return -1
-    if x>0: return +1
+    if x < 0:
+        return -1
+    if x > 0:
+        return +1
     return 0
+
 
 def guarded_sqrt(x):
     '''Calculate a square root of a positive number, otherwise return 0'''
-    return math.sqrt(x) if x>0 else 0
+    return np.sqrt(x) if x > 0 else 0
 
-def newton_raphson(x,f,df,epsilon,N=50):
+
+def newton_raphson(x, f, df, epsilon, N=50):
     '''
     Solve an equation using the Newton-Raphson method.
     
-    ParametersL
+    Parameters:
        x       Starting value
        f       Function for equation: f(x)=0
        df      Derivative of f
@@ -72,37 +63,47 @@ def newton_raphson(x,f,df,epsilon,N=50):
     '''
     x0 = x
     for i in range(N):
-        x1 = x0-f(x0)/df(x0)
-        if abs(x1-x0)<epsilon:
+        x1 = x0 - f(x0) / df(x0)
+        if abs(x1 - x0) < epsilon:
             return x1
         else:
-            x0 = x1    
+            x0 = x1
     return x0
 
+
 def get_angle(r):
-    abs_theta=0 if r[0]==0 else math.atan(r[1]/r[0])
-    return abs_theta+adjust_quadrant(r)
+    abs_theta = 0 if r[0] == 0 else np.atan(r[1] / r[0])
+    return abs_theta + adjust_quadrant(r)
+
 
 def adjust_quadrant(r):
-    if r[0]>=0 and r[1]>=0: return 0
-    if r[0]<0 and r[1]>=0: return math.pi/2
-    if r[0]<0 and r[1]<0: return path.pi
-    return 3*math.pi/2
+    if r[0] >= 0 and r[1] >= 0:
+        return 0
+    if r[0] < 0 and r[1] >= 0:
+        return np.pi / 2
+    if r[0] < 0 and r[1] < 0:
+        return path.pi
+    return 3 * np.pi / 2
+
 
 def get_r(z):
-    [x,y]=z
-    return math.sqrt(x*x*y*y)
+    [x, y] = z
+    return np.sqrt(x * x * y * y)
 
-def get_r_velocity(zdot,theta):
-    [xdot,ydot]=zdot
-    return math.cos(theta)*xdot + math.sin(theta)*ydot
 
-def get_theta_dot(zdot,theta,r):
-    [xdot,ydot]=zdot
-    return (math.cos(theta)*ydot - math.sin(theta)*xdot)/r
+def get_r_velocity(zdot, theta):
+    [xdot, ydot] = zdot
+    return np.cos(theta) * xdot + np.sin(theta) * ydot
 
-# Parse date from string
+
+def get_theta_dot(zdot, theta, r):
+    [xdot, ydot] = zdot
+    return (np.cos(theta) * ydot - np.sin(theta) * xdot) / r
+
 
 def get_date(string):
+    '''
+    Parse date from string
+    '''
     parts = string.split('-')
-    return (int(parts[0]),int(parts[1]),int(parts[2]))
+    return (int(parts[0]), int(parts[1]), int(parts[2]))

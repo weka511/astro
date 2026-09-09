@@ -27,12 +27,13 @@ Murray and Dermott, Exercise 2.2
 '''
 
 from argparse import ArgumentParser
-from orbital import get_xy,get_mean_longitude,Calendar,create_orbit,is_minimum,get_distance
-import numpy as np
+from pathlib import Path
 from math import floor
+import numpy as np
 from matplotlib.pyplot import figure, show
 from mpl_toolkits.mplot3d import Axes3D
-from utilities import get_date, get_data_file_name,get_planetary_data
+from utilities import get_date, get_planetary_data
+from orbital import get_xy,get_mean_longitude,Calendar,create_orbit,is_minimum,get_distance
 
 def find_conjunctions(earth,mars,
                       From=Calendar.get_julian_date(1985,1,1),
@@ -108,11 +109,12 @@ def parse_args():
      parser.add_argument('--incr',type=int,default=10,help='step size')
      parser.add_argument('--2D',dest='is2D',action='store_true',help='Ignore inclindations')
      parser.add_argument('--figs', default='./figs', help=f'Path to plots')
+     parser.add_argument('--data', default='./data', help=f'Path to data files')
      return parser.parse_args()
      
 if __name__=='__main__':
      args = parse_args()
-     data = get_planetary_data(get_data_file_name()) 
+     data = get_planetary_data((Path(args.data)/Path(__file__).stem).with_suffix('.csv'))
      f1,f2,f3 = get_date(args.from_date)
      t1,t2,t3 = get_date(args.to_date)
      fig = figure(figsize=(20, 20), dpi=80)
@@ -122,6 +124,6 @@ if __name__=='__main__':
                           Incr= args.incr,
                           is2D= args.is2D,
                           fig=fig) 
-     fig.savefig(get_data_file_name(path=args.figs,ext='png'))
+     fig.savefig((Path(args.figs)/Path(__file__).stem).with_suffix('.png'))
      
      show()       
