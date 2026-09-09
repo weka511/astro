@@ -23,6 +23,9 @@ from math import isclose,floor,modf
 from unittest import TestCase,main
 import numpy as np
 
+_version__ = '1.0'
+__author__ = 'Simon Crase'
+
 class Calendar:
     '''
     This class contains methods for converting bwteeen Calendar dates and Julian dates.
@@ -232,15 +235,16 @@ def get_xy(T=0,lambdaT=0,e=0.0484007,a=5.20332,varpi = 14.7392):
 
 def get_eccentric_anomaly(e=0,M=0,rel_tol=1e-7, abs_tol=1e-9,N=10000,k=0.85):
     '''
-    Calculate eccentric anomaly by solveing kepler's equation - 2.52
+    Calculate eccentric anomaly by solving kepler's equation - 2.52
 
     Parameters:
-        e             Eccentricty of orbit
-        M  Mean anomaly
-        tolerance     Used to assess correction: throws Assetion Error 
-                      if correction still exceeds tolerance after N iterations
-        N             Maximum number of iterations
-        k             Parameter used in Danby's starting value - MD 2.64
+        e          Eccentricty of orbit
+        M          Mean anomaly
+        rel_tol    Relatave tolerance
+        abs_tol    Used to assess correction: raises ValueError 
+                   if correction still exceeds tolerance after N iterations
+        N          Maximum number of iterations
+        k          Parameter used in Danby's starting value - MD 2.64
     '''
    
     E = M + np.sign(np.sin(M) * k * e)  # Danby's starting value - MD 2.64
@@ -253,7 +257,7 @@ def get_eccentric_anomaly(e=0,M=0,rel_tol=1e-7, abs_tol=1e-9,N=10000,k=0.85):
     allowable = max(rel_tol * abs(correction), abs_tol)    
     raise ValueError(f'Correction {correction} is still greater than {allowable} after {N} iterations.')
 
-def Times(From=0,To=10,Incr=1,Epoch=2451545.0):
+def generate_times(From=0,To=10,Incr=1,Epoch=2451545.0):
     '''
     Generator used for iterating over times
 
@@ -262,9 +266,9 @@ def Times(From=0,To=10,Incr=1,Epoch=2451545.0):
          Incr        Interval from one sample to the next
     '''
     t = From
-    while t < To +Incr:
-        yield t,(t-Epoch)/36525
-        t+=Incr
+    while t < To + Incr:
+        yield t,(t - Epoch)/36525
+        t += Incr
 
 
 def create_orbit(planet,
@@ -297,11 +301,9 @@ def create_orbit(planet,
                        I=np.radians(I),
                        Omega=np.radians(Omega))
 
-    for t,T in Times(From=From,To=To,Incr=Incr):
-        lambdaT=get_mean_longitude(T,
-                                   lambda0=lambda0,lambda_dot=lambda_dot,Nr=Nr)        
+    for t,T in generate_times(From=From,To=To,Incr=Incr):
+        lambdaT = get_mean_longitude(T,lambda0=lambda0,lambda_dot=lambda_dot,Nr=Nr)        
         x,y = get_xy(T=T,lambdaT=lambdaT,e=e,a=a,varpi=np.radians(varpi))
-
         W = np.matmul(Rotation,np.array([x,y,0]).T)
         Xs.append(W[0])
         Ys.append(W[1])

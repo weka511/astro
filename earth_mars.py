@@ -33,17 +33,21 @@ import numpy as np
 from matplotlib.pyplot import figure, show
 from mpl_toolkits.mplot3d import Axes3D
 from utilities import get_date, get_planetary_data
-from orbital import get_xy,get_mean_longitude,Calendar,create_orbit,is_minimum,get_distance
+from orbital import get_mean_longitude,Calendar,create_orbit,is_minimum,get_distance
+
+_version__ = '1.0'
+__author__ = 'Simon Crase'
 
 class Conjunctions:
+     '''
+     Find conjunctions in the orbits of two planets
+     '''     
      def __init__(self,earth,mars,
                   From=Calendar.get_julian_date(1985,1,1),
                   To=Calendar.get_julian_date(2002,12,31),
                   Incr=10,
                   is2D=False):
-          '''
-          Find conjunctions in the orbits of two planets
-          '''
+  
           self.Xs,self.Ys,self.Zs,self.ts = create_orbit(earth,
                                                          lambda_dot=1293740.63,Nr=99,From=From,To=To,Incr=Incr,is2D=is2D)
           self.Xm,self.Ym,self.Zm,_ = create_orbit(mars,
@@ -59,7 +63,7 @@ class Conjunctions:
           _,t0,_ = self.conjunctions[i0]
           i1 = np.argmax(distances)
           _,t1,_ = self.conjunctions[i1]      
-          return t0,distances[i0],t1,distances[i1]
+          return i0,t0,distances[i0],i1,t1,distances[i1]
           
 
 def parse_args():
@@ -83,42 +87,25 @@ def main():
                          To=Calendar.get_julian_date(t1,t2,t3),
                          Incr=args.incr,
                          is2D=args.is2D)
-     
-     ax1 = fig.add_subplot(221, projection='3d',aspect='equal')     
-     ax1.scatter(conjunctions.Xs, conjunctions.Ys, conjunctions.Zs, c='b', edgecolor='face', s=1,label='Earth')
-     ax1.scatter(conjunctions.Xm, conjunctions.Ym, conjunctions.Zm, c='r', edgecolor='face', s=1,label='Mars') 
-     ax1.set_xlabel('X')
-     ax1.set_ylabel('Y')
-     ax1.set_zlabel('Z') 
-     ax1.legend()
-     ax1.set_title('Orbit in 3D')
-     
-     # 2D plot X & Y
-     
-     ax2 = fig.add_subplot(222,aspect='equal') 
-     ax2.scatter(conjunctions.Xs,conjunctions.Ys,c='b',edgecolor='face',s=1,label='Earth')
-     ax2.scatter(conjunctions.Xm,conjunctions.Ym,c='r',edgecolor='face',s=1,label='Mars') 
-     ax2.set_xlabel('X')
-     ax2.set_ylabel('Y')
-     ax2.legend()
-     ax2.set_title('Orbit in 2D')
-     
-     t0,distances0,t1,distances1  = conjunctions.get_min_max()
+         
+     i0,t0,distances0,i1,t1,distances1  = conjunctions.get_min_max()
      Y0,M0,D0 = Calendar.get_calendar_date(t0)
      Y1,M1,D1 = Calendar.get_calendar_date(t1)
-     
+
      # Plot conjunctions
-     
-     ax5 = fig.add_subplot(223) 
-     ax5.plot(conjunctions.ts,conjunctions.distances,'g',label='Distance')
+     ax5 = fig.add_subplot(111) 
+     ax5.plot(conjunctions.ts,conjunctions.distances,'g',label='Distance between planets')
      ax5.scatter([t for _,t,_ in conjunctions.conjunctions],[d for _,_,d in conjunctions.conjunctions],c='m',label='Conjunction')
-     ax5.axhline(y=distances0, color='m', linestyle='-.',label=f'Closest at {Y0}/{M0:02}/{int(D0):02}, {distances0:.4} AU')
-     ax5.axhline(y=distances1, color='m', linestyle=':',label=f'Furthest at {Y1}/{M1:02}/{int(D1):02}, {distances1:.4} AU')
+     ax5.scatter(t0,distances0,marker=11,s=144,c='b',label=f'Closest at {Y0}/{M0:02}/{int(D0):02}, {distances0:.4} AU')
+     ax5.axvline(x=t0, color='m', linestyle='-.')
+     ax5.axhline(y=distances0, color='g', linestyle='-.')
+     ax5.scatter(t1,distances1,marker=10,s=144,c='r',label=f'Furthest at {Y1}/{M1:02}/{int(D1):02}, {distances1:.4} AU')
+     ax5.axvline(x=t1, color='m', linestyle=':')
+     ax5.axhline(y=distances1, color='g', linestyle=':')
      ax5.set_xticklabels([])
      ax5.set_ylabel('Distance(AU)')
      ax5.set_xlabel('t')
      ax5.legend(loc='upper center')
-     ax5.set_title('Distances between planets')
      
      fig.suptitle('Murray and Dermott, Exercise 2.2')
      fig.tight_layout(pad=2,h_pad=5,w_pad=3)
