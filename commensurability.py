@@ -23,6 +23,8 @@ from pathlib import Path
 from matplotlib.pyplot import figure, show
 import numpy as np
 
+__version__ = '1.0'
+__author__ = 'Simon Crase'
 
 def identify_commensurabilities(periods, tolerance=0.001, maxp=10):
      ratios = sorted([(i, j, periods[i] / periods[j]) for j in range(len(periods)) for i in range(j)],

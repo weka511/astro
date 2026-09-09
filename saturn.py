@@ -27,6 +27,8 @@ from pathlib import Path
 from matplotlib.pyplot import figure, show
 import numpy as np
 
+__version__ = '1.0'
+__author__ = 'Simon Crase'
 
 def get_bounds(n_ratio):
      '''

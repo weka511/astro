@@ -27,6 +27,8 @@ from pathlib import Path
 from matplotlib.pyplot import figure, show
 import numpy as np
 
+__version__ = '1.0'
+__author__ = 'Simon Crase'
 
 def create_orbital_periods(T1=1.413, L=1.546, U=2.101, n=4, rng=np.random.default_rng()):
     '''
