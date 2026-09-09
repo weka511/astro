@@ -199,11 +199,11 @@ def get_true_anomaly(E,e,N=1000,atol=1e-12):
     '''
     Solve equation 2.43 by the Newton-Raphson method to estimate f.
 
-    Parameters: E    Eccentric anomally
-                e    Eccentricity
-                N    Maximum number of iterations
-                atol Used to assess correction: raises ValueError 
-                     if correction still exceeds atol after N iterations
+    Parameters: 
+        E    Eccentric anomally
+        e    Eccentricity
+        N    Maximum number of iterations
+        atol function raises ValueError if correction still exceeds atol after N iterations
     '''
     cos_f = (np.cos(E) - e)/(1 - e*np.cos(E))
     f = E  # E and F should be in same quadrant, so use E as starting value
@@ -293,24 +293,19 @@ def create_orbit(planet,
     Ys = []
     Zs = []
     ts = []
-    Rotation = rotate3D(omega = np.radians(varpi - Omega), #MD 2.118
-                       I     = np.radians(I),
-                       Omega = np.radians(Omega))
+    Rotation = rotate3D(omega=np.radians(varpi - Omega), #MD 2.118
+                       I=np.radians(I),
+                       Omega=np.radians(Omega))
 
     for t,T in Times(From=From,To=To,Incr=Incr):
-        x,y = get_xy(T = T, 
-                     lambdaT = get_mean_longitude(T,
-                                                  lambda0    = lambda0,
-                                                  lambda_dot = lambda_dot,
-                                                  Nr         = Nr), 
-                     e = e,
-                     a = a,
-                     varpi = np.radians(varpi))
+        lambdaT=get_mean_longitude(T,
+                                   lambda0=lambda0,lambda_dot=lambda_dot,Nr=Nr)        
+        x,y = get_xy(T=T,lambdaT=lambdaT,e=e,a=a,varpi=np.radians(varpi))
 
-        W = np.matmul(Rotation,[[x],[y],[0]])
-        Xs.append(W[0][0])
-        Ys.append(W[1][0])
-        Zs.append(W[2][0])
+        W = np.matmul(Rotation,np.array([x,y,0]).T)
+        Xs.append(W[0])
+        Ys.append(W[1])
+        Zs.append(W[2])
         ts.append(t)
 
     return (Xs,Ys,Zs,ts)
@@ -328,7 +323,7 @@ def is_minimum(a,b,c):
     Returns: 
         True iff b is less than both a and c
     '''
-    return a>b and b < c
+    return a > b and b < c
 
 
 def get_distance(x0,y0,z0,x1,y1,z1):
