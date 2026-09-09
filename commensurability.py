@@ -19,6 +19,7 @@
 Murray & Dermott, Exercise 1.5. Identify commensurability and estimate probability of value occurring by chance.
 '''
 from argparse import ArgumentParser
+from csv import reader
 from pathlib import Path
 from matplotlib.pyplot import figure, show
 import numpy as np
@@ -62,12 +63,13 @@ def parse_args():
 
 def get_data(file_path):
      with open(file_path) as data:
-          return [float(line.strip()) for line in data]
+          data_reader = reader(data)
+          return [float(row[0]) for row in data_reader]
           
 def main():
      args = parse_args()
      rng = np.random.default_rng(args.seed)
-     periods = get_data((Path(args.data)/Path(__file__).stem).with_suffix('.dat'))
+     periods = get_data((Path(args.data)/Path(__file__).stem).with_suffix('.csv'))
      commensurabilities = identify_commensurabilities(periods)
      probs = [monte_carlo(len(periods), args.N, commensurabilities, seed=None, rng=rng) for i in range(args.N)]
      fig = figure()
