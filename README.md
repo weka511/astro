@@ -22,24 +22,24 @@ Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolu
 1.4|saturn.py|Murray & Dermott, Exercise 1.4. Taking the orbital periods listed in Table A.9 but excluding Epimetheus, Telesto, Calypso and Helen, use the criteria gSiven in Section 1.7 to show there are 28 ratios of mean motions to consider in the Saturn System.
 1.5|commensurability.py|Murray & Dermott, Exercise 1.5. Identify commensurability and estimate probability of value occurring by chance.
 2||The Two Body Problem
-||orbit_space.tex|Calculations to support values for *orbital.py*
 2.2|earth_mars.py|Murray and Dermott, Exercise 2.2: times of orbital conjunction between earth & Mars.
 ||orbital.py|Orbital calculations to support *earth_mars.py*
 3||The Restricted Three Body Problem
 ||jacobi.py|Zero velocity Surfaces for the Jacobi Integral
 ||jacobi3d.py|Potential surfaces
 
-## Miscellaneous
+## Docs directory
 
  File | Purpose 
 --------------------------|---------------------------------------------------------------------
 astro.bib|Bibliography
+orbit_space.tex|Derivations of equations for *earth_mars.py*
 
 ## Data files
 
 File | Description
 ---------------------------|---------------------------------------------------------------------
 commensurability.dat|
-earth_mars.dat|
+earth_mars.csv|Data files used by *earth_mars.py*
 saturn.csv| Orbital periods for exercise 1.4
 
