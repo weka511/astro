@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2015-2019 Greenweaves Software Limited
+# Copyright (C) 2015-2026 Greenweaves Software Limited
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,28 +15,36 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-#Some useful functions that don't fit anywhere else
+'''
+Some useful functions that don't fit anywhere else
+'''
 
-import string, time, math,__main__ as main,os
+from csv import reader
+import string
+import time
+import math
+import __main__ as main
+import os
 
-# get_data_file_name
-#
-# Construct data file name from name of main program
 
-def get_data_file_name(path='data',ext='dat'):
+
+def get_data_file_name(path='data',ext='csv'):
+    '''
+    Construct data file name from name of main program
+    '''
     base = os.path.splitext(os.path.basename(main.__file__))[0]
     return os.path.join(path,'{0}.{1}'.format(base,ext))
 
-# get_planetary_data
-#
-# Construct map containing elements for planets
 
 def get_planetary_data(data_file_name):
+    '''
+    Construct map containing elements for planets
+    '''
     with open(data_file_name) as data_file:
         data = {}
-        for line in data_file:
-            parts = line.strip().split(',')  
-            data[parts[0]] = [abs(float(part)) for part in parts[1:]]
+        data_reader = reader(data_file)
+        for row in data_reader:        
+            data[row[0]] = [abs(float(datum)) for datum in row[1:]]
         return data 
     
 
