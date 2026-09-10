@@ -15,14 +15,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+'''
+Hamiltonian for integrating Kepler problem
+'''
+
 import numpy as np
 from matplotlib.pyplot import figure,show
 from integrators import Hamiltonian, Integrate2
 from utilities import signum
 
-'''
-Hamiltonian for integrating Kepler problem
-'''
+__version__ = '1.0'
+__author__ = 'Simon Crase'
+
 
 class Kepler(Hamiltonian):
     def __init__(self,x,m,k):
@@ -44,7 +48,7 @@ class Kepler(Hamiltonian):
         super(Kepler,self).invert(kepler)  #FIXME
         r = -self.k/self.eta[0]
         L = self.eta[2]
-        p_squared = 2*self.m*self.eta[1]-L*L/(r*r)        
+        p_squared = 2*self.m*self.eta[1] - L*L/(r*r)        
         p = signum(self.x[2])*np.sqrt(p_squared) if p_squared>0 else 0
         self.x[0] = r
         self.x[2] = p
@@ -53,15 +57,15 @@ class Kepler(Hamiltonian):
     def dx(self):
         r = self.x[0]
         L = self.x[3]
-        return [self.x[2]/self.m,L/(self.m*r*r), L*L/(self.m*r*r*r) - self.k / (r*r),0]    
+        return [self.x[2]/self.m,L/(self.m*r**2), L**2/(self.m*r**3) - self.k / r**2,0]    
 
     def d_eta(self):
         term = self.k*self.x[2]/(self.m*self.x[0]*self.x[0])
         return [term,-term,0]
 
     def hamiltonian(self):
-        return self.x[2]*self.x[2]/(2*self.m) + \
-               self.x[3]*self.x[3]/(2*self.m*self.x[0]*self.x[0])-self.k/self.x[0]
+        return (self.x[2]**2/(2*self.m) + 
+               self.x[3]**2/(2*self.m*self.x[0]**2)-self.k/self.x[0])
 
     def display(self):
         print ("x",self.x)
@@ -75,8 +79,8 @@ def main():
     r = 1.0000
     p = 0.0001
     m = 0.001
-    L = np.sqrt((m/r*r*r ))
-    x = [r,0,p,L]
+    L = np.sqrt((m/r**3))
+    x = np.array([r,0,p,L])
     nn = 10000
     kepler = Kepler(x,m,k)
     hamiltonian = kepler.hamiltonian()

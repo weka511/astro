@@ -19,23 +19,32 @@
 Simple integrator based on Kotovich & Bowman, An Exactly Conservative 
 Integrator for the n-Body Problem
 '''
+from abc import ABC, abstractmethod
 
-class Hamiltonian:
+__version__ = '1.0'
+__author__ = 'Simon Crase'
+
+class Hamiltonian(ABC):
+    @abstractmethod
     def dx(self):
         raise NotImplementedError
 
+    @abstractmethod
     def d_eta(self):
         raise NotImplementedError
 
+    @abstractmethod
     def create(self, x):
         raise NotImplementedError
 
+    @abstractmethod
     def transform(self):
         raise NotImplementedError
 
     def invert(self, hamiltonian):
         self.x = hamiltonian.x
 
+    @abstractmethod
     def hamiltonian(self):
         raise NotImplementedError
 
