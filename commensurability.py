@@ -72,20 +72,20 @@ def sample(m, N, target,
                     _, _, _, p = commensurabilities[0]
                     ps.append(p)
           return ps     
+     
      _, _, _, target_p = target[0]
  
      ps = sample_single()
-
-     n, bins = np.histogram(ps, bins=[x + 0.1 for x in range(maxp + 2)])
-     i = 0
-     while bins[i] < target_p:
-          i += 1
-     return n[i - 1] / sum(n)
+     counts = np.zeros((maxp+1))
+     for p in ps:
+          counts[p] += 1
+     return counts[target_p] / counts.sum()    
 
 
 def parse_args():
      parser = ArgumentParser(description='Calculate probability for commensurabilities for problem 1.5.')
-     parser.add_argument('-N', type=int, help='Number of Monte Carlo calculations', default=100)
+     parser.add_argument('-M', type=int, help='Number of samples per Monte Carlo run', default=100)
+     parser.add_argument('-N', type=int, help='Number of Monte Carlo runs', default=100)
      parser.add_argument('--seed', '-s', help='Seed for random number generator', default=None)
      parser.add_argument('--figs', default='./figs', help=f'Path to plots')
      parser.add_argument('--data', default='./data', help=f'Path to data files')
@@ -108,14 +108,18 @@ def main():
      rng = np.random.default_rng(args.seed)
      periods = get_data((Path(args.data)/Path(__file__).stem).with_suffix('.csv'))
      commensurabilities = identify_commensurabilities(periods)
-     probs = [sample(len(periods), args.N, commensurabilities, rng=rng) for i in range(args.N)]
+     probs = [sample(len(periods), args.M, commensurabilities, rng=rng) for i in range(args.N)]
      fig = figure()
+     fig.suptitle('Murray and Dermott, Exercise 1.5')
      cc2 = commensurabilities[0][2]
      cc3 = commensurabilities[0][3]
-     fig.suptitle(f'Closest ratio to {cc2} is {cc3/(cc3+1)} ({cc3})')
+
      ax = fig.add_subplot(1,1,1)
-     ax.hist(probs)
-     ax.set_title('N={0}, mean= {1:.3f}, std= {2:.3f}'.format(args.N, np.mean(probs), np.std(probs)))
+     ax.hist(probs,
+             color='xkcd:blue',bins='fd',density=True,label=f'N={args.N}, mean={np.mean(probs):.4f}, std={np.std(probs):.4f}')
+     ax.set_title(f'Closest ratio to {cc2:.5} is {cc3/(cc3+1):.5} ({cc3})')
+     ax.set_xlabel(r'$\frac{p}{p+1}$')
+     ax.legend()
      fig.savefig(Path(args.figs)/Path(__file__).stem)
 
      if args.show:

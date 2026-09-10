@@ -39,7 +39,7 @@ orbit_space.tex|Derivations of equations for *earth_mars.py*
 
 File | Description
 ---------------------------|---------------------------------------------------------------------
-commensurability.csv|Orbital periods for exercise 1.4
+commensurability.csv|Orbital periods for exercise 1.5
 earth_mars.csv|Data files used by *earth_mars.py*
-saturn.csv|Orbital periods for exercise 1.5
+saturn.csv|Orbital periods for exercise 1.4
 
