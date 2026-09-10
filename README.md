@@ -9,6 +9,7 @@ integrators.py|Simple integrator based on Kotovich & Bowman
 plot_points.py|Display data that has been stored by tracking.py
 rki.py|Implicit Runge Ketta (symplectic) integrators
 restricted.py|Restricted 3 body problem
+template.py|Template for python script
 Threebody.py|Hamiltonian for 2 Dimensional, but otherwise general,  3 body problem
 tracking.py|Record results in logfile so they can be played back, and analyses can be restarted
 Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor
