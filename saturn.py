@@ -55,6 +55,9 @@ def get_bounds(n_ratio):
      return (r0, r1)
 
 def generate_pairs(data):
+     '''
+     Used to iterate through data, returning each pair once (unordered).
+     '''
      for i in range(len(data)):
           name_i, T1 = data[i]
           n1 = 360/T1
@@ -64,16 +67,35 @@ def generate_pairs(data):
                if n1 < n2:
                     yield name_i,name_j,n1,n2
                     
-def create_mean_motion_ratios(data):
+def create_mean_motion_ratios(names_and_periods):
+     '''
+     Calculate ratios between periods for each pair of orbits
+     
+     Parameters:
+         names_and_periods
+         
+     Returns:
+        A list of tuples for each pair:
+          name1
+          name2
+          ratio1
+          ratio2
+          c
+     '''
      product = []
-     for name_i,name_j,n1,n2 in generate_pairs(data):
+     cache0 = []
+     cache1 = []
+     for name_i,name_j,n1,n2 in generate_pairs(names_and_periods):
           (r0, r1) = get_bounds(n1/n2)
           a = (n1/n2 - r0)/(r1 - r0)   # Murray & Dermott (1.19)
-          b = 0 if a <= 0.5 else 1   # Murray & Dermott (1.20)
-          c = 2*np.pi*(a - b)    # Murray & Dermott (1.21)
+          b = 0 if a <= 0.5 else 1     # Murray & Dermott (1.20)
+          c = 2*np.pi*(a - b)          # Murray & Dermott (1.21)
           product.append((name_i,name_j,r0, r1, c))
+          if r0 in cache0 and r1 in cache1: continue
+          cache0.append(r0)
+          cache1.append(r1)
     
-     return product
+     return product,len(cache0)
 
 
 def parse_args():
@@ -88,7 +110,8 @@ def create_data(data_path,
                      'Epimetheus',
                      'Telesto',
                      'Calypso',
-                     'Helene']):
+                     'Helene'
+                     ]):
      '''
      Read data file
      
@@ -118,19 +141,15 @@ def get_bar(mean_motion_ratios,tolerance=0.15):
 
 def main():
      args = parse_args()
-
-     mean_motion_ratios = create_mean_motion_ratios(
-               create_data(
-                    (Path(args.data)/Path(__file__).stem).with_suffix('.csv')))
+     names_and_periods = create_data((Path(args.data)/Path(__file__).stem).with_suffix('.csv'))
+     mean_motion_ratios,count = create_mean_motion_ratios(names_and_periods)
 
      labels,cc,bar_colours = get_bar(mean_motion_ratios,tolerance=args.tolerance)
- 
-     
      cs = sorted([abs(c) for _,_,_,_,c in mean_motion_ratios])
      fig = figure(figsize=(12, 12))
      ax1 = fig.add_subplot(2, 1, 1)
-     ax1.hist(cs,bins=100)
-     ax1.set_title('Distribution of c')
+     ax1.hist(cs,bins=100,color='skyblue', edgecolor='white' )
+     ax1.set_title(f'Distribution of c. There are {count} distinct ratios')
      ax1.set_xlabel('c')
      ax2 = fig.add_subplot(2, 1, 2)
 
