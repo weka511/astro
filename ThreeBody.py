@@ -16,11 +16,12 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 import numpy as np
-import sys
 from matplotlib.pyplot import figure, show
 from integrators import Hamiltonian, Integrate2
-from utilities import signum,get_angle,get_r_velocity,get_theta_dot,get_r,newton_raphson,guarded_sqrt
+from utilities import get_angle,get_r_velocity,get_theta_dot,get_r,newton_raphson,guarded_sqrt
 
+__version__ = '1.0'
+__author__ = 'Simon Crase'
 
 class ThreeBody(Hamiltonian):
 
@@ -96,8 +97,8 @@ class ThreeBody(Hamiltonian):
         [r, _, _, _, p, _, P, _] = self.x
         [_, _, _, rho, l, L, theta, Theta] = self.eta
         r = self.g(r, self.eta[2], rho, theta, Theta)
-        p = signum(p) * guarded_sqrt(2 * self.g1 * (self.eta[0] - l * l / (2.0 * self.g1 * r * r)))
-        P = signum(P) * guarded_sqrt(2 * self.g2 * (self.eta[1] - L * L / (2.0 * self.g2 * rho * rho)))
+        p = np.sign(p) * guarded_sqrt(2 * self.g1 * (self.eta[0] - l * l / (2.0 * self.g1 * r * r)))
+        P = np.sign(P) * guarded_sqrt(2 * self.g2 * (self.eta[1] - L * L / (2.0 * self.g2 * rho * rho)))
 
         self.x = [r, theta, rho, Theta, p, l, P, L]
 
@@ -168,9 +169,7 @@ class ThreeBody(Hamiltonian):
         return (r1, r2, r3)
 
 
-if __name__ == '__main__':
-
-
+def main():
     u = []
     v = []
     w = []
@@ -215,3 +214,5 @@ if __name__ == '__main__':
     print(hamiltonian.hamiltonian())
     show()
 
+if __name__ == '__main__':
+    main()
