@@ -19,16 +19,22 @@
 Hamiltonian for integrating Kepler problem
 '''
 
+from argparse import ArgumentParser
+from pathlib import Path
+from time import time
+from matplotlib.pyplot import figure, show
+from matplotlib import rcParams
 import numpy as np
-from matplotlib.pyplot import figure,show
 from integrators import Hamiltonian, Integrate2
-from utilities import signum
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
 
 
 class Kepler(Hamiltonian):
+    '''
+    The Hamiltonisan for the Kepler problem
+    '''
     def __init__(self,x,m,k):
         self.x = x
         self.m = m
@@ -42,14 +48,14 @@ class Kepler(Hamiltonian):
         r = self.x[0]
         p = self.x[2]
         L = self.x[3]
-        self.eta=[-self.k/r, p*p/(2*self.m)+L*L/(2*self.m*r*r),L]
+        self.eta = [-self.k/r, p*p/(2*self.m)+L*L/(2*self.m*r*r),L]
     
     def invert(self,kepler):
         super(Kepler,self).invert(kepler)  #FIXME
         r = -self.k/self.eta[0]
         L = self.eta[2]
-        p_squared = 2*self.m*self.eta[1] - L*L/(r*r)        
-        p = signum(self.x[2])*np.sqrt(p_squared) if p_squared>0 else 0
+        p_squared = 2*self.m*self.eta[1] - L**2/(r*r)        
+        p = np.sign(self.x[2])*np.sqrt(p_squared) if p_squared>0 else 0
         self.x[0] = r
         self.x[2] = p
         self.x[3] = L
@@ -60,7 +66,7 @@ class Kepler(Hamiltonian):
         return [self.x[2]/self.m,L/(self.m*r**2), L**2/(self.m*r**3) - self.k / r**2,0]    
 
     def d_eta(self):
-        term = self.k*self.x[2]/(self.m*self.x[0]*self.x[0])
+        term = self.k*self.x[2]/(self.m*self.x[0]**2)
         return [term,-term,0]
 
     def hamiltonian(self):
@@ -71,31 +77,54 @@ class Kepler(Hamiltonian):
         print ("x",self.x)
         print ("eta",self.eta)
 
-def main():    
-    u = []
-    v = []
-    h = 0.001
-    k = 1
-    r = 1.0000
-    p = 0.0001
-    m = 0.001
-    L = np.sqrt((m/r**3))
-    x = np.array([r,0,p,L])
-    nn = 10000
-    kepler = Kepler(x,m,k)
+def parse_args():
+    '''
+    Parse command line arguments
+    '''
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument('--figs', default='./figs', help=f'Path to plots')
+    parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+    parser.add_argument('-N',type=int,default=10000)
+    parser.add_argument('--step',type=float,default=0.001)
+    parser.add_argument('-k',type=float,default=1.0)
+    parser.add_argument('-r',type=float,default=1.0)
+    parser.add_argument('-p',type=float,default=0.0001)
+    parser.add_argument('-m',type=float,default=0.001)
+    return parser.parse_args()
+
+            
+def main():
+    '''
+    Integrate Kepler problem
+    '''
+    rcParams['text.usetex'] = True
+    start  = time()
+    args = parse_args()
+ 
+    L = np.sqrt((args.m/args.r**3))
+ 
+    pos = np.zeros((args.N,2))
+    kepler = Kepler( np.array([args.r,0,args.p,L]),args.m,args.k)
     hamiltonian = kepler.hamiltonian()
-    integrator  = Integrate2(h,kepler)
+    integrator  = Integrate2(args.step,kepler)
     
-    for i in range(nn):
+    for i in range(args.N):
         integrator.integrate()
-        u.append(kepler.x[0]*np.cos(kepler.x[1]))
-        v.append(kepler.x[0]*np.sin(kepler.x[1]))
+        pos[i,:] = kepler.x[0]*np.array([np.cos(kepler.x[1]),np.sin(kepler.x[1])])
     
     fig = figure(figsize=(8, 8))
     ax1 = fig.add_subplot(1, 1, 1)        
-    ax1.plot(u,v)
-    print (hamiltonian,kepler.hamiltonian(),kepler.hamiltonian()-hamiltonian)
-    show()
+    ax1.plot(pos[:,0],pos[:,1])
+    ax1.set_title(rf'$\delta H=${kepler.hamiltonian()-hamiltonian:.4e} after {args.N:,} steps of size {args.step}')
+  
+    fig.tight_layout(h_pad=2)
+    fig.savefig(Path(args.figs)/Path(__file__).stem)    
+    elapsed = time() - start
+    minutes = int(elapsed/60)
+    seconds = elapsed - 60*minutes
+    print (f'Elapsed Time {minutes} m {seconds:.2f} s')
+    if args.show:
+        show()
     
 if __name__=='__main__':
     main()

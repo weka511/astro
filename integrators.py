@@ -25,6 +25,9 @@ __version__ = '1.0'
 __author__ = 'Simon Crase'
 
 class Hamiltonian(ABC):
+    '''
+    This class calculates the Hamiltonian and derivatives for the Integratoe 
+    '''
     @abstractmethod
     def dx(self):
         raise NotImplementedError
