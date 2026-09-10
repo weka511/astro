@@ -21,6 +21,7 @@ Some useful functions that don't fit anywhere else
 
 from csv import reader
 from pathlib import Path
+from warnings import deprecated
 import numpy as np
 
 
@@ -35,7 +36,7 @@ def get_planetary_data(data_file_name):
             data[row[0]] = [abs(float(datum)) for datum in row[1:]]
         return data
 
-
+@deprecated('Use np.sign(...) instead')
 def signum(x):
     '''Determine sign of its argument. Returne -1, 0, or +1.'''
     if x < 0:
