@@ -35,7 +35,6 @@ class ThreeBody(Hamiltonian):
     '''
     Hamiltonian for 2 Dimensional, but otherwise general, 3 body problem
     '''
-
     def __init__(self, r1, r2, r3, r1dot, r2dot, r3dot, m1, m2, m3, G=1, clone=False):
         self.G = G
         self.M = m1 + m2 + m3
@@ -78,7 +77,7 @@ class ThreeBody(Hamiltonian):
                 -VTheta
             ])
 
-    def d_eta(self):
+    def d_xi(self):
         [r_dot, theta_dot, rho_dot, Theta_dot, p_dot, l_dot, P_dot, L_dot] = self.dx()
         dH = self.dH()
         return np.array([dH[0], dH[1], dH[2], rho_dot, l_dot, L_dot, theta_dot, Theta_dot])
@@ -93,7 +92,7 @@ class ThreeBody(Hamiltonian):
 
     def transform(self):
         [r, theta, rho, Theta, p, l, P, L] = self.x
-        self.eta = [
+        self.xi = [
             (p * p + (l / r) * (l / r)) / (2 * self.g1),
             (P * P + (L / rho) * (L / rho)) / (2 * self.g2),
             self.V(r, theta, rho, Theta),
@@ -104,14 +103,14 @@ class ThreeBody(Hamiltonian):
             Theta,
          ]
 
-    def invert(self, hamiltonian):
+    def _invert(self, hamiltonian):
         [r, _, _, _, p, _, P, _] = self.x
-        [_, _, _, rho, l, L, theta, Theta] = self.eta
-        r = self.g(r, self.eta[2], rho, theta, Theta)
-        p = np.sign(p) * guarded_sqrt(2 * self.g1 * (self.eta[0] - l * l / (2.0 * self.g1 * r * r)))
-        P = np.sign(P) * guarded_sqrt(2 * self.g2 * (self.eta[1] - L * L / (2.0 * self.g2 * rho * rho)))
+        [_, _, _, rho, l, L, theta, Theta] = self.xi
+        r = self.g(r, self.xi[2], rho, theta, Theta)
+        p = np.sign(p) * guarded_sqrt(2 * self.g1 * (self.xi[0] - l * l / (2.0 * self.g1 * r * r)))
+        P = np.sign(P) * guarded_sqrt(2 * self.g2 * (self.xi[1] - L * L / (2.0 * self.g2 * rho * rho)))
 
-        self.x = [r, theta, rho, Theta, p, l, P, L]
+        self.x = np.array([r, theta, rho, Theta, p, l, P, L])
 
     def hamiltonian(self):
         [r, theta, rho, Theta, p, l, P, L] = self.x
@@ -153,12 +152,12 @@ class ThreeBody(Hamiltonian):
                         (self.m2 / self.mu) * (self.m2 / self.mu) * r * r)
         return -self.G * self.m1 * self.m2 / r - self.G * self.m2 * self.m3 / r23 - self.G * self.m3 * self.m1 / r31
 
-    def g(self, r, eta3, rho, theta, Theta):
+    def g(self, r, xi3, rho, theta, Theta):
         return newton_raphson(r,
-                                        lambda r: self.V(r, theta, rho, Theta) - eta3,
-                                        lambda r: self.dV(r, theta, rho, Theta)[0],
-                                        1.0e-3,
-                                        1000)
+                              lambda r: self.V(r, theta, rho, Theta) - xi3,
+                              lambda r: self.dV(r, theta, rho, Theta)[0],
+                              1.0e-3,
+                              1000)
 
     def dH(self):
         [r, theta, rho, Theta, p, l, P, L] = self.x

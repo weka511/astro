@@ -30,26 +30,44 @@ class Hamiltonian(ABC):
     '''
     @abstractmethod
     def dx(self):
-        raise NotImplementedError
+        '''
+        Calculate derivative of x
+        '''        
 
     @abstractmethod
-    def d_eta(self):
-        raise NotImplementedError
+    def d_xi(self):
+        '''
+        Calculate derivative of xi
+        '''  
 
     @abstractmethod
     def create(self, x):
-        raise NotImplementedError
+        '''
+        Used by KotovychBowman to instantiate a Hamiltonian
+        '''
 
     @abstractmethod
     def transform(self):
-        raise NotImplementedError
-
+        '''
+        Convert coordinates to a new vector, eta, having the 
+        constants of entegration among its elements
+        '''        
     def invert(self, hamiltonian):
+        '''
+        Invert transform
+        '''
         self.x = hamiltonian.x
+        self._invert(hamiltonian)
 
     @abstractmethod
+    def _invert(self, hamiltonian):
+        ...
+            
+    @abstractmethod
     def hamiltonian(self):
-        raise NotImplementedError
+        '''
+        Calculate total energy (should be constant)
+        '''
 
 
 class KotovychBowman:
@@ -64,9 +82,9 @@ class KotovychBowman:
         return self.hamiltonian.x + self.h * self.hamiltonian.dx()
 
     def correct(self, hamiltonian1):
-        return self.hamiltonian.eta + (self.h / 2) * (self.hamiltonian.d_eta() + hamiltonian1.d_eta())
+        return self.hamiltonian.xi + (self.h / 2) * (self.hamiltonian.d_xi() + hamiltonian1.d_xi())
   
     def integrate(self):
         hamiltonian1 = self.hamiltonian.create(self.predict())
-        self.hamiltonian.eta = self.correct(hamiltonian1)
+        self.hamiltonian.xi = self.correct(hamiltonian1)
         self.hamiltonian.invert(hamiltonian1)
