@@ -25,7 +25,7 @@ from time import time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
-from integrators import Hamiltonian, Integrate2
+from integrators import Hamiltonian, KotovychBowman
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -48,7 +48,7 @@ class Kepler(Hamiltonian):
         r = self.x[0]
         p = self.x[2]
         L = self.x[3]
-        self.eta = [-self.k/r, p*p/(2*self.m)+L*L/(2*self.m*r*r),L]
+        self.eta = np.array([-self.k/r, p**2/(2*self.m) + L**2/(2*self.m*r**2),L])
     
     def invert(self,kepler):
         super(Kepler,self).invert(kepler)  #FIXME
@@ -63,11 +63,10 @@ class Kepler(Hamiltonian):
     def dx(self):
         r = self.x[0]
         L = self.x[3]
-        return [self.x[2]/self.m,L/(self.m*r**2), L**2/(self.m*r**3) - self.k / r**2,0]    
+        return np.array([self.x[2]/self.m,L/(self.m*r**2), L**2/(self.m*r**3) - self.k / r**2,0] )   
 
     def d_eta(self):
-        term = self.k*self.x[2]/(self.m*self.x[0]**2)
-        return [term,-term,0]
+        return self.k*self.x[2]/(self.m*self.x[0]**2)* np.array([1,-1,0])
 
     def hamiltonian(self):
         return (self.x[2]**2/(2*self.m) + 
@@ -106,7 +105,7 @@ def main():
     pos = np.zeros((args.N,2))
     kepler = Kepler( np.array([args.r,0,args.p,L]),args.m,args.k)
     hamiltonian = kepler.hamiltonian()
-    integrator  = Integrate2(args.step,kepler)
+    integrator  = KotovychBowman(args.step,kepler)
     
     for i in range(args.N):
         integrator.integrate()

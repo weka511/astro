@@ -25,7 +25,7 @@ from time import time
 import numpy as np
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
-from integrators import Hamiltonian, Integrate2
+from integrators import Hamiltonian, KotovychBowman
 from utilities import get_angle,get_r_velocity,get_theta_dot,get_r,newton_raphson,guarded_sqrt
 
 __version__ = '1.0'
@@ -67,7 +67,7 @@ class ThreeBody(Hamiltonian):
     def dx(self):
             [r, theta, rho, Theta, p, l, P, L] = self.x
             [Vr, Vtheta, Vrho, VTheta] = self.dV(r, theta, rho, Theta)
-            return [
+            return np.array([
                 p / self.g1,
                 l / (self.g1 * r * r),
                 P / self.g2,
@@ -76,12 +76,12 @@ class ThreeBody(Hamiltonian):
                 -Vtheta,
                 L * L / (self.g2 * rho * rho * rho) - Vrho,
                 -VTheta
-            ]
+            ])
 
     def d_eta(self):
         [r_dot, theta_dot, rho_dot, Theta_dot, p_dot, l_dot, P_dot, L_dot] = self.dx()
         dH = self.dH()
-        return [dH[0], dH[1], dH[2], rho_dot, l_dot, L_dot, theta_dot, Theta_dot]
+        return np.array([dH[0], dH[1], dH[2], rho_dot, l_dot, L_dot, theta_dot, Theta_dot])
 
     def create(self, x):
         product = ThreeBody(0, 0, 0, 0, 0, 0, self.m1, self.m2, self.m3, self.G, True)
@@ -211,7 +211,7 @@ def main():
     wz = np.zeros((args.N,2))
     rs = np.zeros((args.N,2))
     pq = np.zeros((args.N,2))
-    integrator = Integrate2(args.step, hamiltonian)
+    integrator = KotovychBowman(args.step, hamiltonian)
     for i in range(args.N):
         integrator.integrate()
         (r1, r2, r3) = hamiltonian.inverse_jacobi()

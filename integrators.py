@@ -52,17 +52,20 @@ class Hamiltonian(ABC):
         raise NotImplementedError
 
 
-class Integrate2:
+class KotovychBowman:
+    '''
+    The integrator from Kotovich & Bowman
+    '''
     def __init__(self, h, hamiltonian):
         self.h = h
         self.hamiltonian = hamiltonian
 
     def predict(self):
-        return [x0 + self.h * f0 for (x0, f0) in zip(self.hamiltonian.x, self.hamiltonian.dx())]
+        return self.hamiltonian.x + self.h * self.hamiltonian.dx()
 
     def correct(self, hamiltonian1):
-        return [e0 + (self.h / 2) * (f0 + f1) for (e0, f0, f1) in zip(self.hamiltonian.eta, self.hamiltonian.d_eta(), hamiltonian1.d_eta())]
-
+        return self.hamiltonian.eta + (self.h / 2) * (self.hamiltonian.d_eta() + hamiltonian1.d_eta())
+  
     def integrate(self):
         hamiltonian1 = self.hamiltonian.create(self.predict())
         self.hamiltonian.eta = self.correct(hamiltonian1)
