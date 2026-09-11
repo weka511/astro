@@ -15,8 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+'''
+Integrate 2 dimensional, but otherwise general, 3 body problem
+'''
+
+from argparse import ArgumentParser
+from pathlib import Path
+from time import time
 import numpy as np
 from matplotlib.pyplot import figure, show
+from matplotlib import rcParams
 from integrators import Hamiltonian, Integrate2
 from utilities import get_angle,get_r_velocity,get_theta_dot,get_r,newton_raphson,guarded_sqrt
 
@@ -24,6 +32,9 @@ __version__ = '1.0'
 __author__ = 'Simon Crase'
 
 class ThreeBody(Hamiltonian):
+    '''
+    Hamiltonian for 2 Dimensional, but otherwise general, 3 body problem
+    '''
 
     def __init__(self, r1, r2, r3, r1dot, r2dot, r3dot, m1, m2, m3, G=1, clone=False):
         self.G = G
@@ -168,16 +179,21 @@ class ThreeBody(Hamiltonian):
         r2 = [rr3 - rho + (self.m1 / self.mu) * r for (rr3, rho, r) in zip(r3, rho_vector, r_vector)]
         return (r1, r2, r3)
 
-
+def parse_args():
+    '''
+    Parse command line arguments
+    '''
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument('--figs', default='./figs', help=f'Path to plots')
+    parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+    parser.add_argument('-N', default=80000, type=int)
+    parser.add_argument('--step',default=1.0e-4,type=float)
+    return parser.parse_args()
+    
 def main():
-    u = []
-    v = []
-    w = []
-    z = []
-    r = []
-    s = []
-    p = []
-    q = []
+    rcParams['text.usetex'] = True
+    start  = time()    
+    args = parse_args()
     hamiltonian = ThreeBody(
         [0.97000436, -0.24308753],
         [0, 0],
@@ -190,29 +206,36 @@ def main():
         1.0
     )
 
-    integrator = Integrate2(1.0e-4, hamiltonian)
-
-    nn = 80000
-    mm = 1000
-    print(hamiltonian.hamiltonian())
-    for i in range(nn):
+    hamiltonian0 = hamiltonian.hamiltonian()
+    uv = np.zeros((args.N,2))
+    wz = np.zeros((args.N,2))
+    rs = np.zeros((args.N,2))
+    pq = np.zeros((args.N,2))
+    integrator = Integrate2(args.step, hamiltonian)
+    for i in range(args.N):
         integrator.integrate()
-        if i > mm:
-            (r1, r2, r3) = hamiltonian.inverse_jacobi()
-            r.append(r1[0])
-            s.append(r1[1])
-            p.append(r2[0])
-            q.append(r2[1])
-            u.append(hamiltonian.x[0] * np.cos(hamiltonian.x[1]))
-            v.append(hamiltonian.x[0] * np.sin(hamiltonian.x[1]))
-            w.append(hamiltonian.x[2] * np.cos(hamiltonian.x[3]))
-            z.append(hamiltonian.x[2] * np.sin(hamiltonian.x[3]))
-
+        (r1, r2, r3) = hamiltonian.inverse_jacobi()
+        rs[i,:] = np.array(r1)
+        pq[i,:] = np.array(r2)
+        uv[i,:] = hamiltonian.x[0] * np.array([np.cos(hamiltonian.x[1]),np.sin(hamiltonian.x[1])])
+        wz[i,:] = hamiltonian.x[2] * np.array([np.cos(hamiltonian.x[3]),np.sin(hamiltonian.x[3])])
+  
     fig = figure(figsize=(8, 8))
     ax1 = fig.add_subplot(1, 1, 1)  
-    ax1.plot(u, v, 'b', w, z, 'r', r, s, 'g', p, q, 'm')
-    print(hamiltonian.hamiltonian())
-    show()
+    ax1.plot(uv[:,0], uv[:,1], 'b',label='uv')
+    ax1.plot(wz[:,0], wz[:,1], 'r',label='wz')
+    ax1.plot(rs[:,0], rs[:,1], 'g',label='rs')
+    ax1.plot(pq[:,0], pq[:,1], 'm',label='pq')
+    ax1.legend()
+    ax1.set_title(rf'N={args.N:,}, $\delta H=${hamiltonian.hamiltonian()-hamiltonian0:.4e}')
+    fig.tight_layout(h_pad=2)
+    fig.savefig(Path(args.figs)/Path(__file__).stem)    
+    elapsed = time() - start
+    minutes = int(elapsed/60)
+    seconds = elapsed - 60*minutes
+    print (f'Elapsed Time {minutes} m {seconds:.2f} s')
+    if args.show:
+        show()    
 
 if __name__ == '__main__':
     main()
