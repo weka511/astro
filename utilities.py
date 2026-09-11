@@ -89,18 +89,15 @@ def adjust_quadrant(r):
 
 def get_r(z):
     [x, y] = z
-    return np.sqrt(x * x * y * y)
+    return np.sqrt(x * x * y * y)   # WTF?
 
 
 def get_r_velocity(zdot, theta):
-    [xdot, ydot] = zdot
-    return np.cos(theta) * xdot + np.sin(theta) * ydot
+    return np.dot(np.array([np.cos(theta),  np.sin(theta)]), zdot)
 
 
 def get_theta_dot(zdot, theta, r):
-    [xdot, ydot] = zdot
-    return (np.cos(theta) * ydot - np.sin(theta) * xdot) / r
-
+    return np.dot(np.array([-np.sin(theta),  np.cos(theta)]), zdot)/r
 
 def get_date(string):
     '''
