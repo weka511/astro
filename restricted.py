@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2015-2017 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2017,2026 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,7 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-import math
+'''
+Restricted 3 body problem 
+'''
+
+from argparse import ArgumentParser
+from pathlib import Path
+from time import time
+import numpy as np
+from matplotlib.pyplot import figure, show
+from matplotlib import rcParams
+from rki import ImplicitRungeKutta4,Driver
+
+__version__ = '1.0'
+__author__ = 'Simon Crase'
 
 def denom(x1,x2,y1,y2):
     return ((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2))**(3.0/2.0)
@@ -50,11 +63,22 @@ def dx(x,G,M1,M2):
 def T(x,G,M1,M2):
     return M1*(x[6]*x[6]+x[7]*x[7]) + M2*(x[8]*x[8]+x[9]*x[9])
 
-if __name__=='__main__':
-    import rki, matplotlib.pyplot as plt
-    
-    nn=1000
-    h = 0.001
+def parse_args():
+    '''
+    Parse command line arguments
+    '''
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument('--figs', default='./figs', help=f'Path to plots')
+    parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+    parser.add_argument('-N',type=int,default=1000)
+    return parser.parse_args()
+   
+def main():
+    rcParams['text.usetex'] = True
+    start  = time()
+    args = parse_args()    
+ 
+    #h = 0.001
     M1 = 250000
     epsilon=0.1
     M2 = 1.0
@@ -66,36 +90,43 @@ if __name__=='__main__':
     x1 = -L*M2/(M1+M2)
     y1 = 0.0
     x3 = 0.5*(x1+x2)*(1+epsilon)
-    y3 = L* math.sqrt(3.0)/2.0
-    omega = math.sqrt(G*(M1+M2)/(L*L*L))
+    y3 = L* np.sqrt(3.0)/2.0
+    omega = np.sqrt(G*(M1+M2)/(L*L*L))
     x=[
         x1, y1,
         x2, y2,
         x3, y3, 
         0, x1*omega,
         0, x2*omega,
-        -0.5*math.sqrt(3)*L*omega, 0.5*L*omega
+        -0.5*np.sqrt(3)*L*omega, 0.5*L*omega
     ]
     
-    rk = rki.ImplicitRungeKutta4(lambda x: dx(x,1,M1,M2),200,1e-18)
+    rk = ImplicitRungeKutta4(lambda x: dx(x,1,M1,M2),200,1e-18)
     
-    driver = rki.Driver(rk,1.e-8,0.5,1.0,1e-12)
+    driver = Driver(rk,1.e-8,0.5,1.0,1e-12)
     
-    x1s=[]
-    y1s=[]
-    x2s=[]
-    y2s=[]    
-    x3s=[]
-    y3s=[]
-    for i in range(nn):
+    xy = np.zeros((args.N,6))
+    
+    for i in range(args.N):
         x= driver.step(x)
-        x1s.append(x[0])
-        y1s.append(x[1])
-        x2s.append(x[2])
-        y2s.append(x[3])        
-        x3s.append(x[4])
-        y3s.append(x[5])
-    plt.plot( x3s,y3s,'r', x1s,y1s,'b', x2s,y2s,'g') 
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.title('M1={0:5.1f},M2={1:5.0f},R2={2:5.1f},L={3:5.1f},nn={4:5.1f},h={5:.1e}'.format(M1,M2,R2,L,nn,h))
+        xy[i,:] = x[0:6]
+   
+    fig = figure(figsize=(8, 8))
+    ax1 = fig.add_subplot(1, 1, 1)         
+    ax1.plot( xy[:,0],xy[:,1],'b')
+    ax1.plot( xy[:,2],xy[:,3],'r')
+    ax1.plot( xy[:,4],xy[:,5],'g')
+
+    ax1.set_xlabel('X')
+    ax1.set_ylabel('Y')
+    ax1.set_title(f'M1={M1:5.1f},M2={M2:5.0f},R2={R2:5.1f},L={3:5.1f},N={args.N:5.1f}')
+    fig.savefig(Path(args.figs)/Path(__file__).stem)    
+    elapsed = time() - start
+    minutes = int(elapsed/60)
+    seconds = elapsed - 60*minutes
+    print (f'Elapsed Time {minutes} m {seconds:.2f} s')
+    if args.show:
+        show()    
+ 
+if __name__=='__main__':
+    main()    
