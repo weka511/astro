@@ -85,7 +85,7 @@ class Kepler(Hamiltonian):
         '''          
         return self.k*self.x[2]/(self.m*self.x[0]**2)* np.array([1,-1,0])
 
-    def hamiltonian(self):
+    def get_energy(self):
         '''
         Calculate total energy (should be constant)
         '''
@@ -121,7 +121,7 @@ def main():
  
     pos = np.zeros((args.N,2))
     kepler = Kepler( np.array([args.r,0,args.p,L]),args.m,args.k)
-    hamiltonian = kepler.hamiltonian()
+    total_energy = kepler.get_energy()
     integrator  = KotovychBowman(args.step,kepler)
     
     for i in range(args.N):
@@ -131,7 +131,7 @@ def main():
     fig = figure(figsize=(8, 8))
     ax1 = fig.add_subplot(1, 1, 1)        
     ax1.plot(pos[:,0],pos[:,1])
-    ax1.set_title(rf'$\delta H=${kepler.hamiltonian()-hamiltonian:.4e} after {args.N:,} steps of size {args.step}')
+    ax1.set_title(rf'$\delta E=${kepler.get_energy()-total_energy:.4e} after {args.N:,} steps of size {args.step}')
   
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    

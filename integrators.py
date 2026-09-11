@@ -61,12 +61,14 @@ class Hamiltonian(ABC):
 
     @abstractmethod
     def _invert(self, hamiltonian):
-        ...
+        '''
+        Invert transform
+        '''        
             
     @abstractmethod
-    def hamiltonian(self):
+    def get_energy(self):
         '''
-        Calculate total energy (should be constant)
+        Calculate total energy (constant, modulo roundoff)
         '''
 
 
@@ -79,12 +81,21 @@ class KotovychBowman:
         self.hamiltonian = hamiltonian
 
     def predict(self):
+        '''
+        Equation (2a)
+        '''
         return self.hamiltonian.x + self.h * self.hamiltonian.dx()
 
     def correct(self, hamiltonian1):
+        '''
+        Equation (2b)
+        '''
         return self.hamiltonian.xi + (self.h / 2) * (self.hamiltonian.d_xi() + hamiltonian1.d_xi())
   
     def integrate(self):
+        '''
+        Equation (3)
+        '''
         hamiltonian1 = self.hamiltonian.create(self.predict())
         self.hamiltonian.xi = self.correct(hamiltonian1)
         self.hamiltonian.invert(hamiltonian1)
