@@ -118,7 +118,7 @@ class ImplicitRungeKutta(ABC):
             return repr(self.value)
 
     def __init__(self, dy, max_iterations, max_iteration_error, order, a,b,c,
-                 distance=lambda k0, k1: max([abs(a - b) for (a, b) in zip(k0, k1)])
+                 distance=lambda k0, k1: np.max(np.abs(k0-k1))
                  ):
         '''
         Initialize
@@ -152,15 +152,13 @@ class ImplicitRungeKutta(ABC):
            y    Current value of y
         '''
         k = np.zeros((len(self.b),len(y)))
-        for i in range(self.max_iterations):
+        for _ in range(self.max_iterations):
             k_new = self.iterate(h, y, k)
-            if min([self.distance(k0, k1) for (k0, k1) in zip(k, k_new)]) < self.max_iteration_error:
-                yy = [y0 for y0 in y]
-                for l in range(len(yy)):
-                    yy[l] += h * np.dot(self.b,k_new[:,l])
-                return yy
+            if max([self.distance(k0, k1) for (k0, k1) in zip(k, k_new)]) < self.max_iteration_error:
+                return y + h*np.inner(self.b,k_new.T)
             else:
                 k = k_new
+                
         self.fail()
 
     def iterate(self, h, y, k):
@@ -175,11 +173,7 @@ class ImplicitRungeKutta(ABC):
         '''
         result = np.zeros((self.s,len(y)))
         for i in range(self.s):
-            yy = y.copy()
-            for l in range(len(k[i])):
-                yy[l] += h * np.dot(self.a[i,:], k[:,l])
-  
-            result[i] = self.dy(yy)
+            result[i] = self.dy(y + h* np.inner(self.a[i,:],k.T))
         return result
 
     def fail(self):
@@ -195,6 +189,12 @@ class ImplicitRungeKutta2(ImplicitRungeKutta):
     4th order Gauss-Legendre
     '''
     def __init__(self, dy, max_iterations, max_iteration_error):
+        '''
+        Parameters:
+            dy
+            max_iterations
+            atol
+        '''
         super().__init__(dy, max_iterations, max_iteration_error, 4,
                 np.array([
                     [0.25, 0.25 - np.sqrt(3.0)/6.0],
@@ -208,14 +208,18 @@ class ImplicitRungeKutta2(ImplicitRungeKutta):
                     0.5 + np.sqrt(3.0)/6
                 ]))
    
-
-
 class ImplicitRungeKutta4(ImplicitRungeKutta):
     '''
     6th order Gauss-Legendre
     '''
 
     def __init__(self, dy, max_iterations=200, atol=1.0e-18):
+        '''
+        Parameters:
+            dy
+            max_iterations
+            atol
+        '''
         super().__init__(dy, max_iterations, atol, 6,
                          np.array([
                                 [5.0/36.0, 2.0/9.0 -np.sqrt(15.0)/15.0, 5.0/36.0 -np.sqrt(15.0)/30.0],
@@ -232,7 +236,6 @@ class ImplicitRungeKutta4(ImplicitRungeKutta):
                                 0.5,
                                 0.5 +np.sqrt(15.0)/10.0
                             ]))
-
 
 def parse_args():
     '''
