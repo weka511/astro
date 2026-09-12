@@ -18,14 +18,18 @@
 '''
 Implicit Runge Ketta (symplectic) integrators
 '''
-
+from abc import ABC
+from argparse import ArgumentParser
+from pathlib import Path
+from time import time
+from matplotlib.pyplot import figure, show
+from matplotlib import rcParams
 import numpy as np
-import matplotlib.pyplot as plt
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
 
-class Driver(object):
+class Driver:
     '''
     Use an integrator to solve an ODE to within a specified error 
     '''
@@ -85,7 +89,7 @@ class Driver(object):
             return self.step(y)
 
 
-class ImplicitRungeKutta(object):
+class ImplicitRungeKutta(ABC):
     '''
     Parent class for Implicit Ringe-Kutta integrators
     
@@ -94,7 +98,8 @@ class ImplicitRungeKutta(object):
     The Butcher tableau is stored in three members: a, b, and c.
     '''
     class Failed(Exception):
-        ''' Exception thrown when we an't solve implict equations
+        ''' 
+        Exception thrown when we can't solve implicit equations
         '''
 
         def __init__(self, value):
@@ -103,7 +108,8 @@ class ImplicitRungeKutta(object):
         def __str__(self):
             return repr(self.value)
 
-    def __init__(self, dy, max_iterations, max_iteration_error, order, distance=lambda k, k_new: max([abs(a - b) for (a, b) in zip(k, k_new)])):
+    def __init__(self, dy, max_iterations, max_iteration_error, order, 
+                 distance=lambda k, k_new: max([abs(a - b) for (a, b) in zip(k, k_new)])):
         '''Initialize
         
         Parameters:
@@ -111,7 +117,7 @@ class ImplicitRungeKutta(object):
            max_iterations      Maximum number of iterations for solving implicit equations
            max_iteration_error Maximum error we can tolerate when solving implicit equations
            order               Order of solver
-           distance            Distance function used to compute error when we solve equations
+            distance            Distance function used to compute error when we solve equations
         '''
         self.dy = dy
         self.max_iterations = max_iterations
@@ -120,7 +126,8 @@ class ImplicitRungeKutta(object):
         self.distance = distance
 
     def step(self, h, y):
-        '''Compute y after next step
+        '''
+        Compute y after next step
         
         Parameters:
            h    Step size
@@ -162,16 +169,16 @@ class ImplicitRungeKutta(object):
         return result
 
     def fail(self):
-        '''Used if er cannot solve implicit equations to throw Exception
+        '''
+        Used  to throw Exception if we cannot solve implicit equations
         '''
         raise ImplicitRungeKutta.Failed(
-            'Failed to Converge within {0} after {1} iterations'.format(
-                self.max_iteration_error,
-                self.max_iterations))
+            f'Failed to converge within {self.max_iteration_error} after {self.max_iterations} iterations')
 
 
 class ImplicitRungeKutta2(ImplicitRungeKutta):
-    '''4th order Gauss-Legendred
+    '''
+    4th order Gauss-Legendred
     '''
 
     def __init__(self, dy, max_iterations, max_iteration_error):
@@ -191,7 +198,8 @@ class ImplicitRungeKutta2(ImplicitRungeKutta):
 
 
 class ImplicitRungeKutta4(ImplicitRungeKutta):
-    '''6th order Gauss-Legendre
+    '''
+    6th order Gauss-Legendre
     '''
 
     def __init__(self, dy, max_iterations=200, atol=1.0e-18):
@@ -213,11 +221,17 @@ class ImplicitRungeKutta4(ImplicitRungeKutta):
         ]
         self.s = len(self.b)
 
+def parse_args():
+    '''
+    Parse command line arguments
+    '''
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument('--figs', default='./figs', help=f'Path to plots')
+    parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+    return parser.parse_args()
 
-def main():
-    rk = ImplicitRungeKutta2(lambda y: [y[1], -y[0]], 10, 0.000000001)
+def run_once(ax,rk,):
     driver = Driver(rk, 0.000000001, 0.5, 1.0, 0.000000001)
-
     try:
         nn = 1000
         y = [1, 0]
@@ -226,12 +240,32 @@ def main():
         for i in range(nn):
             y = driver.step(y)
             xs.append(y[0])
-            ys.append(y[1])
-        plt.plot(xs, ys)
-        plt.show()
+            ys.append(y[1])           
+        ax.plot(xs, ys)
+        ax.set_title(type(rk).__name__)
     except ImplicitRungeKutta.Failed as e:
-        print("caught!", e)
-
+        print(f'Exception {e}')
+    
+def main():
+    args = parse_args()
+    rcParams['text.usetex'] = True
+    start  = time()    
+    fig = figure(figsize=(12, 12))
+    fig.suptitle(Path(__file__).stem)
+    run_once(ax=fig.add_subplot(1,2,1,adjustable='box',aspect=1.0),
+             rk=ImplicitRungeKutta2(lambda y: [y[1], -y[0]], 10, 0.000000001))
+    run_once(ax=fig.add_subplot(1,2,2,adjustable='box',aspect=1.0),
+             rk=ImplicitRungeKutta4(lambda y: [y[1], -y[0]], 10, 0.000000001))    
+    
+    fig.tight_layout(h_pad=2)
+    fig.savefig(Path(args.figs)/Path(__file__).stem)    
+    elapsed = time() - start
+    minutes = int(elapsed/60)
+    seconds = elapsed - 60*minutes
+    print (f'Elapsed Time {minutes} m {seconds:.2f} s')
+    
+    if args.show:
+        show()
 
 if __name__ == '__main__':
     main()
