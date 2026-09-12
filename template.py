@@ -44,8 +44,9 @@ def main():
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
-    fig = figure(figsize=(12, 12))
-    ax1 = fig.add_subplot(1, 1, 1)
+    fig = figure(figsize=(12,12))
+    fig.suptitle(Path(__file__).stem)
+    ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
     ...
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
