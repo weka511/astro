@@ -111,7 +111,7 @@ class ThreeBody(Hamiltonian):
     def _invert(self, hamiltonian):
         [r, _, _, _, p, _, P, _] = self.x
         [_, _, _, rho, l, L, theta, Theta] = self.xi
-        r = self.g(r, self.xi[2], rho, theta, Theta)
+        r = self.g(r, rho, theta, Theta)
         p = np.sign(p) * guarded_sqrt(2 * self.g1 * (self.xi[0] - l * l / (2.0 * self.g1 * r * r)))
         P = np.sign(P) * guarded_sqrt(2 * self.g2 * (self.xi[1] - L * L / (2.0 * self.g2 * rho * rho)))
 
@@ -126,6 +126,9 @@ class ThreeBody(Hamiltonian):
         return (T + self.V(r, theta, rho, Theta))
 
     def dV(self, r, theta, rho, Theta):
+        '''
+        Calculate derivatives of total energy 
+        '''        
         r23_sq = rho**2 - 2 * (self.m[0] / self.mu) * rho * r * np.cos(Theta - theta) + (self.m[0] / self.mu)**2 * r**2
         r23 = np.sqrt(r23_sq)
         dr23_drho = (rho - (self.m[0] / self.mu) * r * np.cos(Theta - theta)) / r23
@@ -170,12 +173,15 @@ class ThreeBody(Hamiltonian):
                 - self.G * self.m[1] * self.m[2] / r23 
                 - self.G * self.m[2] * self.m[0] / r31)
 
-    def g(self, r, xi3, rho, theta, Theta):
+    def g(self, r, rho, theta, Theta,epsilon=1.0e-4, N=1000):
+        '''
+        Calculate the g value for Equation (33b) - V(g(xi3,theta,rho,Theta))=xi3
+        '''
         return newton_raphson(r,
-                              lambda r: self.V(r, theta, rho, Theta) - xi3,
-                              lambda r: self.dV(r, theta, rho, Theta)[0],
-                              1.0e-3,
-                              1000)
+                              lambda xi3: self.V(xi3, theta, rho, Theta) - xi3,
+                              lambda xi3: self.dV(xi3, theta, rho, Theta)[0] - 1,    # FIXME
+                              epsilon=epsilon,
+                              N=N)
 
     def dH(self):
         [r, theta, rho, Theta, p, l, P, L] = self.x
@@ -203,7 +209,7 @@ def parse_args():
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
-    parser.add_argument('-N', default=80000, type=int)
+    parser.add_argument('-T', default=1.0, type=float)
     parser.add_argument('--step',default=1.0e-4,type=float)
     return parser.parse_args()
 
@@ -231,7 +237,7 @@ def adjust_quadrant(r):
     Parameters:
         r       Vector
     Returns:
-       Minumum angle for the quadrant
+        Angle for start of quadrant
     '''
     if   r[0] >= 0 and r[1] >= 0:  return 0
     elif r[0] < 0 and r[1] >= 0: return np.pi / 2
@@ -243,6 +249,7 @@ def main():
     rcParams['text.usetex'] = True
     start  = time()    
     args = parse_args()
+    N = int(args.T/args.step)
     hamiltonian = ThreeBody(                  #Equation (34)
         np.array([[0.97000436, -0.24308753],
                   [0, 0],
@@ -254,27 +261,27 @@ def main():
     )
 
     hamiltonian0 = hamiltonian.get_energy()
-    uv = np.zeros((args.N,2))
-    wz = np.zeros((args.N,2))
-    rs = np.zeros((args.N,2))
-    pq = np.zeros((args.N,2))
+    R1 = np.zeros((N,2))
+    R2 = np.zeros((N,2))
+    R3 = np.zeros((N,2))
+  
     integrator = KotovychBowman(args.step, hamiltonian)
-    for i in range(args.N):
+
+    for i in range(N):
         integrator.integrate()
         (r1, r2, r3) = hamiltonian.inverse_jacobi()
-        rs[i,:] = np.array(r1)
-        pq[i,:] = np.array(r2)
-        uv[i,:] = hamiltonian.x[0] * np.array([np.cos(hamiltonian.x[1]),np.sin(hamiltonian.x[1])])
-        wz[i,:] = hamiltonian.x[2] * np.array([np.cos(hamiltonian.x[3]),np.sin(hamiltonian.x[3])])
+        R1[i,:] = np.array(r1)
+        R2[i,:] = np.array(r2)
+        R3[i,:] = np.array(r3)
   
     fig = figure(figsize=(8, 8))
     ax1 = fig.add_subplot(1, 1, 1)  
-    ax1.plot(uv[:,0], uv[:,1], 'b',label='uv')
-    ax1.plot(wz[:,0], wz[:,1], 'r',label='wz')
-    ax1.plot(rs[:,0], rs[:,1], 'g',label='rs')
-    ax1.plot(pq[:,0], pq[:,1], 'm',label='pq')
-    ax1.legend()
-    ax1.set_title(rf'N={args.N:,}, $\delta H=${hamiltonian.get_energy()-hamiltonian0:.4e}')
+    ax1.plot(R1[:,0], R1[:,1], 'b',label='R1')
+    ax1.plot(R2[:,0], R2[:,1], 'r',label='R2')
+    ax1.plot(R3[:,0], R3[:,1], 'g',label='R3')
+
+    ax1.legend(loc='upper left')
+    ax1.set_title(rf'N={N:,}, $\delta H=${hamiltonian.get_energy()-hamiltonian0:.4e}')
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
