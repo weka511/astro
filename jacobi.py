@@ -19,8 +19,7 @@
 '''Plot Zero velocity Surfaces for the Jacobi Integral'''
 
 from argparse import ArgumentParser
-import math
-import sys
+from math import floor,ceil
 from pathlib import Path
 from time import time
 from matplotlib.pyplot import figure, show
@@ -44,38 +43,22 @@ def parse_args():
 
 @np.vectorize
 def jacobi(x, y, n=1, mu2=0.2, Cj=0):
-    n2 = n * n
     mu1 = 1 - mu2
-    x2 = x * x
-    y2 = y * y
-    r1 = np.sqrt((x + mu2) * (x + mu2) + y2)
-    r2 = np.sqrt((x - mu1) * (x - mu1) + y2)
-    return n2 * (x2 + y2) + 2 * (mu1 / r1 + mu2 / r2) - Cj
-
-
-def bounds(Z):
-    minZ = float('inf')
-    maxZ = - minZ
-    for zz in Z:
-        for z in zz:
-            if z < minZ:
-                minZ = z
-            if z > maxZ:
-                maxZ = z
-    return (math.floor(minZ), math.ceil(maxZ))
-
+    r1 = np.sqrt((x + mu2) * (x + mu2) + y**2)
+    r2 = np.sqrt((x - mu1) * (x - mu1) + y**2)
+    return n**2 * (x**2 + y**2) + 2 * (mu1 / r1 + mu2 / r2) - Cj
 
 def plot_jacobi(fig, n=1, mu2=0.2, Cj=3.9, limit=5, origin='lower'):
-    ax = fig.add_subplot(1, 1, 1)
-    xlist = np.linspace(-limit, limit + 0.001, 100)
-    ylist = np.linspace(-limit, limit + 0.001, 100)
-    X, Y = np.meshgrid(xlist, ylist)
+    X, Y = np.meshgrid(np.linspace(-limit, limit + 0.001, 100), 
+                       np.linspace(-limit, limit + 0.001, 100))
     Z = jacobi(X, Y, n, mu2, Cj)
-    (z0, z1) = bounds(Z)
+    z0 = floor(Z.min())
+    z1 = ceil(Z.max())
 
     levels = list(range(z0, 0, 10)) + list(range(0, z1 + 1, 10))
 
     ticks = [z0, 0, z1]
+    ax = fig.add_subplot(1, 1, 1)
     c = ax.pcolormesh(X, Y, Z)
     cbar = fig.colorbar(c, orientation='vertical', ticks=ticks)
     cbar.ax.set_yticklabels(['min', '0', 'max'])
@@ -103,7 +86,6 @@ def main():
     print(f'Elapsed Time {minutes} m {seconds:.2f} s')
     if args.show:
         show()
-
 
 if __name__ == '__main__':
     main()
