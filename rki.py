@@ -34,28 +34,28 @@ class Driver:
     Use an integrator to solve an ODE to within a specified error 
     
     Attributes:
-        integrator  Used for integrating ODE
-        h_minimum   Step size cannot be increased beyond this value
-        h           Initial step size (variable)
-        h_maximum   Step size cannot be increased beyond this value
-        atol        Maximum tolerable error
-        mult        Used to set a lower bound for error (fraction of epsilon)
-        distance    Distance function used to compute error when we solve equations  
+        integrator    Used for integrating ODE
+        h_minimum     Step size cannot be increased beyond this value
+        h             Initial step size (variable)
+        h_maximum     Step size cannot be increased beyond this value
+        atol          Maximum tolerable error
+        mult          Used to set a lower bound for error (fraction of epsilon)
+        get_distance  Distance function used to compute error when we solve equations  
     '''
     def __init__(self, integrator, 
                  h_minimum=1.0e-9, h=0.5, h_maximum=1.0, atol=1.0e-9, mult=0.01, 
-                 distance=lambda k, k_new: max([abs(a - b) for (a, b) in zip(k, k_new)])):
+                 get_distance=lambda k, k_new: max([abs(a - b) for (a, b) in zip(k, k_new)])):
         '''
         Initialize Driver
         
         Parameters:
-            integrator  Used for integrating ODE
-            h_minimum   Step size cannot be increased beyond this value
-            h           Initial step size (variable)
-            h_maximum   Step size cannot be increased beyond this value
-            atol        Maximum tolerable error
-            mult        Used to set a lower bound for error (fraction of epsilon)
-            distance    Distance function used to compute error when we solve equations       
+            integrator    Used for integrating ODE
+            h_minimum     Step size cannot be increased beyond this value
+            h             Initial step size (variable)
+            h_maximum     Step size cannot be increased beyond this value
+            atol          Maximum tolerable error
+            mult          Used to set a lower bound for error (fraction of epsilon)
+            get_distance  Distance function used to compute error when we solve equations       
         '''
         self.integrator = integrator
         self.h_minimum = h_minimum
@@ -63,14 +63,17 @@ class Driver:
         self.epsilon = atol
         self.h = h
         self.min_epsilon = mult * atol
-        self.distance = distance
+        self.get_distance = get_distance
 
     def step(self, y):
         '''
-        Solve for one step, varying step size to keep weeor within bounds
+        Solve for one step, varying step size to keep trncation error within bounds
         
         Parameters:
            y        Current value of dependent variable
+           
+        Returns:
+            Value of dependent variable at the end of the step
         '''
         try:
             y1 = self.integrator.step(self.h, y)  # one step estimate of next value
@@ -78,7 +81,7 @@ class Driver:
             y11 = self.integrator.step(0.5 * self.h,
                                        self.integrator.step(0.5 * self.h, y)) # Two half steps
             
-            error = self.integrator.distance(y1, y11) # Estimate error by comparing the two estimates for next y
+            error = self.integrator.get_distance(y1, y11) # Estimate error by comparing the two estimates for next y
 
             if error > self.epsilon:  # too large - reduce step size
                 self.h *= (self.epsilon/error)**(1.0/self.integrator.order)
@@ -118,7 +121,7 @@ class ImplicitRungeKutta(ABC):
             return repr(self.value)
 
     def __init__(self, dy, max_iterations, max_iteration_error, order, a,b,c,
-                 distance=lambda k0, k1: np.max(np.abs(k0-k1))
+                 get_distance=lambda k0, k1: np.max(np.abs(k0-k1))
                  ):
         '''
         Initialize
@@ -128,16 +131,16 @@ class ImplicitRungeKutta(ABC):
            max_iterations      Maximum number of iterations for solving implicit equations
            max_iteration_error Maximum error we can tolerate when solving implicit equations
            order               Order of solver
-           distance            Distance function used to compute error when we solve equations
-           a
-           b
-           c
+           get_distance        Distance function used to compute error when we solve equations
+           a                   The matrix from the Butcher tableau https://mathworld.wolfram.com/ButcherTableau.html
+           b                   The b vector from the Butcher tableau
+           c                   The c vector from the Butcher tableau
         '''
         self.dy = dy
         self.max_iterations = max_iterations
         self.max_iteration_error = max_iteration_error
         self.order = order
-        self.distance = distance
+        self.get_distance = get_distance
         self.a = a
         self.b = b
         self.c = c
@@ -154,7 +157,7 @@ class ImplicitRungeKutta(ABC):
         k = np.zeros((len(self.b),len(y)))
         for _ in range(self.max_iterations):
             k_new = self.iterate(h, y, k)
-            if max([self.distance(k0, k1) for (k0, k1) in zip(k, k_new)]) < self.max_iteration_error:
+            if max([self.get_distance(k0, k1) for (k0, k1) in zip(k, k_new)]) < self.max_iteration_error:
                 return y + h*np.inner(self.b,k_new.T)
             else:
                 k = k_new
@@ -246,10 +249,9 @@ def parse_args():
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     return parser.parse_args()
 
-def run_once(ax,rk,):
+def run_once(ax,rk,nn = 100):
     driver = Driver(rk, 0.000000001, 0.5, 1.0, 0.000000001)
     try:
-        nn = 1000
         y = np.array([1, 0])
         xs = []
         ys = []
@@ -258,7 +260,7 @@ def run_once(ax,rk,):
             xs.append(y[0])
             ys.append(y[1])           
         ax.plot(xs, ys)
-        ax.set_title(type(rk).__name__)
+        ax.set_title(f'{type(rk).__name__}: nn={nn}')
     except ImplicitRungeKutta.Failed as e:
         print(f'Exception {e}')
     
@@ -269,9 +271,11 @@ def main():
     fig = figure(figsize=(12, 12))
     fig.suptitle(Path(__file__).stem)
     run_once(ax=fig.add_subplot(1,2,1,adjustable='box',aspect=1.0),
-             rk=ImplicitRungeKutta2(lambda y: [y[1], -y[0]], 10, 0.000000001))
+             rk=ImplicitRungeKutta2(lambda y: [y[1], -y[0]], 10, 0.000000001),
+             nn=150)
     run_once(ax=fig.add_subplot(1,2,2,adjustable='box',aspect=1.0),
-             rk=ImplicitRungeKutta4(lambda y: [y[1], -y[0]], 10, 0.000000001))    
+             rk=ImplicitRungeKutta4(lambda y: [y[1], -y[0]], 10, 0.000000001),
+             nn=50)    
     
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
