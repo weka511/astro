@@ -25,7 +25,7 @@ Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolu
 2.2|earth_mars.py|Murray and Dermott, Exercise 2.2: times of orbital conjunction between earth & Mars.
 ||orbital.py|Orbital calculations to support *earth_mars.py*
 3||The Restricted Three Body Problem
-||jacobi.py|Zero velocity Surfaces for the Jacobi Integral
+3.3|jacobi.py|Zero velocity Surfaces for the Jacobi Integral
 
 
 ## Docs directory
