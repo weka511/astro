@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 # Copyright (C) 2016-2026 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
@@ -40,12 +39,14 @@ def parse_args():
     parser.add_argument('--show', default=False, action='store_true', help='Used to display figure')
     return parser.parse_args()
 
-
 @np.vectorize
 def jacobi(x, y, n=1, mu2=0.2, Cj=0):
+    '''
+    Evaluate the Jacobi Entegral --Murray & Dermott (3.29)
+    '''
     mu1 = 1 - mu2
-    r1 = np.sqrt((x + mu2) * (x + mu2) + y**2)
-    r2 = np.sqrt((x - mu1) * (x - mu1) + y**2)
+    r1 = np.sqrt((x + mu2)**2 + y**2)
+    r2 = np.sqrt((x - mu1)**2 + y**2)
     return n**2 * (x**2 + y**2) + 2 * (mu1 / r1 + mu2 / r2) - Cj
 
 def plot_jacobi(fig, n=1, mu2=0.2, Cj=3.9, limit=5, origin='lower'):
@@ -54,32 +55,38 @@ def plot_jacobi(fig, n=1, mu2=0.2, Cj=3.9, limit=5, origin='lower'):
     Z = jacobi(X, Y, n, mu2, Cj)
     z0 = floor(Z.min())
     z1 = ceil(Z.max())
-
     levels = list(range(z0, 0, 10)) + list(range(0, z1 + 1, 10))
-
     ticks = [z0, 0, z1]
+    
     ax = fig.add_subplot(1, 1, 1)
-    c = ax.pcolormesh(X, Y, Z)
-    cbar = fig.colorbar(c, orientation='vertical', ticks=ticks)
+    
+    cbar = fig.colorbar(ax.pcolormesh(X, Y, Z), 
+                        orientation='vertical', 
+                        ticks=ticks)
     cbar.ax.set_yticklabels(['min', '0', 'max'])
     CS3 = ax.contourf(X, Y, Z, levels, cmap=cm.jet, origin=origin)
-    CS2 = ax.contour(X, Y, Z, levels=[0], colors='w', origin=origin, hold='on', linewidths=(1,))
+    CS2 = ax.contour(X, Y, Z, levels=[0], colors='w', origin=origin, linewidths=(1,))
     cbar.add_lines(CS2)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_title(r'Zero velocity surfaces for $n={0},\mu_2 = {1},C_j={2}$'.format(n, mu2, Cj))
 
-
 def main():
     args = parse_args()
     rcParams['text.usetex'] = True
     start = time()
-    n = 1
-    for (Cj, limit) in zip([3.80465327630637, 3.552, 3.197, 2.84011], [1.5, 2, 2, 1]):
+    Params = np.array([
+                    [3.80465327630637,1.5],
+                    [3.552,2],
+                    [3.197,2],
+                    [2.84011,1]
+    ])
+    m,_ = Params.shape
+    for i in range(m):
         fig = figure()
-        plot_jacobi(fig=fig, Cj=Cj, limit=limit)
-        fig.savefig(f'{Path(args.figs) / Path(__file__).stem}-{n}')
-        n += 1
+        plot_jacobi(fig=fig, Cj=Params[i,0], limit=Params[i,1])
+        fig.savefig(f'{Path(args.figs) / Path(__file__).stem}-{i+1}')
+  
     elapsed = time() - start
     minutes = int(elapsed / 60)
     seconds = elapsed - 60 * minutes
