@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2015-2017,2026 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2026 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -86,20 +86,24 @@ class Driver:
             if error > self.epsilon:  # too large - reduce step size
                 self.h *= (self.epsilon/error)**(1.0/self.integrator.order)
                 return self.step(y)
-
-            if error < self.min_epsilon:  # Is our stepsize too small?
-                if error > 0:
-                    self.h *= (self.min_epsilon/error)**(1.0/self.integrator.order)
-                else:
-                    self.h *= 2.0
-
-                if self.h > self.h_maximum:
-                    self.h = self.h_maximum
+            
+            self.adjust_stepsize(error)
+                    
             return y11
         except ImplicitRungeKutta.Failed:
             self.h *= 0.5
             return self.step(y)
 
+    def adjust_stepsize(self,error):
+        '''
+        Verify that our stepsize isn't too small
+        '''
+        if error > self.min_epsilon: return
+        
+        self.h *= ((self.min_epsilon/error)**(1.0/self.integrator.order) if error > 0 else 2.0)
+
+        if self.h > self.h_maximum:
+            self.h = self.h_maximum
 
 class ImplicitRungeKutta(ABC):
     '''
@@ -120,25 +124,24 @@ class ImplicitRungeKutta(ABC):
         def __str__(self):
             return repr(self.value)
 
-    def __init__(self, dy, max_iterations, max_iteration_error, order, a,b,c,
-                 get_distance=lambda k0, k1: np.max(np.abs(k0-k1))
-                 ):
+    def __init__(self, dy, max_iterations, atol, order, a,b,c,
+                 get_distance=lambda k0, k1: np.max(np.abs(k0-k1))):
         '''
         Initialize
         
         Parameters:
-           dy                  Function f for ODE = dy/dx=f(y)
-           max_iterations      Maximum number of iterations for solving implicit equations
-           max_iteration_error Maximum error we can tolerate when solving implicit equations
-           order               Order of solver
-           get_distance        Distance function used to compute error when we solve equations
-           a                   The matrix from the Butcher tableau https://mathworld.wolfram.com/ButcherTableau.html
-           b                   The b vector from the Butcher tableau
-           c                   The c vector from the Butcher tableau
+           dy              Function f for ODE = dy/dx=f(y)
+           max_iterations  Maximum number of iterations for solving implicit equations
+           atol            Maximum error we can tolerate when solving implicit equations
+           order           Order of solver
+           get_distance    Distance function used to compute error when we solve equations
+           a               The matrix from the Butcher tableau https://mathworld.wolfram.com/ButcherTableau.html
+           b               The b vector from the Butcher tableau
+           c               The c vector from the Butcher tableau
         '''
         self.dy = dy
         self.max_iterations = max_iterations
-        self.max_iteration_error = max_iteration_error
+        self.atol = atol
         self.order = order
         self.get_distance = get_distance
         self.a = a
@@ -157,7 +160,7 @@ class ImplicitRungeKutta(ABC):
         k = np.zeros((len(self.b),len(y)))
         for _ in range(self.max_iterations):
             k_new = self.iterate(h, y, k)
-            if max([self.get_distance(k0, k1) for (k0, k1) in zip(k, k_new)]) < self.max_iteration_error:
+            if max([self.get_distance(k0, k1) for (k0, k1) in zip(k, k_new)]) < self.atol:
                 return y + h*np.inner(self.b,k_new.T)
             else:
                 k = k_new
@@ -168,11 +171,9 @@ class ImplicitRungeKutta(ABC):
         '''Iterate One step in solution of iterative equations for k
         
         Parameters:
-            h
-            y
-            k
-            
-        assume that each row of the matrix is a single vector a = [[row1,...]] 
+            h       Step size
+            y       Current value of solution
+            k       The k term in Eunge Kutta
         '''
         result = np.zeros((self.s,len(y)))
         for i in range(self.s):
@@ -184,21 +185,21 @@ class ImplicitRungeKutta(ABC):
         Used  to throw Exception if we cannot solve implicit equations
         '''
         raise ImplicitRungeKutta.Failed(
-            f'Failed to converge within {self.max_iteration_error} after {self.max_iterations} iterations')
+            f'Failed to converge within {self.atol} after {self.max_iterations} iterations')
 
 
 class ImplicitRungeKutta2(ImplicitRungeKutta):
     '''
     4th order Gauss-Legendre
     '''
-    def __init__(self, dy, max_iterations, max_iteration_error):
+    def __init__(self, dy, max_iterations, atol):
         '''
         Parameters:
-            dy
-            max_iterations
-            atol
+           dy              Function f for ODE = dy/dx=f(y)
+           max_iterations  Maximum number of iterations for solving implicit equations
+           atol            Maximum error we can tolerate when solving implicit equations
         '''
-        super().__init__(dy, max_iterations, max_iteration_error, 4,
+        super().__init__(dy, max_iterations, atol, 4,
                 np.array([
                     [0.25, 0.25 - np.sqrt(3.0)/6.0],
                     [0.25 + np.sqrt(3.0)/6.0, 0.25],
@@ -219,9 +220,9 @@ class ImplicitRungeKutta4(ImplicitRungeKutta):
     def __init__(self, dy, max_iterations=200, atol=1.0e-18):
         '''
         Parameters:
-            dy
-            max_iterations
-            atol
+           dy              Function f for ODE = dy/dx=f(y)
+           max_iterations  Maximum number of iterations for solving implicit equations
+           atol            Maximum error we can tolerate when solving implicit equations
         '''
         super().__init__(dy, max_iterations, atol, 6,
                          np.array([
