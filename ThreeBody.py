@@ -26,7 +26,7 @@ import numpy as np
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 from integrators import Hamiltonian, KotovychBowman
-from utilities import get_r,newton_raphson,guarded_sqrt
+from utilities import newton_raphson,guarded_sqrt
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -111,7 +111,7 @@ class ThreeBody(Hamiltonian):
     def _invert(self, hamiltonian):
         [r, _, _, _, p, _, P, _] = self.x
         [_, _, _, rho, l, L, theta, Theta] = self.xi
-        r = self.g(r, rho, theta, Theta)
+        r = self.get_g(r, rho, theta, Theta)
         p = np.sign(p) * guarded_sqrt(2 * self.g1 * (self.xi[0] - l * l / (2.0 * self.g1 * r * r)))
         P = np.sign(P) * guarded_sqrt(2 * self.g2 * (self.xi[1] - L * L / (2.0 * self.g2 * rho * rho)))
 
@@ -173,15 +173,16 @@ class ThreeBody(Hamiltonian):
                 - self.G * self.m[1] * self.m[2] / r23 
                 - self.G * self.m[2] * self.m[0] / r31)
 
-    def g(self, r, rho, theta, Theta,epsilon=1.0e-4, N=1000):
+    def get_g(self, r, rho, theta, Theta,atol=1.0e-12, N=1000):
         '''
         Calculate the g value for Equation (33b) - V(g(xi3,theta,rho,Theta))=xi3
         '''
-        return newton_raphson(r,
-                              lambda xi3: self.V(xi3, theta, rho, Theta) - xi3,
-                              lambda xi3: self.dV(xi3, theta, rho, Theta)[0] - 1,    # FIXME
-                              epsilon=epsilon,
-                              N=N)
+        return newton_raphson(
+            r,
+            lambda xi3: self.V(xi3, theta, rho, Theta) - xi3,
+            lambda xi3: self.dV(xi3, theta, rho, Theta)[0] - 1,    # FIXME
+            atol=atol,
+            N=N)
 
     def dH(self):
         [r, theta, rho, Theta, p, l, P, L] = self.x

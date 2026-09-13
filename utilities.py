@@ -21,9 +21,8 @@ Some useful functions that don't fit anywhere else
 
 from csv import reader
 from pathlib import Path
-from warnings import deprecated
+from warnings import deprecated,warn
 import numpy as np
-
 
 def get_planetary_data(data_file_name):
     '''
@@ -51,36 +50,27 @@ def guarded_sqrt(x):
     return np.sqrt(x) if x > 0 else 0
 
 
-def newton_raphson(x, f, df, epsilon=0.1e-4, N=50):
+def newton_raphson(x, f, df, atol=0.1e-4, N=50):
     '''
     Solve an equation using the Newton-Raphson method.
     
     Parameters:
-       x       Starting value
-       f       Function for equation: f(x)=0
-       df      Derivative of f
-       epsilon Maximum acceptable error
-       N       Maximum number of iterations
+       x     Starting value
+       f     Function for equation: f(x)=0
+       df    Function to calculate derivative of f
+       atol  Maximum acceptable error
+       N     Maximum number of iterations
     '''
     x0 = x
     for i in range(N):
         x1 = x0 - f(x0) / df(x0)
-        if abs(x1 - x0) < epsilon:
+        if abs(x1 - x0) < atol:
             return x1
         else:
             x0 = x1
+            
+    warn( f'Could not solve equation to within {atol} in {N} iterations')
     return x0
-
-
-
-
-
-def get_r(z):
-    [x, y] = z
-    return np.sqrt(x * x * y * y)   # WTF?
-
-
-
 
 def get_date(string):
     '''
