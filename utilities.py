@@ -51,7 +51,7 @@ def guarded_sqrt(x):
     return np.sqrt(x) if x > 0 else 0
 
 
-def newton_raphson(x, f, df, epsilon, N=50):
+def newton_raphson(x, f, df, epsilon=0.1e-4, N=50):
     '''
     Solve an equation using the Newton-Raphson method.
     
@@ -72,19 +72,7 @@ def newton_raphson(x, f, df, epsilon, N=50):
     return x0
 
 
-def get_angle(r):
-    abs_theta = 0 if r[0] == 0 else np.atan(r[1] / r[0])
-    return abs_theta + adjust_quadrant(r)
 
-
-def adjust_quadrant(r):
-    if r[0] >= 0 and r[1] >= 0:
-        return 0
-    if r[0] < 0 and r[1] >= 0:
-        return np.pi / 2
-    if r[0] < 0 and r[1] < 0:
-        return path.pi
-    return 3 * np.pi / 2
 
 
 def get_r(z):
@@ -92,12 +80,7 @@ def get_r(z):
     return np.sqrt(x * x * y * y)   # WTF?
 
 
-def get_r_velocity(zdot, theta):
-    return np.dot(np.array([np.cos(theta),  np.sin(theta)]), zdot)
 
-
-def get_theta_dot(zdot, theta, r):
-    return np.dot(np.array([-np.sin(theta),  np.cos(theta)]), zdot)/r
 
 def get_date(string):
     '''
