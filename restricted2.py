@@ -24,10 +24,61 @@ from time import time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
+from integrators import Hamiltonian, KotovychBowman
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
 
+class Restricted3Body(Hamiltonian):
+    '''
+    Hamiltonian for retricted 3 body problem
+    '''
+    def __init__(self,mu):
+        self.mu = mu
+        x = 1
+        y = 0
+        x_dot = 0
+        y_dot = 1
+        self.X = np.array([x,y,x_dot,y_dot])
+        
+    def dx(self):
+        '''
+        Calculate derivatives 
+        '''    
+     
+    def d_xi(self):
+        pass
+    
+    def transform(self):
+        '''
+        Transform to the coordinates we will use for integration
+        '''
+        
+    def _invert(self, hamiltonian):
+        pass
+    
+    def get_energy(self):
+        '''
+        Calculate total energy    equation (12)
+        '''
+        return 0.5*(self.X[2]**2 + self.X[3]**2) + self.V()
+    
+    def V(self):
+        r1 = np.sqrt((self.X[0]-self.mu)**2 + self.X[1]**2)
+        r2 = np.sqrt((self.X[0]+1-self.mu)**2 + self.X[1]**2)
+        return -0.5*(self.X[0]**2 + self.X[1]**2) - (1-self.mu)/r1 -self.mu/r2
+        
+    def dV(self, r, theta, rho, Theta):
+        '''
+        Calculate derivatives of total energy 
+        '''   
+    
+    def dH(self):
+        pass
+    
+    def inverse_jacobi(self):
+        pass
+    
 def parse_args():
     '''
     Parse command line arguments
@@ -35,6 +86,7 @@ def parse_args():
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+    parser.add_argument('--mu', type=float,default=0.01)
     return parser.parse_args()
     
 def main():
@@ -47,7 +99,7 @@ def main():
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    ...
+    hamiltonian = Restricted3Body(args.mu)
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start

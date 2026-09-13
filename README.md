@@ -1,11 +1,11 @@
 # Astronomical Calculations inspired by Mike Brown's course [Science of the Solar System](https://www.coursera.org/learn/solar-system/home/info)
 
-## Orbital calculations: [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084)
+## Orbital calculations: 
 
  File | Purpose |
 --------------------------|---------------------------------------------------------------------
 kepler.py|Hamiltonian for integrating Kepler problem
-integrators.py|Simple integrator based on Kotovich & Bowman
+integrators.py|Simple integrator after [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084)
 plot_points.py|Display data that has been stored by tracking.py
 rki.py|Implicit Runge Ketta (symplectic) integrators
 restricted.py|Restricted 3 body problem
@@ -44,4 +44,3 @@ File | Description
 commensurability.csv|Orbital periods for exercise 1.5
 earth_mars.csv|Data files used by *earth_mars.py*
 saturn.csv|Orbital periods for exercise 1.4
-
