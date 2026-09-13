@@ -13,8 +13,6 @@ template.py|Template for python script
 Threebody.py|Hamiltonian for 2 Dimensional, but otherwise general,  3 body problem
 Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor
 
- 
-
 ## Examples from [Murray and Dermott, Solar System Dynamics](https://www.cambridge.org/core/books/solar-system-dynamics/108745217E4A18190CBA340ED5E477A2)
 
 #|File| Description 
@@ -28,7 +26,7 @@ Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolu
 ||orbital.py|Orbital calculations to support *earth_mars.py*
 3||The Restricted Three Body Problem
 ||jacobi.py|Zero velocity Surfaces for the Jacobi Integral
-||jacobi3d.py|Potential surfaces
+
 
 ## Docs directory
 
@@ -49,5 +47,6 @@ saturn.csv|Orbital periods for exercise 1.4
 
 File | Purpose |
 --------------------------|---------------------------------------------------------------------
+jacobi3d.py|Potential surfaces
 plot_points.py|Display data that has been stored by tracking.py
 tracking.py|Record results in logfile so they can be played back, and analyses can be restarted
