@@ -32,6 +32,7 @@ __author__ = 'Simon Crase'
 
 
 class ForceCalculator:
+      
     def __init__(self,G, M1, M2):
         self.G = G
         self.M1 = M1
@@ -47,7 +48,7 @@ class ForceCalculator:
     
     def __call__(self,x):
         '''
-        Calculate force
+        Calculate delta position and velocity the particles
         '''
         x1 = x[0]
         y1 = x[1]
@@ -59,27 +60,19 @@ class ForceCalculator:
         denom31 = self.get_denominator(x3, x1, y3, y1)
         denom23 = self.get_denominator(x2, x3, y2, y3)
         return np.array([
-            x[6],    #x1'
-            x[7],    #y1'
-            x[8],    #x2'
-            x[9],    #y2'
-            x[10],   #x3'
-            x[11],   #y3'
-            - self.G * self.M2 * (x1 - x2) / denom12,     #dx1'
-            - self.G * self.M2 * (y1 - y2) / denom12,     #dy1'
-            - self.G * self.M1 * (x2 - x1) / denom12,     #dx2'
-            - self.G * self.M1 * (y2 - y1) / denom12,     #dy2'
-            - self.G * self.M1 * (x3 - x1) / denom31 - self.G * self.M2 * (x3 - x2) / denom23, #dx3'
-            - self.G * self.M1 * (y3 - y1) / denom31 - self.G * self.M2 * (y3 - y2) / denom23, #dy3'
-        ])
-
-
-def T(x, G, M1, M2):
-    '''
-    Kinetic energy
-    '''
-    return 0.5*(M1 * (x[6]**2 + x[7]**2) + M2 * (x[8]**2 + x[9]**2))  # FIXME - not used at present
-
+                    x[6],    #x1'
+                    x[7],    #y1'
+                    x[8],    #x2'
+                    x[9],    #y2'
+                    x[10],   #x3'
+                    x[11],   #y3'
+                    - self.G * self.M2 * (x1 - x2) / denom12,     #dx1'
+                    - self.G * self.M2 * (y1 - y2) / denom12,     #dy1'
+                    - self.G * self.M1 * (x2 - x1) / denom12,     #dx2'
+                    - self.G * self.M1 * (y2 - y1) / denom12,     #dy2'
+                    - self.G * self.M1 * (x3 - x1) / denom31 - self.G * self.M2 * (x3 - x2) / denom23, #dx3'
+                    - self.G * self.M1 * (y3 - y1) / denom31 - self.G * self.M2 * (y3 - y2) / denom23, #dy3'
+                ])
 
 def parse_args():
     '''
@@ -88,7 +81,7 @@ def parse_args():
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show', default=False, action='store_true', help='Used to display figure')
-    parser.add_argument('-N', type=int, default=1000)
+    parser.add_argument('-N', '--N',type=int, default=1000)
     parser.add_argument('-M1', type=float, default=250000)
     parser.add_argument('-M2', type=float, default=1.0)
     parser.add_argument('-G', type=float, default=1.0)
@@ -96,15 +89,15 @@ def parse_args():
     parser.add_argument('--epsilon', type=float, default=0.1) 
     return parser.parse_args()
 
-def create_model(M1=250000,M2=1.0,G=1.0,L=25.0,epsilon = 0.1):
+def create_model(M1=250000,M2=1.0,G=1.0,L=25.0,epsilon = 0.5):
+    x1 = -L * M2 / (M1 + M2)
+    y1 = 0.0    
     R2 = L * M1 / (M1 + M2)
     x2 = R2
     y2 = 0
-    x1 = -L * M2 / (M1 + M2)
-    y1 = 0.0
-    x3 = 0.5 * (x1 + x2) * (1 + epsilon)
-    y3 = L * np.sqrt(3.0) / 2.0
-    omega = np.sqrt(G * (M1 + M2) / (L * L * L))
+    y3 = 0.5 * (x1 + x2) * (1 + epsilon)
+    x3 = L * np.sqrt(3.0) / 2.0
+    omega = np.sqrt(G * (M1 + M2) / L**3)
     return np.array([
             x1, y1,
             x2, y2,
@@ -123,22 +116,37 @@ def main():
     XY[0,:]  = create_model(G=args.G,M1=args.M1,M2=args.M2,L=args.L,epsilon=args.epsilon)
     calculator = ForceCalculator(args.G,args.M1,args.M2)
     driver = Driver(ImplicitRungeKutta4(calculator,
-                                        max_iterations=200, atol=1e-18), 
+                                        max_iterations=2000, atol=1e-18), 
                     h_minimum=1.e-8, h=0.5, h_maximum=1.0, atol=1e-12)
 
     for i in range(args.N):
         XY[i+1, :] = driver.step(XY[i,:])
 
-    fig = figure(figsize=(8, 8))
-    ax1 = fig.add_subplot(1, 1, 1)
+    fig = figure(figsize=(8,8))
+    fig.suptitle(f'{Path(__file__).stem},M1={args.M1:5.1f},M2={args.M2:5.0f},L={args.L:5.1f},N={args.N:,}')
+    ax1 = fig.add_subplot(2,2,1,adjustable='box',aspect=1.0)
     ax1.plot(XY[:, 0], XY[:, 1], 'b', label=f'M1({args.M1})')
-    ax1.plot(XY[:, 2], XY[:, 3], 'r', label=f'M2({args.M2})')
-    ax1.plot(XY[:, 4], XY[:, 5], 'g', label=f'm({args.epsilon})')
-
+    ax1.scatter(XY[-1, 0], XY[-1, 1])
     ax1.set_xlabel('X')
     ax1.set_ylabel('Y')
-    ax1.set_title(f'M1={args.M1:5.1f},M2={args.M2:5.0f},L={args.L:5.1f},N={args.N:,}')
-    ax1.legend()
+    ax1.legend(loc='center')    
+    ax2 = fig.add_subplot(2,2,2,adjustable='box',aspect=1.0)
+    ax2.plot(XY[:, 2], XY[:, 3], 'r', label=f'M2({args.M2})')
+    ax2.scatter(XY[-1, 2], XY[-1, 3])
+    ax2.set_xlabel('X')
+    ax2.set_ylabel('Y')
+    ax2.legend(loc='center')      
+    ax3 = fig.add_subplot(2,2,3,adjustable='box',aspect=1.0)
+    ax3.plot(XY[:, 4], XY[:, 5], 'g', label=f'm({args.epsilon})')
+    ax3.scatter(XY[-1, 4], XY[-1, 5])
+    ax3.set_xlabel('X')
+    ax3.set_ylabel('Y')
+    ax3.legend(loc='center')      
+ 
+    ax4 = fig.add_subplot(2,2,4,adjustable='box',aspect=1.0)
+    ax4.plot(XY[:, 0], XY[:, 1], 'b', label=f'M1({args.M1})')
+    ax4.plot(XY[:, 2], XY[:, 3], 'r', label=f'M2({args.M2})')
+    ax4.plot(XY[:, 4], XY[:, 5], 'g', label=f'm({args.epsilon})')    
 
     fig.savefig(Path(args.figs) / Path(__file__).stem)
     elapsed = time() - start
@@ -147,7 +155,6 @@ def main():
     print(f'Elapsed Time {minutes} m {seconds:.2f} s')
     if args.show:
         show()
-
 
 if __name__ == '__main__':
     main()
