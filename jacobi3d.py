@@ -17,7 +17,10 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 from mpl_toolkits.mplot3d import Axes3D
-import numpy as np, matplotlib.pyplot as plt, math as m, jacobi,matplotlib.colors as clrs
+import numpy as np
+import matplotlib.pyplot as plt
+import math as m
+import jacobi,matplotlib.colors as clrs
 
 def plot_3d(limit=2,eps=0.001,minZ=-3.9,maxZ=-2.84,steps=1000):
     fig = plt.figure()
