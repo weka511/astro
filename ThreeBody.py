@@ -25,8 +25,8 @@ from time import time
 import numpy as np
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
+from scipy.optimize import newton
 from integrators import Hamiltonian, KotovychBowman
-from utilities import newton_raphson,guarded_sqrt
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -112,9 +112,8 @@ class ThreeBody(Hamiltonian):
         [r, _, _, _, p, _, P, _] = self.x
         [_, _, _, rho, l, L, theta, Theta] = self.xi
         r = self.get_g(r, rho, theta, Theta)
-        p = np.sign(p) * guarded_sqrt(2 * self.g1 * (self.xi[0] - l * l / (2.0 * self.g1 * r * r)))
-        P = np.sign(P) * guarded_sqrt(2 * self.g2 * (self.xi[1] - L * L / (2.0 * self.g2 * rho * rho)))
-
+        p = np.sign(p) * sqrt_if_positive(2*self.g1*(self.xi[0] - l**2/(2.0 * self.g1 * r*2)))
+        P = np.sign(P) * sqrt_if_positive(2*self.g2*(self.xi[1] - L**2/(2.0 * self.g2 * rho**2)))
         self.x = np.array([r, theta, rho, Theta, p, l, P, L])
 
     def get_energy(self):
@@ -177,12 +176,11 @@ class ThreeBody(Hamiltonian):
         '''
         Calculate the g value for Equation (33b) - V(g(xi3,theta,rho,Theta))=xi3
         '''
-        return newton_raphson(
-            r,
-            lambda xi3: self.V(xi3, theta, rho, Theta) - xi3,
-            lambda xi3: self.dV(xi3, theta, rho, Theta)[0] - 1,    # FIXME
-            atol=atol,
-            N=N)
+        return newton(lambda xi3: self.V(xi3, theta, rho, Theta) - xi3,
+                      r,
+                      fprime=lambda xi3: self.dV(xi3, theta, rho, Theta)[0] - 1,
+                      tol=atol,
+                      maxiter=N)
 
     def dH(self):
         [r, theta, rho, Theta, p, l, P, L] = self.x
@@ -203,6 +201,16 @@ class ThreeBody(Hamiltonian):
         r2 = r3 - rho_vector + (self.m[0] / self.mu) * r_vector       
         return (r1, r2, r3)
 
+    
+def sqrt_if_positive(x):
+    '''
+    Calculate a square root of a positive number, otherwise return 0
+    
+    Parameters:
+        x
+    '''
+    return np.sqrt(x) if x > 0 else 0
+    
 def parse_args():
     '''
     Parse command line arguments
