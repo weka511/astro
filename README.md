@@ -4,13 +4,13 @@
 
  File | Purpose |
 --------------------------|---------------------------------------------------------------------
+3body.py|Hamiltonian for 2 Dimensional, but otherwise general,  3 body problem
 kepler.py|Hamiltonian for integrating Kepler problem
 integrators.py|Simple integrator after [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084)
 rki.py|Implicit Runge Ketta (symplectic) integrators
 restricted.py|Restricted 3 body problem
 restricted2.py|Restricted 3 body problem after Kotovych and Bowman
 template.py|Template for python script
-Threebody.py|Hamiltonian for 2 Dimensional, but otherwise general,  3 body problem
 Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor
 
 ## Examples from [Murray and Dermott, Solar System Dynamics](https://www.cambridge.org/core/books/solar-system-dynamics/108745217E4A18190CBA340ED5E477A2)
