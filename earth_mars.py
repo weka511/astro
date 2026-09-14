@@ -27,12 +27,12 @@ Murray and Dermott, Exercise 2.2
 '''
 
 from argparse import ArgumentParser
+from csv import reader
 from pathlib import Path
 from math import floor
 import numpy as np
 from matplotlib.pyplot import figure, show
 from mpl_toolkits.mplot3d import Axes3D
-from utilities import get_date, get_planetary_data
 from orbital import get_mean_longitude,Calendar,create_orbit,is_minimum,get_distance
 
 _version__ = '1.0'
@@ -75,6 +75,30 @@ def parse_args():
      parser.add_argument('--figs', default='./figs', help=f'Path to plots')
      parser.add_argument('--data', default='./data', help=f'Path to data files')
      return parser.parse_args()
+
+def get_planetary_data(data_file_name):
+     '''
+     Construct map containing elements for planets
+     
+     Parameters:
+         data_file_name
+     '''
+     with open(data_file_name) as data_file:
+          data = {}
+          data_reader = reader(data_file)
+          for row in data_reader:
+               data[row[0]] = [abs(float(datum)) for datum in row[1:]]
+          return data
+
+def get_date(string):
+     '''
+     Parse date from string
+     
+     Parameters:
+         string
+     '''
+     parts = string.split('-')
+     return (int(parts[0]), int(parts[1]), int(parts[2]))
      
 def main():
      args = parse_args()
