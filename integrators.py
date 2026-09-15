@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2015 Greenweaves Software Pty Ltd
+# Copyright (C) 2015-2026 Greenweaves Software Pty Ltd
 
 # This is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -57,10 +57,10 @@ class Hamiltonian(ABC):
         Invert transform
         '''
         self.x = hamiltonian.x
-        self._invert(hamiltonian)
+        self._invert()
 
     @abstractmethod
-    def _invert(self, hamiltonian):
+    def _invert(self):
         '''
         Invert transform
         '''        

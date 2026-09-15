@@ -59,7 +59,7 @@ class Kepler(Hamiltonian):
         L = self.x[3]
         self.xi = np.array([-self.k/r, p**2/(2*self.m) + L**2/(2*self.m*r**2),L])
     
-    def _invert(self,hamiltonian):
+    def _invert(self):
         '''
         Convert eta to (r,p,L)
         '''        

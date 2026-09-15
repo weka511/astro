@@ -36,7 +36,7 @@ class ThreeBody(Hamiltonian):
     '''
     Hamiltonian for 2 Dimensional, but otherwise general, 3 body problem
     '''
-    def __init__(self,R,R_dot,m,G=1,clone=False):
+    def __init__(self,R,R_dot,m,G=1,clone=False,atol=1e-16):
         self.G = G
         self.M = m.sum()        # Section 5
         self.mu = m[0] + m[1]   # Section 5
@@ -50,18 +50,18 @@ class ThreeBody(Hamiltonian):
         r_dot =  R_dot[1,:] - R_dot[0,:]
         r_polar = np.linalg.norm(r)
         theta = get_angle(r)
-        p = self.g1 * get_r_velocity(r_dot, theta)
-        l = self.g1 * r_polar**2 * get_theta_dot(r_dot, theta, r_polar)
-        centre_of_mass01 = (R[0,:]*m[0] + R[1,:]*m[1])/self.mu
+        p = self.g1 * get_r_velocity(r_dot, theta)                            # Linear momentum
+        l = self.g1 * r_polar**2 * get_theta_dot(r_dot, theta, r_polar)       # angular momentum
+        centre_of_mass01 = np.dot(m[:2],R[:2,:])/self.mu
         rho = R[2,:] - centre_of_mass01
         # Section 5
-        assert np.linalg.norm(R[2,:] - R[0,:] - rho - (m[1]/self.mu)*r) < 1e-16,'Equation (27b)'    
-        assert np.linalg.norm(R[2,:] - R[1,:] - rho + (m[0]/self.mu)*r) < 1e-16,'Equation (27c)'
-        rho_dot = R_dot[2,:] - (R_dot[0,:]*m[0] + R_dot[1,:]*m[1])/self.mu  # Parallel to formula for rho
+        assert np.linalg.norm(R[2,:] - R[0,:] - rho - (m[1]/self.mu)*r) < atol,'Equation (27b)'    
+        assert np.linalg.norm(R[2,:] - R[1,:] - rho + (m[0]/self.mu)*r) < atol,'Equation (27c)'
+        rho_dot = R_dot[2,:] - np.dot(m[:2],R_dot[:2,:])/self.mu  # Parallel to formula for rho
         rho_polar = np.linalg.norm(rho)
         Theta = get_angle(rho)
         P = self.g2 * get_r_velocity(rho_dot, Theta)                           # Linear momentum
-        L = self.g2 * rho_polar**2 * get_theta_dot(rho_dot, Theta, rho_polar)  # angular mementum
+        L = self.g2 * rho_polar**2 * get_theta_dot(rho_dot, Theta, rho_polar)  # angular momentum
         self.x = [r_polar, theta, rho_polar, Theta, p, l, P, L]
         self.transform()
 
@@ -79,7 +79,7 @@ class ThreeBody(Hamiltonian):
             l**2/(self.g1*r**3) - Vr,            # Equation (30b)
             -Vtheta,                             # Equation (30b)
             L**2/(self.g2*rho**3) - Vrho,        # Equation (30d)
-            -VTheta                              # Equation (302)
+            -VTheta                              # Equation (30d)
         ])
 
     def d_xi(self):
@@ -111,11 +111,18 @@ class ThreeBody(Hamiltonian):
             Theta,                                # Equation (31b)
          ]
 
-    def _invert(self, hamiltonian):
+    def _invert(self):
+        '''
+        Convert from xi to original variables
+        '''
         [r, _, _, _, p, _, P, _] = self.x
-        [_, _, _, rho, l, L, theta, Theta] = self.xi
-        r = self.get_g(r, rho, theta, Theta)
-        p = np.sign(p) * sqrt_if_positive(2*self.g1*(self.xi[0] - l**2/(2.0 * self.g1 * r*2)))
+        [_, _, _, rho, l, L, theta, Theta] = self.xi           # (33a)
+        r = self.get_g(r, rho, theta, Theta)                  # (33b)
+        if 2*self.g1*(self.xi[0] - l**2/(2.0 * self.g1 * r*2)) < 0:
+            print (2*self.g1*(self.xi[0] - l**2/(2.0 * self.g1 * r*2)))
+        p = np.sign(p) * sqrt_if_positive(2*self.g1*(self.xi[0] - l**2/(2.0 * self.g1 * r*2)))   #WTF (33c)
+        if 2*self.g2*(self.xi[1] - L**2/(2.0 * self.g2 * rho**2)) < 0:
+            print (2*self.g2*(self.xi[1] - L**2/(2.0 * self.g2 * rho**2)))
         P = np.sign(P) * sqrt_if_positive(2*self.g2*(self.xi[1] - L**2/(2.0 * self.g2 * rho**2)))
         self.x = np.array([r, theta, rho, Theta, p, l, P, L])
 
@@ -186,14 +193,17 @@ class ThreeBody(Hamiltonian):
                       maxiter=N)
 
     def dH(self):
+        '''
+        Calculate the derivatives of H. See Equation (32)
+        '''
         [r, theta, rho, Theta, p, l, P, L] = self.x
         [r_dot, theta_dot, rho_dot, Theta_dot, p_dot, l_dot, P_dot, L_dot] = self.dx()
         [Vr, Vtheta, Vrho, VTheta] = self.dV(r, theta, rho, Theta)
-        return [
-            p * p_dot / self.g1 + (l * r * r * l_dot - r * l * l * r_dot) / (self.g1 * r * r * r * r),
-            P * P_dot / self.g2 + (L * rho * rho * L_dot - rho * L * L * rho_dot) / (self.g2 * rho * rho * rho * rho),
-            Vr * r_dot + Vtheta * theta_dot + Vrho * rho_dot + VTheta * Theta_dot
-        ]
+        return np.array([
+            p*p_dot/self.g1 + (l*r**2*l_dot - r*l**2*r_dot)/(self.g1*r**4),           # (32a)
+            P*P_dot/self.g2 + (L*rho**2*L_dot - rho*L**2*rho_dot)/(self.g2*rho**4),   # (32b)
+            Vr * r_dot + Vtheta * theta_dot + Vrho * rho_dot + VTheta * Theta_dot     # (32c)
+        ])
 
     def inverse_jacobi(self):
         [r, theta, rho, Theta, p, l, P, L] = self.x
@@ -219,7 +229,7 @@ def parse_args():
     Parse command line arguments
     '''
     parser = ArgumentParser(description=__doc__)
-    parser.add_argument('file_name')
+    parser.add_argument('file_name',help='File name for initial conditions')
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('--data', default='./data', help=f'Path to data files')
@@ -232,40 +242,52 @@ def parse_args():
 def get_r_velocity(velocity, theta):
     '''
     Get the radial component of velocity
+    
+    Parameters:
+        velocity   Velocity vector
+        theta
     '''
     return np.dot(np.array([np.cos(theta),  np.sin(theta)]), velocity)
 
 
-def get_theta_dot(zdot, theta, r):
+def get_theta_dot(velocity, theta, r):
     '''
     Get the angular component of velocity
+    
+    Parameters:
+        velocity   Velocity vector
+        theta
+        r
     '''    
-    return np.dot(np.array([-np.sin(theta),  np.cos(theta)]), zdot)/r
+    return np.dot(np.array([-np.sin(theta),  np.cos(theta)]), velocity)/r
 
-def adjust_quadrant(r):
+def adjust_quadrant(vector):
     '''
     Determine the correct quadrant for a vector.
     
     Parameters:
-        r       Vector
+        vector      Velocity vectpr
     Returns:
         Angle for start of quadrant
     '''
-    if   r[0] >= 0 and r[1] >= 0:  return 0
-    elif r[0] < 0 and r[1] >= 0: return np.pi / 2
-    elif r[0] < 0 and r[1] < 0:  return np.pi
+    if   vector[0] >= 0 and vector[1] >= 0:  return 0
+    elif vector[0] < 0 and vector[1] >= 0: return np.pi / 2
+    elif vector[0] < 0 and vector[1] < 0:  return np.pi
     else:
         return 3 * np.pi / 2 
 
-def get_angle(r):
+def get_angle(vector):
     '''
     Determine the angle for a vector
+    
+    Parameters:
+        velocity   Velocity vector
     '''
-    return adjust_quadrant(r) + (np.atan(r[1] / r[0]) if r[0] != 0 else 0)
+    return adjust_quadrant(vector) + (np.atan(vector[1] / vector[0]) if vector[0] != 0 else 0)
 
 def read_data(file_name,dim=2):
     '''
-    Read masses positions and initial velocities from a file
+    Read initial conditions from a file
     '''
     state = -1
     i = 0
