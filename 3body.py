@@ -20,6 +20,7 @@ Integrate 2 dimensional, but otherwise general, 3 body problem
 '''
 
 from argparse import ArgumentParser
+from csv import reader
 from pathlib import Path
 from time import time
 import numpy as np
@@ -55,8 +56,8 @@ class ThreeBody(Hamiltonian):
         rho = R[2,:] - centre_of_mass01
         # Section 5
         assert np.linalg.norm(R[2,:] - R[0,:] - rho - (m[1]/self.mu)*r) < 1e-16,'Equation (27b)'    
-        assert np.linalg.norm(R[2,:] - R[1,:] - rho + (m[0]/self.mu)*r) < 1e-16,'Equation (27c)'  #FIXME
-        rho_dot = R_dot[2,:] - (R_dot[0,:]*m[0] + R_dot[1,:]*m[1])/self.mu #self.M*R_dot[2,:]/self.mu         # Parallel to formula for rho
+        assert np.linalg.norm(R[2,:] - R[1,:] - rho + (m[0]/self.mu)*r) < 1e-16,'Equation (27c)'
+        rho_dot = R_dot[2,:] - (R_dot[0,:]*m[0] + R_dot[1,:]*m[1])/self.mu  # Parallel to formula for rho
         rho_polar = np.linalg.norm(rho)
         Theta = get_angle(rho)
         P = self.g2 * get_r_velocity(rho_dot, Theta)                           # Linear momentum
@@ -218,8 +219,10 @@ def parse_args():
     Parse command line arguments
     '''
     parser = ArgumentParser(description=__doc__)
+    parser.add_argument('file_name')
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+    parser.add_argument('--data', default='./data', help=f'Path to data files')
     parser.add_argument('-T', default=1.0, type=float)
     parser.add_argument('--step',default=1.0e-4,type=float)
     return parser.parse_args()
@@ -260,20 +263,41 @@ def get_angle(r):
     '''
     return adjust_quadrant(r) + (np.atan(r[1] / r[0]) if r[0] != 0 else 0)
 
+def read_data(file_name,dim=2):
+    '''
+    Read masses positions and initial velocities from a file
+    '''
+    state = -1
+    i = 0
+    with open(file_name) as f:
+        data_reader = reader(f)
+        for row in data_reader:
+            values = np.array([float(m) for m in row])
+            match(state):
+                case -1:
+                    masses = values
+                    Q = np.zeros((len(masses),dim))
+                    P = np.zeros((len(masses),dim))
+                    state = 0
+                case 0:
+                    Q[i,:] = values
+                    i += 1
+                    if i == len(masses):
+                        i = 0
+                        state = 1
+                case 1:
+                    P[i,:] = values
+                    i += 1
+ 
+        return Q,P,masses
+    
 def main():
     rcParams['text.usetex'] = True
     start  = time()    
     args = parse_args()
     N = int(args.T/args.step)
-    hamiltonian = ThreeBody(                  #Equation (34)
-        np.array([[0.97000436, -0.24308753],
-                  [0, 0],
-                  [-0.97000436, 0.24308753]]),
-        np.array([[0.46620369, 0.43236573],
-                  [-0.93240737, -0.86473146],
-                  [0.46620369, 0.43236573]]),
-        np.array([1.0,1.0,1.0])                    #FIXME
-    )
+    R,R_dot,m = read_data(Path(args.data)/args.file_name)
+    hamiltonian = ThreeBody(  R, R_dot,m)                    #FIXME
 
     hamiltonian0 = hamiltonian.get_energy()
     R1 = np.zeros((N,2))

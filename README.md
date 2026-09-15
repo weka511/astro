@@ -39,6 +39,7 @@ orbit_space.tex|Derivations of equations for *earth_mars.py*
 
 File | Description
 ---------------------------|---------------------------------------------------------------------
+chenciner.csv|An initial configuration for [Chenciner et al: a remarkable periodic solution of the three-body problem in the case of equal masses](https://arxiv.org/abs/math/0011268)
 commensurability.csv|Orbital periods for exercise 1.5
 earth_mars.csv|Data files used by *earth_mars.py*
 saturn.csv|Orbital periods for exercise 1.4
