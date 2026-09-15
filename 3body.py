@@ -40,8 +40,8 @@ class ThreeBody(Hamiltonian):
         self.M = m.sum()        # Section 5
         self.mu = m[0] + m[1]   # Section 5
         self.m = m
-        self.g1 = m[0] * m[1] / self.mu    # Reduced masse - Section 5
-        self.g2 = m[2] * self.mu / self.M  # Reduced masse - Section 5
+        self.g1 = m[0]*m[1]/self.mu    # Reduced mass - Section 5 - just after (28) 
+        self.g2 = m[2]*self.mu/self.M  # Reduced mass - Section 5 - just after (28) 
         if clone:
             return
 
@@ -51,10 +51,12 @@ class ThreeBody(Hamiltonian):
         theta = get_angle(r)
         p = self.g1 * get_r_velocity(r_dot, theta)
         l = self.g1 * r_polar**2 * get_theta_dot(r_dot, theta, r_polar)
-        rho = self.M*R[2,:]/self.mu                       # Section 5
+        centre_of_mass01 = (R[0,:]*m[0] + R[1,:]*m[1])/self.mu
+        rho = R[2,:] - centre_of_mass01
+        # Section 5
         assert np.linalg.norm(R[2,:] - R[0,:] - rho - (m[1]/self.mu)*r) < 1e-16,'Equation (27b)'    
-        assert np.linalg.norm(R[2,:] - R[1,:] - rho + (m[0]/self.mu)*r) < 1e-16,'Equation (27c)'  
-        rho_dot = self.M*R_dot[2,:]/self.mu         # Parallel to formula for rho
+        assert np.linalg.norm(R[2,:] - R[1,:] - rho + (m[0]/self.mu)*r) < 1e-16,'Equation (27c)'  #FIXME
+        rho_dot = R_dot[2,:] - (R_dot[0,:]*m[0] + R_dot[1,:]*m[1])/self.mu #self.M*R_dot[2,:]/self.mu         # Parallel to formula for rho
         rho_polar = np.linalg.norm(rho)
         Theta = get_angle(rho)
         P = self.g2 * get_r_velocity(rho_dot, Theta)                           # Linear momentum
@@ -172,7 +174,7 @@ class ThreeBody(Hamiltonian):
                 - self.G * self.m[1] * self.m[2] / r23 
                 - self.G * self.m[2] * self.m[0] / r31)
 
-    def get_g(self, r, rho, theta, Theta,atol=1.0e-12, N=1000):
+    def get_g(self, r, rho, theta, Theta,atol=1.0e-4, N=1000):
         '''
         Calculate the g value for Equation (33b) - V(g(xi3,theta,rho,Theta))=xi3
         '''
@@ -222,9 +224,7 @@ def parse_args():
     parser.add_argument('--step',default=1.0e-4,type=float)
     return parser.parse_args()
 
-def get_angle(r):
-    abs_theta = 0 if r[0] == 0 else np.atan(r[1] / r[0])
-    return abs_theta + adjust_quadrant(r)
+
 
 def get_r_velocity(velocity, theta):
     '''
@@ -241,7 +241,7 @@ def get_theta_dot(zdot, theta, r):
 
 def adjust_quadrant(r):
     '''
-    Determive the correct quadrant for a vector.
+    Determine the correct quadrant for a vector.
     
     Parameters:
         r       Vector
@@ -253,6 +253,12 @@ def adjust_quadrant(r):
     elif r[0] < 0 and r[1] < 0:  return np.pi
     else:
         return 3 * np.pi / 2 
+
+def get_angle(r):
+    '''
+    Determine the angle for a vector
+    '''
+    return adjust_quadrant(r) + (np.atan(r[1] / r[0]) if r[0] != 0 else 0)
 
 def main():
     rcParams['text.usetex'] = True
@@ -266,28 +272,30 @@ def main():
         np.array([[0.46620369, 0.43236573],
                   [-0.93240737, -0.86473146],
                   [0.46620369, 0.43236573]]),
-        np.array([1.0, 1.0,1.0])
+        np.array([1.0,1.0,1.0])                    #FIXME
     )
 
     hamiltonian0 = hamiltonian.get_energy()
     R1 = np.zeros((N,2))
     R2 = np.zeros((N,2))
     R3 = np.zeros((N,2))
-  
     integrator = KotovychBowman(args.step, hamiltonian)
 
     for i in range(N):
         integrator.integrate()
-        (r1, r2, r3) = hamiltonian.inverse_jacobi()
-        R1[i,:] = np.array(r1)
-        R2[i,:] = np.array(r2)
-        R3[i,:] = np.array(r3)
+        R1[i,:], R2[i,:], R3[i,:] = hamiltonian.inverse_jacobi()
   
     fig = figure(figsize=(8, 8))
     ax1 = fig.add_subplot(1, 1, 1)  
     ax1.plot(R1[:,0], R1[:,1], 'b',label='R1')
+    ax1.scatter(R1[0,0],R1[0,1],c='b')
+    ax1.scatter(R1[-1,0],R1[-1,1],c='b',marker='X')
     ax1.plot(R2[:,0], R2[:,1], 'r',label='R2')
+    ax1.scatter(R2[0,0],R2[0,1],c='r')
+    ax1.scatter(R2[-1,0],R2[-1,1],c='r',marker='X')
     ax1.plot(R3[:,0], R3[:,1], 'g',label='R3')
+    ax1.scatter(R3[0,0],R3[0,1],c='g')
+    ax1.scatter(R3[-1,0],R3[-1,1],c='g',marker='X')
 
     ax1.legend(loc='upper left')
     ax1.set_title(rf'N={N:,}, $\delta H=${hamiltonian.get_energy()-hamiltonian0:.4e}')
