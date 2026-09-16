@@ -44,6 +44,7 @@ class Hamiltonian(ABC):
     def create(self, x):
         '''
         Used by KotovychBowman to instantiate a Hamiltonian
+        during the predictor stage
         '''
 
     @abstractmethod
@@ -51,7 +52,8 @@ class Hamiltonian(ABC):
         '''
         Convert coordinates to a new vector, eta, having the 
         constants of entegration among its elements
-        '''        
+        '''  
+        
     def invert(self, hamiltonian):
         '''
         Invert transform
