@@ -72,7 +72,7 @@ class ThreeBody(Hamiltonian):
         [r, theta, rho, Theta, p, l, P, L] = self.x
         [Vr, Vtheta, Vrho, VTheta] = self.dV(r, theta, rho, Theta)
         return np.array([
-            p/self.g1,                           # Equation (30a)
+            p/self.g1,                           #  Equation (30a)
             l/(self.g1*r**2),                    # Equation (30a)
             P/self.g2,                           # Equation (30c)
             L/(self.g2*rho**2),                  # Equation (30c)
@@ -118,11 +118,7 @@ class ThreeBody(Hamiltonian):
         [r, _, _, _, p, _, P, _] = self.x
         [_, _, _, rho, l, L, theta, Theta] = self.xi           # (33a)
         r = self.get_g(r, rho, theta, Theta)                  # (33b)
-        if 2*self.g1*(self.xi[0] - l**2/(2.0 * self.g1 * r*2)) < 0:
-            print (2*self.g1*(self.xi[0] - l**2/(2.0 * self.g1 * r*2)))
         p = np.sign(p) * sqrt_if_positive(2*self.g1*(self.xi[0] - l**2/(2.0 * self.g1 * r*2)))   #WTF (33c)
-        if 2*self.g2*(self.xi[1] - L**2/(2.0 * self.g2 * rho**2)) < 0:
-            print (2*self.g2*(self.xi[1] - L**2/(2.0 * self.g2 * rho**2)))
         P = np.sign(P) * sqrt_if_positive(2*self.g2*(self.xi[1] - L**2/(2.0 * self.g2 * rho**2)))
         self.x = np.array([r, theta, rho, Theta, p, l, P, L])
 
@@ -136,20 +132,18 @@ class ThreeBody(Hamiltonian):
 
     def dV(self, r, theta, rho, Theta):
         '''
-        Calculate derivatives of total energy 
+        Calculate derivatives of potential energy 
         '''        
-        r23_sq = rho**2 - 2 * (self.m[0] / self.mu) * rho * r * np.cos(Theta - theta) + (self.m[0] / self.mu)**2 * r**2
-        r23 = np.sqrt(r23_sq)
+        r23 = np.sqrt(rho**2 - 2*(self.m[0]/self.mu)*rho*r*np.cos(Theta - theta) + (self.m[0]/self.mu)**2 *r**2)
         dr23_drho = (rho - (self.m[0] / self.mu) * r * np.cos(Theta - theta)) / r23
         dr23_dr = (-(self.m[0] / self.mu) * rho * np.cos(Theta - theta) + (self.m[0] / self.mu)**2 * r) / r23
         dr23_dTheta = 2 * (self.m[0] / self.mu) * r * rho * np.sin(Theta - theta) / r23
         dr23_dtheta = - dr23_dTheta
 
-        r31_sq = (rho**2 
+        r31 = np.sqrt((rho**2 
                   + 2 * (self.m[2] / self.mu) * rho * r * np.cos(Theta - theta)  
                   +(self.m[2] / self.mu) **2 * r**2
-                  )
-        r31 = np.sqrt(r31_sq)
+                  ))
         dr31_drho = (rho + (self.m[1] / self.mu) * r * np.cos(Theta - theta)) / r31
         dr31_dr = ((self.m[1] / self.mu) * rho * np.cos(Theta - theta) 
                    + (self.m[1] / self.mu) * (self.m[1] / self.mu) * r) / r31
@@ -157,8 +151,8 @@ class ThreeBody(Hamiltonian):
         dr31_dTheta = -2 * (self.m[1] / self.mu) * r * rho * np.sin(Theta - theta) / r31
         dr31_dtheta = - dr31_dTheta
 
-        V23 = self.G * self.m[1] * self.m[2] / r23_sq
-        V31 = self.G * self.m[2] * self.m[0] / r31_sq
+        V23 = self.G * self.m[1] * self.m[2] / r23**2
+        V31 = self.G * self.m[2] * self.m[0] / r31**2
         V12 = self.G * self.m[0] * self.m[1] / r**2
 
         return [
