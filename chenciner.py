@@ -71,10 +71,10 @@ def read_data(file_name,dim=2):
 class Hamiltonian:
     r = 0
     theta = 1
-    p = 2
-    l = 3
-    rho = 4
-    Theta = 5
+    rho = 2
+    Theta = 3
+    p = 4
+    l = 5    
     P = 6
     L = 7
     def __init__(self,m,G=1,clone=False,atol=1e-16):
@@ -99,12 +99,31 @@ class Hamiltonian:
         ])
     
     def dV(self,y):
-        dV = np.zeros((8))
-        dV[Hamiltonian.r] = 0
-        dv[Hamiltonian.theta] = 0
-        dV[Hamiltonian.rho] = 0
-        dv[Hamiltonian.Theta] = 0        
-        return dV
+        r = y[Hamiltonian.r]
+        theta = y[Hamiltonian.theta]
+        rho = y[Hamiltonian.rho]
+        Theta = y[Hamiltonian.Theta]       
+ 
+        r12 = r
+        r23 = np.sqrt(rho**2 - 2*(self.m[0]/self.mu)*r*rho*np.cos(Theta-theta) + (self.m[0]/self.mu)**2*r**2)
+        r13 = np.sqrt(rho**2 + 2*(self.m[1]/self.mu)*r*rho*np.cos(Theta-theta) + (self.m[1]/self.mu)**2*r**2)
+        T = np.array([
+            self.m[0]*self.m[1]/r12**2,
+            self.m[1]*self.m[2]/r23**2,
+            self.m[0]*self.m[2]/r13**2
+        ])
+        C2 = np.array([
+                    -(self.m[0]/self.mu)*(np.cos(Theta-theta)*rho-(self.m[0]/self.mu)*r),
+                    -(self.m[0]/self.mu)*np.sin(Theta-theta)*r*rho,
+                    rho - (self.m[0]/self.mu)*r*np.sin(Theta-theta),
+                    (self.m[0]/self.mu)*np.sin(Theta-theta)*r*rho])/r13
+        C3 = np.array([
+                    (self.m[1]/self.mu)*(np.cos(Theta-theta)*rho+(self.m[1]/self.mu)*r),
+                    (self.m[1]/self.mu)*np.sin(Theta-theta)*r*rho,
+                    rho + (self.m[1]/self.mu)*r*np.sin(Theta-theta),
+                    -(self.m[1]/self.mu)*np.sin(Theta-theta)*r*rho])/r13
+        S = np.c_[np.array([1,0,0,0]), C2,C3]    
+        return self.H * np.dot(S,T)
         
 def main():
     '''
