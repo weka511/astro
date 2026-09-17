@@ -171,7 +171,7 @@ From  \cite[(27a)]{kotovych2002exactly}
 		0& \partial_{\theta} r_{23} & \partial_{\theta} r_{31}\\
 		0& \partial_{\rho} r_{23} & \partial_{\rho} r_{31}\\
 		0& \partial_{\Theta} r_{23} & \partial_{\Theta} r_{31}
-	\end{pmatrix}\\
+	\end{pmatrix}
 \end{align*}
 From  \cite[(27b)]{kotovych2002exactly}
 \begin{align*}
@@ -195,6 +195,15 @@ From  \cite[(27c)]{kotovych2002exactly}
 	\vec{r_3} - \vec{r_2} =& \vec{\rho} - \frac{m_1}{\mu}\vec{r} 
 \end{align*}
 The RHS is identical to \eqref{eq:r_3:r_1} if we substitute $-m_1$ for $m_2$.
+
+\begin{align*}
+	S =& \begin{pmatrix}
+		1& \frac{-\frac{m_1}{\mu} \big[\cos{(\Theta-\theta)} \rho - \frac{m_1}{\mu} r\big]}{r_{23}} & \frac{\frac{m_2}{\mu} \big[\cos{(\Theta-\theta)} \rho + \frac{m_2}{\mu} r\big]}{r_{13}}\\
+		0& \frac{\frac{-m_1}{\mu} \sin(\Theta-\theta) r \rho}{r_{23}} & \frac{\frac{m_2}{\mu} \sin(\Theta-\theta) r \rho}{r_{13}}\\
+		0& \frac{\rho + \big[\frac{m_1}{\mu}\big]^2 r \cos(\theta-\Theta)}{r_{23}} & \frac{\rho + \big[\frac{m_2}{\mu}\big]^2 r \cos(\theta-\Theta)}{r_{13}}\\
+		0& \frac{\big[\frac{m_1}{\mu}\big]^2 r \rho \sin(\theta-\Theta)}{r_{23}}& \frac{\big[\frac{m_2}{\mu}\big]^2 r \rho \sin(\theta-\Theta)}{r_{13}}
+	\end{pmatrix}
+\end{align*}
 \bibliographystyle{unsrt}
 \bibliography{astro}
 
