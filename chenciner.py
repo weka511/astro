@@ -93,66 +93,71 @@ class Hamiltonian:
                       rho + (self.m[1]/self.mu)*r*np.sin(Theta-theta),
                       -(self.m[1]/self.mu)*np.sin(Theta-theta)*r*rho])/r13                  ]    
         return self.G * np.dot(S,T)
- 
-def adjust_quadrant(vector):
-    '''
-    Determine the correct quadrant for a vector.
-    
-    Parameters:
-        vector      Velocity vectpr
-    Returns:
-        Angle for start of quadrant
-    '''
-    if   vector[0] >= 0 and vector[1] >= 0:  return 0
-    elif vector[0] < 0 and vector[1] >= 0: return np.pi / 2
-    elif vector[0] < 0 and vector[1] < 0:  return np.pi
-    else:
-        return 3 * np.pi / 2 
 
-def get_angle(vector):
-    '''
-    Determine the angle for a vector
+class Geometry: 
+    @staticmethod
+    def adjust_quadrant(vector):
+        '''
+        Determine the correct quadrant for a vector.
+        
+        Parameters:
+            vector      Velocity vectpr
+        Returns:
+            Angle for start of quadrant
+        '''
+        if   vector[0] >= 0 and vector[1] >= 0:  return 0
+        elif vector[0] < 0 and vector[1] >= 0: return np.pi / 2
+        elif vector[0] < 0 and vector[1] < 0:  return np.pi
+        else:
+            return 3 * np.pi / 2 
     
-    Parameters:
-        velocity   Velocity vector
-    '''
-    return adjust_quadrant(vector) + (np.atan(vector[1] / vector[0]) if vector[0] != 0 else 0)
-
-def get_r_velocity(velocity, theta):
-    '''
-    Get the radial component of velocity
+    @staticmethod
+    def get_angle(vector):
+        '''
+        Determine the angle for a vector
+        
+        Parameters:
+            velocity   Velocity vector
+        '''
+        return Geometry.adjust_quadrant(vector) + (np.atan(vector[1] / vector[0]) if vector[0] != 0 else 0)
     
-    Parameters:
-        velocity   Velocity vector
-        theta
-    '''
-    return np.dot(np.array([np.cos(theta),  np.sin(theta)]), velocity)
-
-def get_theta_dot(velocity, theta, r):
-    '''
-    Get the angular component of velocity
+    @staticmethod
+    def get_r_velocity(velocity, theta):
+        '''
+        Get the radial component of velocity
+        
+        Parameters:
+            velocity   Velocity vector
+            theta
+        '''
+        return np.dot(np.array([np.cos(theta),  np.sin(theta)]), velocity)
     
-    Parameters:
-        velocity   Velocity vector
-        theta
-        r
-    '''    
-    return np.dot(np.array([-np.sin(theta),  np.cos(theta)]), velocity)/r
-
+    @staticmethod
+    def get_theta_dot(velocity, theta, r):
+        '''
+        Get the angular component of velocity
+        
+        Parameters:
+            velocity   Velocity vector
+            theta
+            r
+        '''    
+        return np.dot(np.array([-np.sin(theta),  np.cos(theta)]), velocity)/r
+    
+    @staticmethod
+    def get_polar_coordinates(r):                      
+        return np.linalg.norm(r),Geometry.get_angle(r)
+        
 def create_initial_values(hamiltonian,R,R_dot,m):
-    r = R[1,:] - R[0,:]                 # Equation (27a)
+    r_polar,theta = Geometry.get_polar_coordinates( R[1,:] - R[0,:] ) # Equation (27a)
     r_dot =  R_dot[1,:] - R_dot[0,:]
-    r_polar = np.linalg.norm(r)
-    theta = get_angle(r)
-    p = hamiltonian.g1 * get_r_velocity(r_dot, theta)                            # Linear momentum
-    l = hamiltonian.g1 * r_polar**2 * get_theta_dot(r_dot, theta, r_polar)       # angular momentum
+    p = hamiltonian.g1 * Geometry.get_r_velocity(r_dot, theta)                            # Linear momentum
+    l = hamiltonian.g1 * r_polar**2 * Geometry.get_theta_dot(r_dot, theta, r_polar)       # angular momentum
     centre_of_mass01 = np.dot(m[:2],R[:2,:])/hamiltonian.mu
-    rho = R[2,:] - centre_of_mass01
     rho_dot = R_dot[2,:] - np.dot(m[:2],R_dot[:2,:])/hamiltonian.mu  # Parallel to formula for rho
-    rho_polar = np.linalg.norm(rho)
-    Theta = get_angle(rho)
-    P = hamiltonian.g2 * get_r_velocity(rho_dot, Theta)                           # Linear momentum
-    L = hamiltonian.g2 * rho_polar**2 * get_theta_dot(rho_dot, Theta, rho_polar)  # angular momentum
+    rho_polar,Theta = Geometry.get_polar_coordinates( R[2,:] - centre_of_mass01)
+    P = hamiltonian.g2 * Geometry.get_r_velocity(rho_dot, Theta)                           # Linear momentum
+    L = hamiltonian.g2 * rho_polar**2 * Geometry.get_theta_dot(rho_dot, Theta, rho_polar)  # angular momentum
     
     return np.array([r_polar,theta,rho_polar,Theta,p,l,P,L])
 
@@ -215,18 +220,23 @@ def main():
     y = create_initial_values(hamiltonian,R,R_dot,m)
     integrator = ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 10, 1e-9)
     driver = Driver(integrator, h=0.1)
-    XY = np.zeros((args.Iterations,6))
+    XY = np.zeros((args.Iterations+1,6))
+    r,rho = create_vectors(y) 
+    XY[0,0:2] = (-rho - (2*hamiltonian.m[1]+hamiltonian.m[0])*r/hamiltonian.mu)/3
+    XY[0,2:4] = (-rho + (hamiltonian.m[1]+2*hamiltonian.m[0])*r/hamiltonian.mu)/3
+    XY[0,4:] = (2*rho + (hamiltonian.m[1]-hamiltonian.m[0])*r/hamiltonian.mu)/3    
     for i in range(args.Iterations):
         y = driver.step(y)
         r,rho = create_vectors(y) 
-        XY[i,0:2] = (-rho - (2*hamiltonian.m[1]+hamiltonian.m[0])*r/hamiltonian.mu)/3
-        XY[i,2:4] = (-rho + (hamiltonian.m[1]+2*hamiltonian.m[0])*r/hamiltonian.mu)/3
-        XY[i,4:] = (2*rho + (hamiltonian.m[1]-hamiltonian.m[0])*r/hamiltonian.mu)/3
+        XY[i+1,0:2] = (-rho - (2*hamiltonian.m[1]+hamiltonian.m[0])*r/hamiltonian.mu)/3
+        XY[i+1,2:4] = (-rho + (hamiltonian.m[1]+2*hamiltonian.m[0])*r/hamiltonian.mu)/3
+        XY[i+1,4:] = (2*rho + (hamiltonian.m[1]-hamiltonian.m[0])*r/hamiltonian.mu)/3
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(2,2,1,adjustable='box',aspect=1.0)
     ax1.plot(XY[0,:],XY[1,:],'r')
     ax1.scatter(R[0,0],R[0,1],c='r')
+    ax1.scatter(XY[0,0],XY[0,1],c='r',marker='X')
     ax2 = fig.add_subplot(2,2,2,adjustable='box',aspect=1.0)
     ax2.plot(XY[2,:],XY[3,:],'g')
     ax2.scatter(R[1,0],R[1,1],c='g')
