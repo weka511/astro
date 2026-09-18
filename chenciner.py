@@ -196,6 +196,13 @@ def read_data(file_name,dim=2):
  
         return Q,P,masses
     
+def create_vectors(y):
+    r = y[Hamiltonian.index_r]
+    theta = y[Hamiltonian.index_theta]
+    rho = y[Hamiltonian.index_rho]
+    Theta = y[Hamiltonian.index_Theta]
+    return r*np.array([np.cos(theta),np.sin(theta)]),rho*np.array([np.cos(Theta),np.sin(Theta)])
+
 def main():
     '''
     Read initial values and integrate equations of motion
@@ -205,19 +212,27 @@ def main():
     args = parse_args()
     R,R_dot,m = read_data(Path(args.data)/args.file_name)
     hamiltonian = Hamiltonian(m) 
- 
     y = create_initial_values(hamiltonian,R,R_dot,m)
-        
-    integrator = ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 10, 0.000000001)
-    driver = Driver(integrator, 0.000000001, 0.5, 1.0, 0.000000001)
-    XY = np.zeros((args.Iterations,8))
+    integrator = ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 10, 1e-9)
+    driver = Driver(integrator, h=0.1)
+    XY = np.zeros((args.Iterations,6))
     for i in range(args.Iterations):
         y = driver.step(y)
-        XY[i,:] = y
+        r,rho = create_vectors(y) 
+        XY[i,0:2] = (-rho - (2*hamiltonian.m[1]+hamiltonian.m[0])*r/hamiltonian.mu)/3
+        XY[i,2:4] = (-rho + (hamiltonian.m[1]+2*hamiltonian.m[0])*r/hamiltonian.mu)/3
+        XY[i,4:] = (2*rho + (hamiltonian.m[1]-hamiltonian.m[0])*r/hamiltonian.mu)/3
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
-    ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    ax1.plot(XY[Hamiltonian.index_r,:],XY[Hamiltonian.index_theta,:])
+    ax1 = fig.add_subplot(2,2,1,adjustable='box',aspect=1.0)
+    ax1.plot(XY[0,:],XY[1,:],'r')
+    ax1.scatter(R[0,0],R[0,1],c='r')
+    ax2 = fig.add_subplot(2,2,2,adjustable='box',aspect=1.0)
+    ax2.plot(XY[2,:],XY[3,:],'g')
+    ax2.scatter(R[1,0],R[1,1],c='g')
+    ax3 = fig.add_subplot(2,2,3,adjustable='box',aspect=1.0)
+    ax3.plot(XY[4,:],XY[5,:],'b')
+    ax3.scatter(R[2,0],R[2,1],c='b')
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
