@@ -5,7 +5,7 @@
  File | Purpose |
 --------------------------|---------------------------------------------------------------------
 3body.py|Hamiltonian for 2 Dimensional, but otherwise general,  3 body problem
-chenciner.csv|Chenciner choreography using symplectic inegrator
+chenciner.csv|Chenciner choreography using symplectic integrator
 kepler.py|Hamiltonian for integrating Kepler problem
 integrators.py|Simple integrator after [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084)
 rki.py|Implicit Runge Ketta (symplectic) integrators
