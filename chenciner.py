@@ -15,7 +15,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Template for python script'''
+'''
+Chenciner choreography using symplectic integrator
+'''
 
 from argparse import ArgumentParser
 from csv import reader
@@ -29,6 +31,131 @@ from rki import ImplicitRungeKutta4,Driver
 __version__ = '1.0'
 __author__ = 'Simon Crase'
 
+
+class Hamiltonian:
+    index_r = 0
+    index_theta = 1
+    index_rho = 2
+    index_Theta = 3
+    index_p = 4
+    index_l = 5    
+    index_P = 6
+    index_L = 7
+    def __init__(self,m,G=1,clone=False,atol=1e-16):
+        self.G = G
+        self.M = m.sum()        # Section 5
+        self.mu = m[0] + m[1]   # Section 5
+        self.m = m
+        self.g1 = m[0]*m[1]/self.mu    # Reduced mass - Section 5 - just after (28) 
+        self.g2 = m[2]*self.mu/self.M  # Reduced mass - Section 5 - just after (28) 
+        
+    def dH(self,y):  # r theta p l R Theta P L
+        r = y[Hamiltonian.index_r]
+        theta = y[Hamiltonian.index_theta]
+        rho = y[Hamiltonian.index_rho]
+        Theta = y[Hamiltonian.index_Theta]  
+        p = y[Hamiltonian.index_p]
+        l = y[Hamiltonian.index_l]
+        P = y[Hamiltonian.index_P]
+        L = y[Hamiltonian.index_L]          
+        dV =self.dV(r,theta,rho,Theta)
+        return np.array([
+            p/self.g1,
+            l/(self.g1*p**2),
+            l**2 / (self.g1*r**3) - dV[Hamiltonian.index_r],
+            - dV[Hamiltonian.index_theta],
+            P/self.g1,
+            L/(self.g1*rho**2),
+            L**2 / (self.g1*rho**3) - dV[Hamiltonian.index_rho],
+            - dV[Hamiltonian.index_Theta],            
+        ])
+    
+    def dV(self,r,theta,rho,Theta):  
+ 
+        r12 = r
+        r23 = np.sqrt(rho**2 - 2*(self.m[0]/self.mu)*r*rho*np.cos(Theta-theta) + (self.m[0]/self.mu)**2*r**2)
+        r13 = np.sqrt(rho**2 + 2*(self.m[1]/self.mu)*r*rho*np.cos(Theta-theta) + (self.m[1]/self.mu)**2*r**2)
+        T = np.array([
+            self.m[0]*self.m[1]/r12**2,
+            self.m[1]*self.m[2]/r23**2,
+            self.m[0]*self.m[2]/r13**2
+        ])
+ 
+        S = np.c_[np.array([1,0,0,0]),
+                  np.array([
+                      -(self.m[0]/self.mu)*(np.cos(Theta-theta)*rho-(self.m[0]/self.mu)*r),
+                      -(self.m[0]/self.mu)*np.sin(Theta-theta)*r*rho,
+                      rho - (self.m[0]/self.mu)*r*np.sin(Theta-theta),
+                      (self.m[0]/self.mu)*np.sin(Theta-theta)*r*rho])/r23                  ,
+                  np.array([
+                      (self.m[1]/self.mu)*(np.cos(Theta-theta)*rho+(self.m[1]/self.mu)*r),
+                      (self.m[1]/self.mu)*np.sin(Theta-theta)*r*rho,
+                      rho + (self.m[1]/self.mu)*r*np.sin(Theta-theta),
+                      -(self.m[1]/self.mu)*np.sin(Theta-theta)*r*rho])/r13                  ]    
+        return self.G * np.dot(S,T)
+ 
+def adjust_quadrant(vector):
+    '''
+    Determine the correct quadrant for a vector.
+    
+    Parameters:
+        vector      Velocity vectpr
+    Returns:
+        Angle for start of quadrant
+    '''
+    if   vector[0] >= 0 and vector[1] >= 0:  return 0
+    elif vector[0] < 0 and vector[1] >= 0: return np.pi / 2
+    elif vector[0] < 0 and vector[1] < 0:  return np.pi
+    else:
+        return 3 * np.pi / 2 
+
+def get_angle(vector):
+    '''
+    Determine the angle for a vector
+    
+    Parameters:
+        velocity   Velocity vector
+    '''
+    return adjust_quadrant(vector) + (np.atan(vector[1] / vector[0]) if vector[0] != 0 else 0)
+
+def get_r_velocity(velocity, theta):
+    '''
+    Get the radial component of velocity
+    
+    Parameters:
+        velocity   Velocity vector
+        theta
+    '''
+    return np.dot(np.array([np.cos(theta),  np.sin(theta)]), velocity)
+
+def get_theta_dot(velocity, theta, r):
+    '''
+    Get the angular component of velocity
+    
+    Parameters:
+        velocity   Velocity vector
+        theta
+        r
+    '''    
+    return np.dot(np.array([-np.sin(theta),  np.cos(theta)]), velocity)/r
+
+def create_initial_values(hamiltonian,R,R_dot,m):
+    r = R[1,:] - R[0,:]                 # Equation (27a)
+    r_dot =  R_dot[1,:] - R_dot[0,:]
+    r_polar = np.linalg.norm(r)
+    theta = get_angle(r)
+    p = hamiltonian.g1 * get_r_velocity(r_dot, theta)                            # Linear momentum
+    l = hamiltonian.g1 * r_polar**2 * get_theta_dot(r_dot, theta, r_polar)       # angular momentum
+    centre_of_mass01 = np.dot(m[:2],R[:2,:])/hamiltonian.mu
+    rho = R[2,:] - centre_of_mass01
+    rho_dot = R_dot[2,:] - np.dot(m[:2],R_dot[:2,:])/hamiltonian.mu  # Parallel to formula for rho
+    rho_polar = np.linalg.norm(rho)
+    Theta = get_angle(rho)
+    P = hamiltonian.g2 * get_r_velocity(rho_dot, Theta)                           # Linear momentum
+    L = hamiltonian.g2 * rho_polar**2 * get_theta_dot(rho_dot, Theta, rho_polar)  # angular momentum
+    
+    return np.array([r_polar,theta,rho_polar,Theta,p,l,P,L])
+
 def parse_args():
     '''
     Parse command line arguments
@@ -38,6 +165,7 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('--data', default='./data', help=f'Path to data files')
+    parser.add_argument('-N','--Iterations',default=100,type=int,help='Number of steps')
     return parser.parse_args()
 
 def read_data(file_name,dim=2):
@@ -67,80 +195,29 @@ def read_data(file_name,dim=2):
                     i += 1
  
         return Q,P,masses
- 
-class Hamiltonian:
-    r = 0
-    theta = 1
-    rho = 2
-    Theta = 3
-    p = 4
-    l = 5    
-    P = 6
-    L = 7
-    def __init__(self,m,G=1,clone=False,atol=1e-16):
-        self.G = G
-        self.M = m.sum()        # Section 5
-        self.mu = m[0] + m[1]   # Section 5
-        self.m = m
-        self.g1 = m[0]*m[1]/self.mu    # Reduced mass - Section 5 - just after (28) 
-        self.g2 = m[2]*self.mu/self.M  # Reduced mass - Section 5 - just after (28) 
-        
-    def dH(self,y):  # r theta p l R Theta P L
-        dV =self.dV(y)
-        return np.array([
-            y[Hamiltonian.p]/self.g1,
-            y[Hamiltonian.l]/(self.g1*y[Hamiltonian.p]**2),
-            y[Hamiltonian.l]**2 / (self.g1*self.r**3) - dV[Hamiltonian.r],
-            - dV[Hamiltonian.theta],
-            y[Hamiltonian.P]/self.g1,
-            y[Hamiltonian.L]/(self.g1*y[Hamiltonan.rho]**2),
-            y[Hamiltonian.L]**2 / (self.g1*self.rho**3) - dV[Hamiltonian.rho],
-            - dV[Hamiltonian.Theta],            
-        ])
     
-    def dV(self,y):
-        r = y[Hamiltonian.r]
-        theta = y[Hamiltonian.theta]
-        rho = y[Hamiltonian.rho]
-        Theta = y[Hamiltonian.Theta]       
- 
-        r12 = r
-        r23 = np.sqrt(rho**2 - 2*(self.m[0]/self.mu)*r*rho*np.cos(Theta-theta) + (self.m[0]/self.mu)**2*r**2)
-        r13 = np.sqrt(rho**2 + 2*(self.m[1]/self.mu)*r*rho*np.cos(Theta-theta) + (self.m[1]/self.mu)**2*r**2)
-        T = np.array([
-            self.m[0]*self.m[1]/r12**2,
-            self.m[1]*self.m[2]/r23**2,
-            self.m[0]*self.m[2]/r13**2
-        ])
-        C2 = np.array([
-                    -(self.m[0]/self.mu)*(np.cos(Theta-theta)*rho-(self.m[0]/self.mu)*r),
-                    -(self.m[0]/self.mu)*np.sin(Theta-theta)*r*rho,
-                    rho - (self.m[0]/self.mu)*r*np.sin(Theta-theta),
-                    (self.m[0]/self.mu)*np.sin(Theta-theta)*r*rho])/r13
-        C3 = np.array([
-                    (self.m[1]/self.mu)*(np.cos(Theta-theta)*rho+(self.m[1]/self.mu)*r),
-                    (self.m[1]/self.mu)*np.sin(Theta-theta)*r*rho,
-                    rho + (self.m[1]/self.mu)*r*np.sin(Theta-theta),
-                    -(self.m[1]/self.mu)*np.sin(Theta-theta)*r*rho])/r13
-        S = np.c_[np.array([1,0,0,0]), C2,C3]    
-        return self.H * np.dot(S,T)
-        
 def main():
     '''
-    Do whatever...
+    Read initial values and integrate equations of motion
     '''
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
-    
     R,R_dot,m = read_data(Path(args.data)/args.file_name)
-    hamiltonian = Hamiltonian(m)    
-    integrator = ImplicitRungeKutta4(lambda y: hamiltonian.dH, 10, 0.000000001)
-    
+    hamiltonian = Hamiltonian(m) 
+ 
+    y = create_initial_values(hamiltonian,R,R_dot,m)
+        
+    integrator = ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 10, 0.000000001)
+    driver = Driver(integrator, 0.000000001, 0.5, 1.0, 0.000000001)
+    XY = np.zeros((args.Iterations,8))
+    for i in range(args.Iterations):
+        y = driver.step(y)
+        XY[i,:] = y
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    
+    ax1.plot(XY[Hamiltonian.index_r,:],XY[Hamiltonian.index_theta,:])
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
