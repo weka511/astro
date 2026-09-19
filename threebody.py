@@ -202,8 +202,10 @@ class Test1(TestCase):
             [0.46620369, 0.43236573]            
             ])
         hamiltonian = Hamiltonian(m) 
-        y = hamiltonian.create_initial_values(R,R_dot,m)        
-
+        canonical = hamiltonian.create_initial_values(R,R_dot,m) 
+        converted_back = hamiltonian.get_coordinates(canonical)
+        z=0
+        
 
 if __name__ == '__main__':
     main()
