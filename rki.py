@@ -88,6 +88,8 @@ class Driver:
                 return self.step(y)
             
             self.adjust_stepsize(error)
+            if self.h < self.h_minimum:
+                self.h = self.h_minimum                
                     
             return y11
         except ImplicitRungeKutta.Failed:
@@ -96,18 +98,18 @@ class Driver:
 
     def adjust_stepsize(self,error):
         '''
-        Verify that our stepsize isn't too small
+        Verify that our stepsize isn't too small or too large
         '''
         if error > self.min_epsilon: return
         
         self.h *= ((self.min_epsilon/error)**(1.0/self.integrator.order) if error > 0 else 2.0)
 
         if self.h > self.h_maximum:
-            self.h = self.h_maximum
+            self.h = self.h_maximum    
 
 class ImplicitRungeKutta(ABC):
     '''
-    Parent class for Implicit Ringe-Kutta integrators
+    Parent class for Implicit Runge-Kutta integrators
     
     see https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Gauss.E2.80.93Legendre_methods
     
