@@ -31,7 +31,9 @@
 Check calculations from \cite{ssd}
 \end{abstract}
 
-\section{The Orbit in Space}
+\section{The Two-body problem}
+
+\subsection{The Orbit in Space--\cite[2.8]{ssd}}
 
 From  \cite[(2.119) and (2.120)]{ssd}:
 \begin{align*}
@@ -131,7 +133,7 @@ Substituting in (\ref{eq:Pj})
 =& -0.426885803
 \end{align*}
 
-\section {3 Body}
+\section {The Three Body Problem}
 
 From \cite[(24)]{kotovych2002exactly}
 \begin{align*}
@@ -224,9 +226,16 @@ Now rearrange \eqref{eq:r:231:r} and \eqref{eq:r:22:r}
 \begin{align*}
 	\vec{r_1} =& \vec{r_3}  -\vec{\rho} - \frac{m_2}{\mu}\vec{r}  \\
 	=& \frac{2 \vec{\rho} + \frac{m_2 - m_1}{\mu} \vec{r}}{3} -\vec{\rho} - \frac{m_2}{\mu}\vec{r}\\
-	=& -\frac{ \vec{\rho} - \frac{2 m_2+m_1}{\mu} \vec{r}}{3} \numberthis \label{eq:r:1}\\
+	=& \frac{2 \vec{\rho} + \frac{m_2 - m_1}{\mu} \vec{r}  -3\vec{\rho} - 3\frac{m_2}{\mu}\vec{r}}{3}\\
+	=& \frac{ -\vec{\rho} - \frac{2 m_2+m_1}{\mu} \vec{r}}{3} \numberthis \label{eq:r:1}\\
 	\vec{r_2} =& \vec{r_3}  -\vec{\rho} + \frac{m_1}{\mu}\vec{r}\\
 	=& \frac{- \vec{\rho} + \frac{m_2+2m_1}{\mu} \vec{r}}{3}  \numberthis \label{eq:r:2}
+\end{align*}
+Verify against \eqref{eq:r:3}, \eqref{eq:r:1}, and \eqref{eq:r:2}:
+\begin{align*}
+	\vec{r_1} + \vec{r_2} + \vec{r_3} =& \frac{1}{3} \big[-\cancel{\vec{\rho}} - \frac{2 m_2+m_1}{\mu} \vec{r} - \cancel{\vec{\rho} }+ \frac{m_2+2m_1}{\mu} \vec{r} + 2 \cancel{\vec{\rho}} + \frac{m_2-m_1}{\mu} \vec{r}\big] \\
+	=& \frac{1}{3\mu} \big[ \cancel{-2 m_2}-\bcancel{m_1}  + \cancel{m_2}+\bcancel{2m_1}  +  \cancel{m_2}-\bcancel{m_1} \big] \vec{r}\\
+	=& 0 \text{, as expected from \eqref{eq:r:12:r}}.
 \end{align*}
 \bibliographystyle{unsrt}
 \bibliography{astro}
