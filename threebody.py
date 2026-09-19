@@ -135,22 +135,7 @@ class Hamiltonian:
         return self.G * np.dot(S,T)
 
 class Geometry: 
-    @staticmethod
-    def adjust_quadrant(vector):
-        '''
-        Determine the correct quadrant for a vector.
-        
-        Parameters:
-            vector      Velocity vectpr
-        Returns:
-            Angle for start of quadrant
-        '''
-        if   vector[0] >= 0 and vector[1] >= 0:  return 0
-        elif vector[0] < 0 and vector[1] >= 0: return np.pi / 2
-        elif vector[0] < 0 and vector[1] < 0:  return np.pi
-        else:
-            return 3 * np.pi / 2 
-    
+       
     @staticmethod
     def get_angle(vector):
         '''
@@ -159,8 +144,8 @@ class Geometry:
         Parameters:
             velocity   Velocity vector
         '''
-        return Geometry.adjust_quadrant(vector)  + np.pi/2 +(np.atan(vector[1] / vector[0]) if vector[0] != 0 else 0) #FIXME
-    
+        return np.arctan2(vector[1], vector[0])
+
     @staticmethod
     def get_r_velocity(velocity, theta):
         '''
