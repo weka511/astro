@@ -159,7 +159,7 @@ class Geometry:
         Parameters:
             velocity   Velocity vector
         '''
-        return Geometry.adjust_quadrant(vector) + (np.atan(vector[1] / vector[0]) if vector[0] != 0 else 0)
+        return Geometry.adjust_quadrant(vector)  + np.pi/2 +(np.atan(vector[1] / vector[0]) if vector[0] != 0 else 0) #FIXME
     
     @staticmethod
     def get_r_velocity(velocity, theta):
@@ -204,8 +204,9 @@ class Test1(TestCase):
         hamiltonian = Hamiltonian(m) 
         canonical = hamiltonian.create_initial_values(R,R_dot,m) 
         converted_back = hamiltonian.get_coordinates(canonical)
-        z=0
-        
+        np.testing.assert_almost_equal(R[0,:],converted_back[0:2],decimal=16)
+        np.testing.assert_almost_equal(R[1,:],converted_back[2:4],decimal=16)
+        np.testing.assert_almost_equal(R[2,:],converted_back[4:6],decimal=16)
 
 if __name__ == '__main__':
     main()

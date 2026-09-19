@@ -96,7 +96,7 @@ def main():
         XY[i,:] = hamiltonian.get_coordinates(y)
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
-    ax1 = fig.add_subplot(2,2,1,adjustable='box',aspect=1.0)
+    ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
     ax1.plot(XY[0,:],XY[1,:],'r')
     ax1.scatter(R[0,0],R[0,1],c='r')
     ax1.scatter(XY[0,0],XY[0,1],c='r',marker='X')
