@@ -127,7 +127,7 @@ class ImplicitRungeKutta(ABC):
             return repr(self.value)
 
     def __init__(self, dy, max_iterations, atol, order, a,b,c,
-                 get_distance=lambda k0, k1: np.max(np.abs(k0-k1))):
+                 get_distance=lambda k0, k1: np.linalg.norm(k0-k1)): #np.max(np.abs(k0-k1))):
         '''
         Initialize
         
