@@ -33,8 +33,6 @@ from threebody import Hamiltonian
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
-
-logger = getLogger(__name__)
       
 def parse_args():
     '''
@@ -86,7 +84,9 @@ def main():
     '''
     args = parse_args()
     basicConfig(filename=f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log', 
-                level=INFO)      
+                level=INFO)
+    logger = getLogger(__name__)
+    np.set_printoptions(linewidth=np.nan) # Prevent lines beig split when we log numpy arrays
     rcParams['text.usetex'] = True
     start  = time()
     R,R_dot,m = read_data(Path(args.data)/args.file_name)
@@ -101,7 +101,7 @@ def main():
         if args.euler:
             dy = hamiltonian.dH(y) 
             y += args.step*dy
-            logger.info (f'Step {i}, h={driver.h},dy={dy}')
+            logger.info (hamiltonian.get_coordinates(y,atol=1.0e-4))
         else:
             y = driver.step(y)
         XY[i+1,:] = hamiltonian.get_coordinates(y,atol=1.0e-4)
@@ -110,15 +110,23 @@ def main():
     fig = figure(figsize=(12,12))
     fig.suptitle(f'{Path(__file__).stem},Iterations={args.Iterations:,}')
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    ax1.plot(XY[0,:],XY[1,:],'r')
-    #ax1.plot(XY[2,:],XY[3,:],'g')
-    #ax1.plot(XY[4,:],XY[5,:],'b')
+    ax1.scatter(XY[0,:],XY[0,:],c='r',s=1)
+    ax1.scatter(XY[1,:],XY[1,:],c='g',s=1)
+    ax1.scatter(XY[2,:],XY[2,:],c='b',s=1)
+    # Plot initial condition for all three masses
     ax1.scatter(R[0,0],R[0,1],c='r',marker='+',s=200)
-    ax1.scatter(XY[0,0],XY[0,1],c='r',marker='x',s=100)
     ax1.scatter(R[1,0],R[1,1],c='g',marker='+',s=200)
-    ax1.scatter(XY[0,2],XY[0,3],c='g',marker='x',s=100)
     ax1.scatter(R[2,0],R[2,1],c='b',marker='+',s=200)
+    
+    # Now compare with values converted back from the Canonical Coordinates
+    ax1.scatter(XY[0,0],XY[0,1],c='r',marker='x',s=100)   
+    ax1.scatter(XY[0,2],XY[0,3],c='g',marker='x',s=100)
     ax1.scatter(XY[0,4],XY[0,5],c='b',marker='x',s=100)
+    
+    #ax1.scatter(R[2,0],R[2,1],c='b',marker='+',s=200)
+    
+    #ax1.scatter(XY[-1,0],XY[-1,1],c='r',marker='s',s=100)
+ 
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
