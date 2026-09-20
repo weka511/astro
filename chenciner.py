@@ -21,8 +21,10 @@ Chenciner choreography using symplectic integrator
 
 from argparse import ArgumentParser
 from csv import reader
+from logging import basicConfig,getLogger,INFO
+
 from pathlib import Path
-from time import time
+from time import time,strftime
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
@@ -32,7 +34,7 @@ from threebody import Hamiltonian
 __version__ = '1.0'
 __author__ = 'Simon Crase'
 
-
+logger = getLogger(__name__)
       
 def parse_args():
     '''
@@ -45,6 +47,9 @@ def parse_args():
     parser.add_argument('--data', default='./data', help=f'Path to data files')
     parser.add_argument('-N','--Iterations',default=100,type=int,help='Number of steps')
     parser.add_argument('--freq',default=100,type=int,help='Print progress every freq steps')
+    parser.add_argument('--step',type=float,default=0.001)
+    parser.add_argument('--logs', default='./logs', help=f'Path to log files')
+    parser.add_argument('--euler',default=False,action='store_true',help='Specify use of Eulerian integration')
     return parser.parse_args()
 
 def read_data(file_name,dim=2):
@@ -75,15 +80,15 @@ def read_data(file_name,dim=2):
  
         return Q,P,masses
     
-
-
 def main():
     '''
     Read initial values and integrate equations of motion
     '''
+    args = parse_args()
+    basicConfig(filename=f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log', 
+                level=INFO)      
     rcParams['text.usetex'] = True
     start  = time()
-    args = parse_args()
     R,R_dot,m = read_data(Path(args.data)/args.file_name)
     hamiltonian = Hamiltonian(m) 
     y = hamiltonian.create_initial_values(R,R_dot,m)
@@ -93,14 +98,21 @@ def main():
 
     XY[0,:] = hamiltonian.get_coordinates(y)
     for i in range(args.Iterations):
-        y = driver.step(y)
-        XY[i+1,:] = hamiltonian.get_coordinates(y)
+        if args.euler:
+            dy = hamiltonian.dH(y) 
+            y += args.step*dy
+            logger.info (f'Step {i}, h={driver.h},dy={dy}')
+        else:
+            y = driver.step(y)
+        XY[i+1,:] = hamiltonian.get_coordinates(y,atol=1.0e-4)
         if i%args.freq == 0:
-            print (f'Step {i}, h={driver.h}')
+            print ((f'Step {i}, h={driver.h}'))
     fig = figure(figsize=(12,12))
     fig.suptitle(f'{Path(__file__).stem},Iterations={args.Iterations:,}')
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
     ax1.plot(XY[0,:],XY[1,:],'r')
+    #ax1.plot(XY[2,:],XY[3,:],'g')
+    #ax1.plot(XY[4,:],XY[5,:],'b')
     ax1.scatter(R[0,0],R[0,1],c='r',marker='+',s=200)
     ax1.scatter(XY[0,0],XY[0,1],c='r',marker='x',s=100)
     ax1.scatter(R[1,0],R[1,1],c='g',marker='+',s=200)
