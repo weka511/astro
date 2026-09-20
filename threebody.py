@@ -86,7 +86,7 @@ class Hamiltonian:
             ))/3
         assert np.abs(result.sum()) < atol
         return result
-        
+      
     def dH(self,y):  # r theta p l R Theta P L
         r = y[Hamiltonian.index_r]
         theta = y[Hamiltonian.index_theta]
@@ -97,16 +97,17 @@ class Hamiltonian:
         P = y[Hamiltonian.index_P]
         L = y[Hamiltonian.index_L]          
         dV =self.dV(r,theta,rho,Theta)
-        return np.array([
-            p/self.g1,
-            l/(self.g1*p**2),
-            l**2 / (self.g1*r**3) - dV[Hamiltonian.index_r],
-            - dV[Hamiltonian.index_theta],
-            P/self.g1,
-            L/(self.g1*rho**2),
-            L**2 / (self.g1*rho**3) - dV[Hamiltonian.index_rho],
-            - dV[Hamiltonian.index_Theta],            
-        ])
+        dH = np.zeros((8))
+        dH[Hamiltonian.index_r] = p/self.g1                                             # (30a)
+        dH[Hamiltonian.index_theta] = l/(self.g1*r**2)                                  # (30a)
+        dH[Hamiltonian.index_rho] = P/self.g2                                           # (30c)
+        dH[Hamiltonian.index_Theta] = L/(self.g2*rho**2)                                # (30c)
+        dH[Hamiltonian.index_p] = l**2 / (self.g1*r**3) - dV[Hamiltonian.index_r]       # (30b)
+        dH[Hamiltonian.index_l] = - dV[Hamiltonian.index_theta]                         # (30b)  
+        dH[Hamiltonian.index_P] = L**2 / (self.g2*rho**3) - dV[Hamiltonian.index_rho]   # (30d)
+        dH[Hamiltonian.index_L] = - dV[Hamiltonian.index_Theta]                         # (30d)
+        return dH
+ 
     
     def dV(self,r,theta,rho,Theta):  
         '''
