@@ -114,25 +114,33 @@ class Hamiltonian:
         Calculate derivatives of potential energy
         '''
         r12 = r
-        r23 = np.sqrt(rho**2 - 2*(self.m[0]/self.mu)*r*rho*np.cos(Theta-theta) + (self.m[0]/self.mu)**2*r**2)
-        r13 = np.sqrt(rho**2 + 2*(self.m[1]/self.mu)*r*rho*np.cos(Theta-theta) + (self.m[1]/self.mu)**2*r**2)
+        r23 = np.sqrt(rho**2 
+                      - 2*(self.m[0]/self.mu)*r*rho*np.cos(Theta-theta)
+                      + (self.m[0]/self.mu)**2 * r**2)
+        r13 = np.sqrt(rho**2 + 
+                      2*(self.m[1]/self.mu)*r*rho*np.cos(Theta-theta)
+                      + (self.m[1]/self.mu)**2 * r**2)
         T = np.array([
             self.m[0]*self.m[1]/r12**2,
             self.m[1]*self.m[2]/r23**2,
             self.m[0]*self.m[2]/r13**2
         ])
  
+        cos_difference = np.cos(Theta-theta)
+        sin_difference = np.sin(Theta-theta)
         S = np.c_[np.array([1,0,0,0]),
                   np.array([
-                      -(self.m[0]/self.mu)*(np.cos(Theta-theta)*rho-(self.m[0]/self.mu)*r),
-                      -(self.m[0]/self.mu)*np.sin(Theta-theta)*r*rho,
-                      rho - (self.m[0]/self.mu)*r*np.sin(Theta-theta),
-                      (self.m[0]/self.mu)*np.sin(Theta-theta)*r*rho])/r23                  ,
+                      -(self.m[0]/self.mu) * (cos_difference*rho - (self.m[0]/self.mu)*r),
+                      -(self.m[0]/self.mu) * sin_difference*r*rho,
+                      rho - (self.m[0]/self.mu)*r*cos_difference,
+                      (self.m[0]/self.mu) *r*rho * sin_difference
+                  ])  / r23                  ,
                   np.array([
-                      (self.m[1]/self.mu)*(np.cos(Theta-theta)*rho+(self.m[1]/self.mu)*r),
-                      (self.m[1]/self.mu)*np.sin(Theta-theta)*r*rho,
-                      rho + (self.m[1]/self.mu)*r*np.sin(Theta-theta),
-                      -(self.m[1]/self.mu)*np.sin(Theta-theta)*r*rho])/r13                  ]    
+                      (self.m[1]/self.mu) * (cos_difference*rho + (self.m[1]/self.mu)*r),
+                      (self.m[1]/self.mu) * sin_difference*r*rho,
+                      rho + (self.m[1]/self.mu)*r*cos_difference,
+                      -(self.m[1]/self.mu) *r*rho * sin_difference
+                ]) / r13                  ]    
         return self.G * np.dot(S,T)
 
 class Geometry: 
