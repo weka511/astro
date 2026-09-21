@@ -22,7 +22,6 @@ Chenciner choreography using symplectic integrator
 from argparse import ArgumentParser
 from csv import reader
 from logging import basicConfig,getLogger,INFO,FileHandler,StreamHandler,Formatter
-
 from pathlib import Path
 from time import time,strftime
 from matplotlib.pyplot import figure, show
@@ -83,9 +82,9 @@ def plot_orbits(R,XY,ax=None):
     Plot orbits
     
     Parameters:
-        R
-        XY
-        ax
+        R     Initial positions
+        XY    Computed positions
+        ax    Axis for plotting
     '''
     ax.scatter(XY[:,0],XY[:,1],c='r',marker='*',s=1)
     ax.scatter(XY[:,2],XY[:,3],c='g',marker='*',s=1)
@@ -96,15 +95,17 @@ def plot_orbits(R,XY,ax=None):
     ax.scatter(R[2,0],R[2,1],c='b',marker='+',s=200)
     
 def create_logger(path_name):
-    def add_handler(handler,logger,formatter):
+    '''
+    Set up console logger and file logger
+    '''
+    def add_handler(handler,logger,formatter=Formatter('%(message)s')):
         handler.setLevel(INFO)
         handler.setFormatter(formatter)
         logger.addHandler(handler)    
     product = getLogger(__name__)
     product.setLevel(INFO)
-    formatter = Formatter('%(message)s')
-    add_handler(FileHandler(path_name),product,formatter)
-    add_handler(StreamHandler(),product,formatter)   
+    add_handler(FileHandler(path_name),product)
+    add_handler(StreamHandler(),product)   
     np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
     return product
 
@@ -137,7 +138,7 @@ def main():
             
         XY[i+1,:] = hamiltonian.get_coordinates(y,atol=1.0e-4)
         if i%args.freq == 0:
-            logger.info ((f'Step {i}, h={driver.h}'))
+            logger.info ((f'Step {i}, h={driver.h}, E={hamiltonian.get_total_energy(y)}'))
     fig = figure(figsize=(8,8))
     fig.suptitle(f'{Path(__file__).stem}, Orbits={args.n:,}')
     
