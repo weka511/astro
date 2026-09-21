@@ -27,7 +27,7 @@ from time import time,strftime
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
-from rki import ImplicitRungeKutta4,Driver
+from rki import ImplicitRungeKutta4
 from threebody import Hamiltonian
 
 __version__ = '1.0'
@@ -46,7 +46,6 @@ def parse_args():
     parser.add_argument('--freq',default=100,type=int,help='Print progress every freq steps')
     parser.add_argument('--step',type=float,default=0.001)
     parser.add_argument('--logs', default='./logs', help=f'Path to log files')
-    parser.add_argument('--euler',default=False,action='store_true',help='Specify use of Eulerian integration')
     return parser.parse_args()
 
 def read_data(file_name,dim=2):
@@ -121,24 +120,20 @@ def main():
     R,R_dot,m = read_data(Path(args.data)/args.file_name)
     hamiltonian = Hamiltonian(m) 
     y = hamiltonian.create_initial_values(R,R_dot,m)
-    integrator = ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 10, 1e-9)
-    driver = Driver(integrator,h=0.1,h_minimum=0.001)
+    integrator = ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 100, 1e-6)
+
     T = 6.32591398
-    N = int (args.n*T/args.step)    
+    N = int (args.n*T/args.step) // 2   
     XY = np.zeros((N+1,6))
 
     XY[0,:] = hamiltonian.get_coordinates(y)
 
     for i in range(N):
-        if args.euler:
-            dy = hamiltonian.dH(y) 
-            y += args.step*dy
-        else:
-            y = driver.step(y)
-            
+        y = integrator.step(args.step,y)
         XY[i+1,:] = hamiltonian.get_coordinates(y,atol=1.0e-4)
         if i%args.freq == 0:
-            logger.info ((f'Step {i}, h={driver.h}, E={hamiltonian.get_total_energy(y)}'))
+            logger.info ((f'Step {i}, E={hamiltonian.get_total_energy(y)}'))
+            
     fig = figure(figsize=(8,8))
     fig.suptitle(f'{Path(__file__).stem}, Orbits={args.n:,}')
     
