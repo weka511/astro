@@ -137,11 +137,11 @@ Substituting in (\ref{eq:Pj})
 
 From \cite[(24)]{kotovych2002exactly}
 \begin{align*}
-	V =& -G \sum_{i<j}\frac{m_i m_j}{r_{jk}}\\
-	\partial_r V =& G \sum_{i<j}\frac{\partial_r r_{jk}}{r_{jk}^2} \numberthis \label{eq:V:r}\\
-	\partial_{\theta} V =& G \sum_{i<j}\frac{\partial_{\theta} r_{jk}}{r_{jk}^2}  \numberthis \label{eq:V:theta}\\
-	\partial_{\rho} V =& G \sum_{i<j}\frac{\partial_{\rho} r_{jk}}{r_{jk}^2} \numberthis \label{eq:V:rho}\\
-	\partial_{\Theta} V =& G \sum_{i<j}\frac{\partial_{\Theta} r_{jk}}{r_{jk}^2}  \numberthis \label{eq:V:Theta}
+	V =& -G \sum_{i<j}\frac{m_i m_j}{r_{ij}}\\
+	\partial_r V =& G \sum_{i<j}\frac{m_i m_j(\partial_r r_{ij})}{r_{ij}^2} \numberthis \label{eq:V:r}\\
+	\partial_{\theta} V =& G \sum_{i<j}\frac{m_i m_j(\partial_{\theta} r_{ij})}{r_{ij}^2}  \numberthis \label{eq:V:theta}\\
+	\partial_{\rho} V =& G \sum_{i<j}\frac{m_i m_j(\partial_{\rho} r_{ij})}{r_{ij}^2} \numberthis \label{eq:V:rho}\\
+	\partial_{\Theta} V =& G \sum_{i<j}\frac{m_i m_j(\partial_{\Theta} r_{ij})}{r_{ij}^2}  \numberthis \label{eq:V:Theta}
 \end{align*}
 
 Using matrix notation, we define
@@ -153,10 +153,10 @@ Using matrix notation, we define
 		\partial_{\Theta} V
 	\end{pmatrix}\\
 	S \triangleq& \begin{pmatrix}
-		\partial_r r_{12}& \partial_r r_{23} & \partial_r r_{31}\\
-		\partial_{\theta} r_{12}& \partial_{\theta} r_{23} & \partial_{\theta} r_{31}\\
-		\partial_{\rho} r_{12}& \partial_{\rho} r_{23} & \partial_{\rho} r_{31}\\
-		\partial_{\Theta} r_{12}& \partial_{\Theta} r_{23} & \partial_{\Theta} r_{31}
+		\partial_r r_{12}& \partial_r r_{23} & \partial_r r_{13}\\
+		\partial_{\theta} r_{12}& \partial_{\theta} r_{23} & \partial_{\theta} r_{13}\\
+		\partial_{\rho} r_{12}& \partial_{\rho} r_{23} & \partial_{\rho} r_{13}\\
+		\partial_{\Theta} r_{12}& \partial_{\Theta} r_{23} & \partial_{\Theta} r_{13}
 	\end{pmatrix}\\
 	T \triangleq& \begin{pmatrix}
 		\frac{m_1 m_2}{r_{12}^2}\\
@@ -170,15 +170,15 @@ From  \cite[(27a)]{kotovych2002exactly}
 	\vec{r_2} - \vec{r_1} =& \vec{r} \text{, whence}\\
 	r_{12} =& r \\
 		S =& \begin{pmatrix}
-		1& \partial_r r_{23} & \partial_r r_{31}\\
-		0& \partial_{\theta} r_{23} & \partial_{\theta} r_{31}\\
-		0& \partial_{\rho} r_{23} & \partial_{\rho} r_{31}\\
-		0& \partial_{\Theta} r_{23} & \partial_{\Theta} r_{31}
+		1& \partial_r r_{23} & \partial_r r_{13}\\
+		0& \partial_{\theta} r_{23} & \partial_{\theta} r_{13}\\
+		0& \partial_{\rho} r_{23} & \partial_{\rho} r_{13}\\
+		0& \partial_{\Theta} r_{23} & \partial_{\Theta} r_{13}
 	\end{pmatrix} \numberthis \label{eq:S:1}
 \end{align*}
 From  \cite[(27b)]{kotovych2002exactly}
 \begin{align*}
-	\vec{r_3} - \vec{r_1} =& \vec{\rho} + \frac{m_2}{\mu}\vec{r} \\
+	\vec{r_3} - \vec{r_1} =& \vec{\rho} + \frac{m_2}{\mu}\vec{r} \numberthis \label{eq_r3_r1}\\
 	=&\big[\rho \cos{\Theta}+\frac{m_2}{\mu}r \cos{\theta}\big] \vec{i_1} +\big[\rho \sin{\Theta}+\frac{m_2}{\mu}r \sin{\theta}\big] \vec{i_2}\\
 	r_{13}^2 =& \big[\rho \cos{\Theta}+\frac{m_2}{\mu}r \cos{\theta}\big]^2 + \big[\rho \sin{\Theta}+\frac{m_2}{\mu}r \sin{\theta}\big]^2\\
 	=&  \rho^2 + 2 \frac{m_2}{\mu} r \rho \big(\cos{\Theta}cos{\theta}+\sin{\Theta}\sin{\theta}\big) +\big(\frac{m_2}{\mu}\big)^2r^2 \\
@@ -193,9 +193,10 @@ Differentiating with respect to $r$, $\theta$, $\rho$, and $\Theta$ yields:
 \end{align*}
 From  \cite[(27c)]{kotovych2002exactly}
 \begin{align*}
-	\vec{r_3} - \vec{r_2} =& \vec{\rho} - \frac{m_1}{\mu}\vec{r} \text{, whose RHS is identical to \eqref{eq:r_3:r_1} if we substitute $-m_1$ for $m_2$.}
+	\vec{r_3} - \vec{r_2} =& \vec{\rho} - \frac{m_1}{\mu}\vec{r} \numberthis \label{eq_r3_r2}
 \end{align*}
-We will substitute \eqref{eq:r:13:d_r}, \eqref{eq:r:13:d_theta}, \eqref{eq:r:13:d_rho}, and \eqref{eq:r:13:d_Theta} in \eqref{eq:S:1} to give:
+The RHS of \eqref{eq_r3_r2} is identical to that of \eqref{eq_r3_r1} if we substitute $-m_1$ for $m_2$.
+We will substitute \eqref{eq:r:13:d_r}, \eqref{eq:r:13:d_theta}, \eqref{eq:r:13:d_rho}, and \eqref{eq:r:13:d_Theta} in \eqref{eq:S:1}, and use the symmetry between \eqref{eq_r3_r2}  and \eqref{eq_r3_r1}  to give:
 
 \begin{align*}
 	S =& \begin{pmatrix}
