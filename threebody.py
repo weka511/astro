@@ -123,13 +123,16 @@ class Hamiltonian:
         return dH
  
     def get_r(self,r,theta,rho,Theta):
+        '''
+        Calculate distances between the bodies
+        '''
         r12 = r
         r23 = np.sqrt(rho**2 
-                          - 2*(self.m[0]/self.mu)*r*rho*np.cos(Theta-theta)
-                          + (self.m[0]/self.mu)**2 * r**2)
-        r13 = np.sqrt(rho**2 + 
-                          2*(self.m[1]/self.mu)*r*rho*np.cos(Theta-theta)
-                          + (self.m[1]/self.mu)**2 * r**2)
+                      - 2*(self.m[0]/self.mu)*r*rho*np.cos(Theta-theta)
+                      + (self.m[0]/self.mu)**2 * r**2)
+        r13 = np.sqrt(rho**2
+                      + 2*(self.m[1]/self.mu)*r*rho*np.cos(Theta-theta)
+                      + (self.m[1]/self.mu)**2 * r**2)
         return r12,r23,r13
     
     def dV(self,r,theta,rho,Theta):  
@@ -173,7 +176,7 @@ class Hamiltonian:
         r12,r23,r13 = self.get_r(r,theta,rho,Theta)
         T = (p**2/(2*self.g1) + P**2/(2*self.g2) 
              + l**2/(2*self.g1*r**2) + L**2/(2*self.g2*rho**2))  #eq (29)
-        V = -self.G * (self.m[0]*self.m[1]/r12* 
+        V = -self.G * (self.m[0]*self.m[1]/r12
                        + self.m[1]*self.m[2]/r23 
                        + self.m[0]*self.m[2]/r13)
         return T + V
