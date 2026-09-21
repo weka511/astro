@@ -26,15 +26,29 @@ __version__ = '1.0'
 __author__ = 'Simon Crase'
 
 class Hamiltonian:
-    index_r = 0
-    index_theta = 1
-    index_rho = 2
-    index_Theta = 3
-    index_p = 4
-    index_l = 5    
-    index_P = 6
-    index_L = 7
-    def __init__(self,m,G=1,clone=False,atol=1e-16):
+    '''
+    Attributes:
+        M 
+        mu 
+        m
+        g1 
+        g2
+    '''
+    index_r = 0         # Index into y: [r,theta,rho,Theta,p,l,P,L]
+    index_theta = 1     # Index into y:
+    index_rho = 2       # Index into y:
+    index_Theta = 3     # Index into y:
+    index_p = 4         # Index into y:
+    index_l = 5         # Index into y:
+    index_P = 6         # Index into y:
+    index_L = 7         # Index into y:
+    
+    def __init__(self,m,G=1):
+        '''
+        Parameters:
+            m
+            G
+        '''
         self.G = G
         self.M = m.sum()        # Section 5
         self.mu = m[0] + m[1]   # Section 5
@@ -108,18 +122,22 @@ class Hamiltonian:
         dH[Hamiltonian.index_L] = - dV[Hamiltonian.index_Theta]                         # (30d)
         return dH
  
+    def get_r(self,r,theta,rho,Theta):
+        r12 = r
+        r23 = np.sqrt(rho**2 
+                          - 2*(self.m[0]/self.mu)*r*rho*np.cos(Theta-theta)
+                          + (self.m[0]/self.mu)**2 * r**2)
+        r13 = np.sqrt(rho**2 + 
+                          2*(self.m[1]/self.mu)*r*rho*np.cos(Theta-theta)
+                          + (self.m[1]/self.mu)**2 * r**2)
+        return r12,r23,r13
     
     def dV(self,r,theta,rho,Theta):  
         '''
         Calculate derivatives of potential energy
         '''
-        r12 = r
-        r23 = np.sqrt(rho**2 
-                      - 2*(self.m[0]/self.mu)*r*rho*np.cos(Theta-theta)
-                      + (self.m[0]/self.mu)**2 * r**2)
-        r13 = np.sqrt(rho**2 + 
-                      2*(self.m[1]/self.mu)*r*rho*np.cos(Theta-theta)
-                      + (self.m[1]/self.mu)**2 * r**2)
+        r12,r23,r13 = self.get_r(r,theta,rho,Theta)
+
         T = np.array([
             self.m[0]*self.m[1]/r12**2,
             self.m[1]*self.m[2]/r23**2,
@@ -142,6 +160,23 @@ class Hamiltonian:
                       -(self.m[1]/self.mu) *r*rho * sin_difference
                 ]) / r13                  ]    
         return self.G * np.dot(S,T)
+    
+    def get_total_energy(self,y):
+        r = y[Hamiltonian.index_r]
+        theta = y[Hamiltonian.index_theta]
+        rho = y[Hamiltonian.index_rho]
+        Theta = y[Hamiltonian.index_Theta]  
+        p = y[Hamiltonian.index_p]
+        l = y[Hamiltonian.index_l]
+        P = y[Hamiltonian.index_P]
+        L = y[Hamiltonian.index_L]  
+        r12,r23,r13 = self.get_r(r,theta,rho,Theta)
+        T = (p**2/(2*self.g1) + P**2/(2*self.g2) 
+             + l**2/(2*self.g1*r**2) + L**2/(2*self.g2*rho**2))  #eq (29)
+        V = -self.G * (self.m[0]*self.m[1]/r12* 
+                       + self.m[1]*self.m[2]/r23 
+                       + self.m[0]*self.m[2]/r13)
+        return T + V
 
 class Geometry: 
        
