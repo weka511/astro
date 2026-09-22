@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
+'''Potential surfaces for the Jacobi Integral'''
+
 from argparse import ArgumentParser
 from pathlib import Path
 from time import time
@@ -34,9 +36,24 @@ def parse_args():
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show', default=False, action='store_true', help='Used to display figure')
+    parser.add_argument('--limit',default=1,type=float)
+    parser.add_argument('--eps',default=0.001,type=float)
+    parser.add_argument('--minZ',default=-3.9,type=float)
+    parser.add_argument('--maxZ',default=-2.89,type=float)
+    parser.add_argument('--steps',default=1000,type=int)
     return parser.parse_args()
 
 def create(limit=2, eps=0.001, minZ=-3.9, maxZ=-2.84, steps=1000):
+    '''
+    Create X, Y, and Z cordinates for surfaces
+    
+    Parameters:
+        limit
+        eps
+        minZ
+        maxZ
+        steps
+    '''    
     xlist = np.linspace(-limit, limit + eps, steps)
     ylist = np.linspace(-limit, limit + eps, steps)
     X, Y = np.meshgrid(xlist, ylist)
@@ -45,34 +62,49 @@ def create(limit=2, eps=0.001, minZ=-3.9, maxZ=-2.84, steps=1000):
     Z[Z > maxZ] = np.nan
     return X,Y,Z
 
-def plot_3d(file_name,X,Y,Z,limit=2, eps=0.001, minZ=-3.9, maxZ=-2.84):
+def plot_3d(file_name,X,Y,Z,limit=1, eps=0.001, minZ=-3.9, maxZ=-2.84,heading=''):
     '''
+    Plot the surfaces
+    
     Parameters:
+        file_name
+        X
+        Y
+        Z
         limit
         eps
         minZ
         maxZ
-        steps
     '''
-    fig = figure()
+    fig = figure(figsize=(8,8))
     ax = fig.add_subplot(111, projection='3d')    
-    surf = ax.plot_surface(X, Y, Z, cmap=cm.jet, norm=clrs.Normalize(vmin=minZ, vmax=maxZ, clip=False))
+    surface = ax.plot_surface(X, Y, Z, 
+                              cmap=cm.jet, 
+                              norm=clrs.Normalize(vmin=minZ, vmax=maxZ, clip=False))
+    
     ax.set_xlim(-limit, limit)
     ax.set_ylim(-limit, limit)
-    fig.colorbar(surf, shrink=0.5, aspect=5)
+    fig.colorbar(surface, shrink=0.5, aspect=5)
+    fig.suptitle(heading)
     fig.savefig(file_name)
 
 def main():
     args = parse_args()
     rcParams['text.usetex'] = True
-    start = time()    
-    X,Y,Z = create(limit=1)
-    plot_3d(f'{Path(args.figs) / Path(__file__).stem}',X,Y,Z,limit=1)
+    start = time()
+    
+    X,Y,Z = create(limit=args.limit,eps=args.eps,maxZ=args.maxZ,minZ=args.minZ,steps=args.steps)
+    plot_3d(f'{Path(args.figs) / Path(__file__).stem}',X,Y,Z,
+            limit=args.limit,eps=args.eps,maxZ=args.maxZ,minZ=args.minZ,
+            heading=f'{ Path(__file__).stem}: limit={args.limit}, eps={args.eps}, maxZ={args.maxZ}, minZ={args.minZ}')
+    
     elapsed = time() - start
     minutes = int(elapsed / 60)
     seconds = elapsed - 60 * minutes
     print(f'Elapsed Time {minutes} m {seconds:.2f} s')
+    
     if args.show:
         show()
+        
 if __name__ == '__main__':
     main()
