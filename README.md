@@ -28,6 +28,7 @@ Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolu
 ||orbital.py|Orbital calculations to support *earth_mars.py*
 3||The Restricted Three Body Problem
 3.3|jacobi.py|Zero velocity Surfaces for the Jacobi Integral
+-|jacobi3d.py|Potential surfaces
 
 
 ## Docs directory
@@ -50,6 +51,5 @@ saturn.csv|Orbital periods for exercise 1.4
 
 File | Purpose |
 --------------------------|---------------------------------------------------------------------
-jacobi3d.py|Potential surfaces
 plot_points.py|Display data that has been stored by tracking.py
 tracking.py|Record results in logfile so they can be played back, and analyses can be restarted
