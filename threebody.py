@@ -27,10 +27,12 @@ __author__ = 'Simon Crase'
 
 class Hamiltonian:
     '''
+    This class repr4sents the Hamiltonian for a 3 body prblem
     Attributes:
         M 
         mu 
-        m
+        m     The 3 masses     
+        G     Gravitational constant
         g1 
         g2
     '''
@@ -46,8 +48,8 @@ class Hamiltonian:
     def __init__(self,m,G=1):
         '''
         Parameters:
-            m
-            G
+            m     The 3 masses     
+            G     Gravitational constant
         '''
         self.G = G
         self.M = m.sum()        # Section 5
@@ -77,8 +79,13 @@ class Hamiltonian:
         
         return np.array([r_polar,theta,rho_polar,Theta,p,l,P,L])    
     
-    @staticmethod
-    def create_vectors(y):
+    def create_vectors(self,y):
+        '''
+        Used to convert r/theta and rho/Theta into two 2-dimenional vectors
+        
+        parameters:
+            y    [r,theta,rho,Theta,p,l,P,L]
+        '''
         r = y[Hamiltonian.index_r]
         theta = y[Hamiltonian.index_theta]
         rho = y[Hamiltonian.index_rho]
@@ -87,21 +94,32 @@ class Hamiltonian:
     
     def get_coordinates(self,y,atol=1e-12):
         '''
-        Convert canonical coordinates back to a position in the original space
+        Convert canonical coordinates back to positions in the original space:
+        the three particles should be centred around the origin.
+        
+        Parameters:
+            y         A configuration in canonical coordinates
+            atol      Tolerqance for checking that paritlces are centred.   
+            
+        Returns:
+            A tuple of 3 vectors, one for each particle
+        '''
+        r,rho = self.create_vectors(y) 
+        positions = np.hstack((
+                (-rho - (2*self.m[1] + self.m[0])*r/self.mu),
+                (-rho + (self.m[1] + 2*self.m[0])*r/self.mu),
+                (2*rho + (self.m[1] - self.m[0])*r/self.mu)
+            )) / 3
+        assert np.abs(positions.sum()) < atol
+        return positions
+      
+    def dH(self,y):  # r theta p l R Theta P L
+        '''
+        Used by integrator to evolve the system
         
         Parameters:
             y         A configuration in canonical coordinates
         '''
-        r,rho = Hamiltonian.create_vectors(y) 
-        result= np.hstack((
-                (-rho - (2*self.m[1] + self.m[0])*r/self.mu),
-                (-rho + (self.m[1] + 2*self.m[0])*r/self.mu),
-                (2*rho + (self.m[1] - self.m[0])*r/self.mu)
-            ))/3
-        assert np.abs(result.sum()) < atol
-        return result
-      
-    def dH(self,y):  # r theta p l R Theta P L
         r = y[Hamiltonian.index_r]
         theta = y[Hamiltonian.index_theta]
         rho = y[Hamiltonian.index_rho]
@@ -125,6 +143,12 @@ class Hamiltonian:
     def get_r(self,r,theta,rho,Theta):
         '''
         Calculate distances between the bodies
+        
+        Parameters:
+            r
+            theta
+            rho
+            Theta
         '''
         r12 = r
         r23 = np.sqrt(rho**2 
@@ -138,6 +162,12 @@ class Hamiltonian:
     def dV(self,r,theta,rho,Theta):  
         '''
         Calculate derivatives of potential energy
+        
+        Parameters:
+            r
+            theta
+            rho
+            Theta
         '''
         r12,r23,r13 = self.get_r(r,theta,rho,Theta)
 
@@ -165,6 +195,12 @@ class Hamiltonian:
         return self.G * np.dot(S,T)
     
     def get_total_energy(self,y):
+        '''
+        Calculate sum of kinetic energu and potential energy
+        
+        Parameters:
+            y         A configuration in canonical coordinates
+        '''
         r = y[Hamiltonian.index_r]
         theta = y[Hamiltonian.index_theta]
         rho = y[Hamiltonian.index_rho]
@@ -174,9 +210,9 @@ class Hamiltonian:
         P = y[Hamiltonian.index_P]
         L = y[Hamiltonian.index_L]  
         r12,r23,r13 = self.get_r(r,theta,rho,Theta)
-        T = (p**2/(2*self.g1) + P**2/(2*self.g2) 
-             + l**2/(2*self.g1*r**2) + L**2/(2*self.g2*rho**2))  #eq (29)
-        V = -self.G * (self.m[0]*self.m[1]/r12
+        T = (p**2/(2*self.g1) + P**2/(2*self.g2)                    # eq (29)
+             + l**2/(2*self.g1*r**2) + L**2/(2*self.g2*rho**2))
+        V = -self.G * (self.m[0]*self.m[1]/r12                      # eq (24)
                        + self.m[1]*self.m[2]/r23 
                        + self.m[0]*self.m[2]/r13)
         return T + V
@@ -200,7 +236,7 @@ class Geometry:
         
         Parameters:
             velocity   Velocity vector
-            theta
+            theta      Angle of velocity vector
         '''
         return np.dot(np.array([np.cos(theta),  np.sin(theta)]), velocity)
     
@@ -242,4 +278,3 @@ class Test1(TestCase):
 
 if __name__ == '__main__':
     main()
-    

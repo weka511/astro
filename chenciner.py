@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 '''
-Chenciner choreography using symplectic integrator
+Calculate and plot Chenciner & Montgomery choreography using symplectic integrator
 '''
 
 from argparse import ArgumentParser
@@ -51,6 +51,10 @@ def parse_args():
 def read_data(file_name,dim=2):
     '''
     Read initial conditions from a file
+    
+    Parameters:
+        file_name
+        dim
     '''
     state = -1
     i = 0
@@ -111,19 +115,22 @@ def create_logger(path_name):
     
 def main():
     '''
-    Read initial values and integrate equations of motion
+    Read initial values, integrate equations of motion and plot results
     '''
     args = parse_args()
     logger = create_logger(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     rcParams['text.usetex'] = True
     start  = time()
+    
     R,R_dot,m = read_data(Path(args.data)/args.file_name)
     hamiltonian = Hamiltonian(m) 
     y = hamiltonian.create_initial_values(R,R_dot,m)
-    integrator = ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 100, 1e-6)
+    integrator = ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 
+                                     max_iterations=1000, 
+                                     atol=1e-16)
 
     T = 6.32591398
-    N = int (args.n*T/args.step) // 2   
+    N = int (args.n*T/args.step)  
     XY = np.zeros((N+1,6))
 
     XY[0,:] = hamiltonian.get_coordinates(y)
@@ -136,11 +143,10 @@ def main():
             
     fig = figure(figsize=(8,8))
     fig.suptitle(f'{Path(__file__).stem}, Orbits={args.n:,}')
-    
     plot_orbits(R,XY,ax = fig.add_subplot(1,1,1))
- 
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
+    
     elapsed = time() - start
     minutes = int(elapsed/60)
     seconds = elapsed - 60*minutes
