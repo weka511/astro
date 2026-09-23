@@ -150,6 +150,12 @@ class ImplicitRungeKutta(ABC):
         self.b = b
         self.c = c
         self.s = len(b)
+        
+    def __str__(self):
+        '''
+        Used to display details of integrator
+        '''
+        return f'{type(self).__name__}: order={self.order},max_iterations={self.max_iterations},atol={self.atol}'
 
     def step(self, h, y):
         '''
