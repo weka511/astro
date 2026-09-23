@@ -27,7 +27,7 @@ from time import time,strftime
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
-from rki import ImplicitRungeKutta4
+from rki import ImplicitRungeKutta4, ImplicitRungeKutta2
 from threebody import Hamiltonian
 
 __version__ = '1.0'
@@ -42,10 +42,14 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('--data', default='./data', help=f'Path to data files')
-    parser.add_argument('-n','--n',default=12,type=int,help='Number of orbits')
+    parser.add_argument('-n','--n',default=12,type=float,help='Number of orbits')
     parser.add_argument('--freq',default=100,type=int,help='Print progress every freq steps')
     parser.add_argument('--step',type=float,default=0.001)
     parser.add_argument('--logs', default='./logs', help=f'Path to log files')
+    parser.add_argument('--integrator',default='ImplicitRungeKutta4')
+    groupImplicitRungeKutta = parser.add_argument_group('ImplicitRungeKutta','Used with ImplicitRungeKutta')
+    groupImplicitRungeKutta.add_argument('--atol',type=float,default=1e-16)
+    groupImplicitRungeKutta.add_argument('--max_iterations',type=int,default=1000)
     return parser.parse_args()
 
 def read_data(file_name,dim=2):
@@ -112,7 +116,23 @@ def create_logger(path_name):
     np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
     return product
 
+def create_integrator(name,hamiltonian):
+    '''
+    Factory method for setting up integrator
     
+    Parameters:
+        name           Name of integrator to be used
+        himiltonian    The aomiltonian that evolves system
+    '''
+    match name:
+        case 'ImplicitRungeKutta4':
+            return ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 
+                                       max_iterations=1000, 
+                                       atol=1e-16)  
+        case 'ImplicitRungeKutta2':
+            return ImplicitRungeKutta2(lambda y: hamiltonian.dH(y), 
+                                       max_iterations=1000, 
+                                       atol=1e-16)            
 def main():
     '''
     Read initial values, integrate equations of motion and plot results
@@ -125,9 +145,7 @@ def main():
     R,R_dot,m = read_data(Path(args.data)/args.file_name)
     hamiltonian = Hamiltonian(m) 
     y = hamiltonian.create_initial_values(R,R_dot,m)
-    integrator = ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 
-                                     max_iterations=1000, 
-                                     atol=1e-16)
+    integrator = create_integrator(args.integrator,hamiltonian)
 
     T = 6.32591398
     N = int (args.n*T/args.step)  
@@ -142,7 +160,7 @@ def main():
             logger.info ((f'Step {i}, E={hamiltonian.get_total_energy(y)}'))
             
     fig = figure(figsize=(8,8))
-    fig.suptitle(f'{Path(__file__).stem}, Orbits={args.n:,}')
+    fig.suptitle(f'{Path(__file__).stem}, Orbits={args.n:,}, Integrator={integrator}')
     plot_orbits(R,XY,ax = fig.add_subplot(1,1,1))
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
