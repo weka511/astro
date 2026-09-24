@@ -101,10 +101,29 @@ def plot_orbits(R,XY,ax=None):
     ax.scatter(R[0,0],R[0,1],c='r',marker='+',s=200)
     ax.scatter(R[1,0],R[1,1],c='g',marker='+',s=200)
     ax.scatter(R[2,0],R[2,1],c='b',marker='+',s=200)
+    ax.set_title('Orbit')
+ 
+def plot_energy(E,ax=None): 
+    '''
+    Plot evolution of energy
+    
+    Parameters:
+         E     Energies
+         ax    Axis for plotting
+    '''
+    E_relative = E/np.abs(E[0])
+    ax.plot(range(len(E)),E_relative,c='xkcd:blue',label='Total Energy')
+    ax.set_ylim((E_relative.min(),E_relative.max()))
+    ax.axhline(E_relative[0],label=f'E={E[0]:.6f}',c='xkcd:red',linestyle=':')
+    ax.legend()
+    ax.set_title('Evolutiuon of Energy')
     
 def create_logger(path_name):
     '''
     Set up console logger and file logger
+    
+    Parameters:
+        path_name    Path name for log file
     '''
     def add_handler(handler,logger,formatter=Formatter('%(message)s')):
         handler.setLevel(INFO)
@@ -151,18 +170,21 @@ def main():
     T = 6.32591398
     N = int (args.n*T/args.step)  
     XY = np.zeros((N+1,6))
-
+    E = np.zeros((N+1))
     XY[0,:] = hamiltonian.get_coordinates(y)
-
+    E[0] = hamiltonian.get_total_energy(y)
     for i in range(N):
         y = integrator.step(args.step,y)
         XY[i+1,:] = hamiltonian.get_coordinates(y,atol=1.0e-4)
+        E[i+1] = hamiltonian.get_total_energy(y)
         if i%args.freq == 0:
             logger.info ((f'Step {i}, E={hamiltonian.get_total_energy(y)}'))
             
-    fig = figure(figsize=(8,8))
+    fig = figure(figsize=(12,6))
     fig.suptitle(f'{Path(__file__).stem}, Orbits={args.n:,}, Integrator={integrator}')
-    plot_orbits(R,XY,ax = fig.add_subplot(1,1,1))
+    plot_orbits(R,XY,ax = fig.add_subplot(1,2,1))
+    plot_energy(E,ax = fig.add_subplot(1,2,2))
+
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     
