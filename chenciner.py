@@ -29,6 +29,7 @@ from matplotlib import rcParams
 import numpy as np
 from rki import ImplicitRungeKutta4, ImplicitRungeKutta2
 from threebody import Hamiltonian
+from verlet import VelocityVerlet
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -44,7 +45,7 @@ def parse_args():
     parser.add_argument('--data', default='./data', help=f'Path to data files')
     parser.add_argument('-n','--n',default=12,type=float,help='Number of orbits')
     parser.add_argument('--freq',default=100,type=int,help='Print progress every freq steps')
-    parser.add_argument('--step',type=float,default=0.001)
+    parser.add_argument('--step',type=float,default=0.0001)
     parser.add_argument('--logs', default='./logs', help=f'Path to log files')
     parser.add_argument('--integrator',default='ImplicitRungeKutta4')
     groupImplicitRungeKutta = parser.add_argument_group('ImplicitRungeKutta','Used with ImplicitRungeKutta')
