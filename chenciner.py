@@ -116,7 +116,7 @@ def plot_energy(E,ax=None):
     ax.set_ylim((E_relative.min(),E_relative.max()))
     ax.axhline(E_relative[0],label=f'E={E[0]:.6f}',c='xkcd:red',linestyle=':')
     ax.legend()
-    ax.set_title('Evolutiuon of Energy')
+    ax.set_title('Evolution of Energy')
     
 def create_logger(path_name):
     '''
