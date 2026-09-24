@@ -116,7 +116,7 @@ def create_logger(path_name):
     np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
     return product
 
-def create_integrator(name,hamiltonian):
+def create_integrator(name,hamiltonian,args):
     '''
     Factory method for setting up integrator
     
@@ -127,12 +127,12 @@ def create_integrator(name,hamiltonian):
     match name:
         case 'ImplicitRungeKutta4':
             return ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 
-                                       max_iterations=1000, 
-                                       atol=1e-16)  
+                                       max_iterations=args.max_iterations, 
+                                       atol=args.atol)  
         case 'ImplicitRungeKutta2':
             return ImplicitRungeKutta2(lambda y: hamiltonian.dH(y), 
-                                       max_iterations=1000, 
-                                       atol=1e-16)            
+                                       max_iterations=args.max_iterations, 
+                                       atol=args.atol)            
 def main():
     '''
     Read initial values, integrate equations of motion and plot results
@@ -145,7 +145,7 @@ def main():
     R,R_dot,m = read_data(Path(args.data)/args.file_name)
     hamiltonian = Hamiltonian(m) 
     y = hamiltonian.create_initial_values(R,R_dot,m)
-    integrator = create_integrator(args.integrator,hamiltonian)
+    integrator = create_integrator(args.integrator,hamiltonian,args)
 
     T = 6.32591398
     N = int (args.n*T/args.step)  
