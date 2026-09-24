@@ -48,10 +48,10 @@ class VelocityVerlet:
         p = y[self.n:]
         if self.F_half == None:
             self.F_half = self.hamiltonian.dp(y)
-        p_half = p + 0.5*h*self.F_half
+        p_half = p - 0.5*h*self.F_half
         q += h*p_half          # m?
         self.F_half = self.hamiltonian.dp(y)
-        p = p_half + 0.5*h*self.F_half
+        p = p_half - 0.5*h*self.F_half
   
         return np.hstack([q,p])
         
@@ -85,13 +85,13 @@ def parse_args():
     '''
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
-    parser.add_argument('-N','--N',default=25,type=int)
+    parser.add_argument('-N','--N',default=628,type=int)
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     return parser.parse_args()
     
 def main():
     '''
-    Do whatever...
+    Use Verlet integrator to plot SHM
     '''
     rcParams['text.usetex'] = True
     start  = time()
@@ -105,10 +105,11 @@ def main():
         y = integrator.step(0.1,y)
         X[i+1,:] = y
     
-    fig = figure(figsize=(12,12))
+    fig = figure(figsize=(8,8))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    ax1.scatter(X[:,0],X[:,1])
+    ax1.scatter(X[:,0],X[:,1],c='xkcd:blue',s=1)
+    ax1.scatter(X[0,0],X[0,1],c='xkcd:blue',marker='X',s=25)
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
