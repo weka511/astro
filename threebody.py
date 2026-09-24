@@ -27,14 +27,14 @@ __author__ = 'Simon Crase'
 
 class Hamiltonian:
     '''
-    This class repr4sents the Hamiltonian for a 3 body prblem
+    This class represents the Hamiltonian for a 3 body prblem
     Attributes:
-        M 
-        mu 
+        M     Total mass
+        mu    Sum of the largest two masses
         m     The 3 masses     
         G     Gravitational constant
-        g1 
-        g2
+        g1    Reduced mass - Section 5 - just after (28) 
+        g2    Reduced mass - Section 5 - just after (28) 
     '''
     index_r = 0         # Index into y: [r,theta,rho,Theta,p,l,P,L]
     index_theta = 1     # Index into y:
