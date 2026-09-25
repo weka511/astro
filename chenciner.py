@@ -47,7 +47,9 @@ def parse_args():
     parser.add_argument('--freq',default=1000,type=int,help='Print progress every freq steps')
     parser.add_argument('--step',type=float,default=0.0001)
     parser.add_argument('--logs', default='./logs', help=f'Path to log files')
-    parser.add_argument('--integrator',default='ImplicitRungeKutta4')
+    parser.add_argument('--integrator',
+                        choices=IntegratorFactory.get_integrator_names(),
+                        default=IntegratorFactory.get_integrator_names()[0])
     groupImplicitRungeKutta = parser.add_argument_group('ImplicitRungeKutta','Used with ImplicitRungeKutta')
     groupImplicitRungeKutta.add_argument('--atol',type=float,default=1e-7)
     groupImplicitRungeKutta.add_argument('--max_iterations',type=int,default=2000)
@@ -144,23 +146,39 @@ def create_logger(path_name):
     np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
     return product
 
-def create_integrator(name,hamiltonian,args):
+class IntegratorFactory:
     '''
-    Factory method for setting up integrator
+    Used to advertise available integrators, and set up the one chosen
+    '''
     
-    Parameters:
-        name           Name of integrator to be used
-        himiltonian    The aomiltonian that evolves system
-    '''
-    match name:
-        case 'ImplicitRungeKutta4':
-            return ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 
-                                       max_iterations=args.max_iterations, 
-                                       atol=args.atol)  
-        case 'ImplicitRungeKutta2':
-            return ImplicitRungeKutta2(lambda y: hamiltonian.dH(y), 
-                                       max_iterations=args.max_iterations, 
-                                       atol=args.atol)            
+    @staticmethod
+    def get_integrator_names():
+        '''
+        Used to list available integrators
+        '''
+        return [
+            'ImplicitRungeKutta4',
+            'ImplicitRungeKutta2'
+        ]
+    
+    @staticmethod
+    def create_integrator(name,hamiltonian,args):
+        '''
+        Factory method for setting up integrator
+        
+        Parameters:
+            name           Name of integrator to be used
+            himiltonian    The aomiltonian that evolves system
+        '''
+        match name:
+            case 'ImplicitRungeKutta4':
+                return ImplicitRungeKutta4(lambda y: hamiltonian.dH(y), 
+                                           max_iterations=args.max_iterations, 
+                                           atol=args.atol)  
+            case 'ImplicitRungeKutta2':
+                return ImplicitRungeKutta2(lambda y: hamiltonian.dH(y), 
+                                           max_iterations=args.max_iterations, 
+                                           atol=args.atol)            
 def main():
     '''
     Read initial values, integrate equations of motion and plot results
@@ -173,7 +191,7 @@ def main():
     R,R_dot,m = read_data(Path(args.data)/args.file_name)
     hamiltonian = Hamiltonian(m) 
     y = hamiltonian.create_initial_values(R,R_dot,m)
-    integrator = create_integrator(args.integrator,hamiltonian,args)
+    integrator = IntegratorFactory.create_integrator(args.integrator,hamiltonian,args)
 
     T = 6.32591398
     N = int (args.n*T/args.step)  
