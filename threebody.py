@@ -58,6 +58,9 @@ class Hamiltonian:
         self.g1 = m[0]*m[1]/self.mu    # Reduced mass - Section 5 - just after (28) 
         self.g2 = m[2]*self.mu/self.M  # Reduced mass - Section 5 - just after (28) 
         
+    def __len__(self):
+        return 4
+        
     def create_initial_values(self,R,R_dot,m):
         '''
         Determine the canonical coordinates for a configuration
@@ -112,7 +115,28 @@ class Hamiltonian:
             )) / 3
         assert np.abs(positions.sum()) < atol
         return positions
-      
+    
+ 
+    
+    def dp(self,y):
+        r,theta,rho,Theta,p,l,P,L = self._extract(y)
+        dV =self.dV(r,theta,rho,Theta)
+        dH = np.zeros((2*len(self)))
+        dH[Hamiltonian.index_p] = l**2 / (self.g1*r**3) - dV[Hamiltonian.index_r]       # (30b)
+        dH[Hamiltonian.index_l] = - dV[Hamiltonian.index_theta]                         # (30b)  
+        dH[Hamiltonian.index_P] = L**2 / (self.g2*rho**3) - dV[Hamiltonian.index_rho]   # (30d)
+        dH[Hamiltonian.index_L] = - dV[Hamiltonian.index_Theta]                         # (30d)        
+        return dH[len(self):]
+        
+    def dq(self,y):
+        r,theta,rho,Theta,p,l,P,L = self._extract(y)
+        dH = np.zeros((len(self)))
+        dH[Hamiltonian.index_r] = p/self.g1                                             # (30a)
+        dH[Hamiltonian.index_theta] = l/(self.g1*r**2)                                  # (30a)
+        dH[Hamiltonian.index_rho] = P/self.g2                                           # (30c)
+        dH[Hamiltonian.index_Theta] = L/(self.g2*rho**2)                                # (30c) 
+        return dH
+    
     def dH(self,y):  # r theta p l R Theta P L
         '''
         Used by integrator to evolve the system
@@ -216,6 +240,17 @@ class Hamiltonian:
                        + self.m[1]*self.m[2]/r23 
                        + self.m[0]*self.m[2]/r13)
         return T + V
+    
+    def _extract(self,y):
+        r = y[Hamiltonian.index_r]
+        theta = y[Hamiltonian.index_theta]
+        rho = y[Hamiltonian.index_rho]
+        Theta = y[Hamiltonian.index_Theta]  
+        p = y[Hamiltonian.index_p]
+        l = y[Hamiltonian.index_l]
+        P = y[Hamiltonian.index_P]
+        L = y[Hamiltonian.index_L]
+        return r,theta,rho,Theta,p,l,P,L    
 
 class Geometry: 
        
