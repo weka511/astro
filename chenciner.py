@@ -111,7 +111,7 @@ def plot_orbits(R,XY,ax=None,end=-1):
     ax.set_title('Orbit')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
-    ax.legend()
+    ax.legend(loc='upper right')
  
 def plot_energy(E,ax=None): 
     '''
@@ -125,7 +125,7 @@ def plot_energy(E,ax=None):
     ax.plot(E_relative,c='xkcd:blue',label='Total Energy')
     ax.set_ylim((E_relative.min(),E_relative.max()))
     ax.axhline(E_relative[0],label=f'E={E[0]:.6f}',c='xkcd:red',linestyle=':')
-    ax.legend()
+    ax.legend(loc='upper right')
     ax.set_title('Evolution of Energy')
     
 def create_logger(path_name):
