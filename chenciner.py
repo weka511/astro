@@ -158,7 +158,8 @@ class IntegratorFactory:
         '''
         return [
             'ImplicitRungeKutta4',
-            'ImplicitRungeKutta2'
+            'ImplicitRungeKutta2',
+            'Verlet'
         ]
     
     @staticmethod
@@ -168,7 +169,7 @@ class IntegratorFactory:
         
         Parameters:
             name           Name of integrator to be used
-            himiltonian    The aomiltonian that evolves system
+            hamiltonian    The Hamiltonian that evolves system
         '''
         match name:
             case 'ImplicitRungeKutta4':
@@ -178,7 +179,9 @@ class IntegratorFactory:
             case 'ImplicitRungeKutta2':
                 return ImplicitRungeKutta2(lambda y: hamiltonian.dH(y), 
                                            max_iterations=args.max_iterations, 
-                                           atol=args.atol)            
+                                           atol=args.atol) 
+            case 'Verlet':
+                return VelocityVerlet(hamiltonian)
 def main():
     '''
     Read initial values, integrate equations of motion and plot results
