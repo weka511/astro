@@ -75,7 +75,7 @@ class SHM:
         return 1
         
     def get_total_energy(self,p,q):
-        return 0.5 * (p**2/self.m + self.h * self.m*q**2)
+        return 0.5 * (p**2/self.m + self.k * self.m*q**2)
     
     def dq(self,y):
         q = y[0:len(self)]
@@ -107,17 +107,22 @@ def main():
     shm = SHM()
     integrator = VelocityVerlet(shm)
     X = np.zeros((args.N+1,2))
+    E = np.zeros((args.N+1))
     y = np.array([1,0],dtype=float)
     X[0,:] = y
+    E[0] = shm.get_total_energy(y[0],y[1])
     for i in range(args.N):
         y = integrator.step(0.1,y)
         X[i+1,:] = y
+        E[i+1] = shm.get_total_energy(y[0],y[1])
     
-    fig = figure(figsize=(8,8))
+    fig = figure(figsize=(12,6))
     fig.suptitle(Path(__file__).stem)
-    ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
+    ax1 = fig.add_subplot(1,2,1,adjustable='box',aspect=1.0)
     ax1.scatter(X[:,0],X[:,1],c='xkcd:blue',s=1)
     ax1.scatter(X[0,0],X[0,1],c='xkcd:blue',marker='X',s=25)
+    ax2 = fig.add_subplot(1,2,2,adjustable='box',aspect=1.0)
+    ax2.plot(E)
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
