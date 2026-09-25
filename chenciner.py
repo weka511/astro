@@ -94,14 +94,17 @@ def plot_orbits(R,XY,ax=None):
         XY    Computed positions
         ax    Axis for plotting
     '''
-    ax.scatter(XY[:,0],XY[:,1],c='r',marker='*',s=1)
-    ax.scatter(XY[:,2],XY[:,3],c='g',marker='*',s=1)
-    ax.scatter(XY[:,4],XY[:,5],c='b',marker='*',s=1)
+    ax.scatter(XY[:,0],XY[:,1],c='r',marker='*',s=1,label='$m_1$')
+    ax.scatter(XY[:,2],XY[:,3],c='g',marker='*',s=1,label='$m_2$')
+    ax.scatter(XY[:,4],XY[:,5],c='b',marker='*',s=1,label='$m_3$')
     # Plot initial condition for all three masses
     ax.scatter(R[0,0],R[0,1],c='r',marker='+',s=200)
     ax.scatter(R[1,0],R[1,1],c='g',marker='+',s=200)
     ax.scatter(R[2,0],R[2,1],c='b',marker='+',s=200)
     ax.set_title('Orbit')
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.legend()
  
 def plot_energy(E,ax=None): 
     '''
