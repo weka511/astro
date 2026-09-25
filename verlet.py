@@ -34,7 +34,14 @@ class VelocityVerlet:
     def __init__(self,hamiltonian):
         self.hamiltonian = hamiltonian
         self.F_half = None
+        self.first_step = True
         self.n = len(hamiltonian)
+        
+    def __str__(self):
+        '''
+        Used to display details of integrator
+        '''
+        return f'{type(self).__name__}'    
         
     def step(self, h, y):
         '''
@@ -46,8 +53,9 @@ class VelocityVerlet:
         '''
         q = y[0:self.n]
         p = y[self.n:]
-        if self.F_half == None:
+        if self.first_step == True:
             self.F_half = self.hamiltonian.dp(y)
+            self.first_step = False
         p_half = p - 0.5*h*self.F_half
         q += h*p_half          # m?
         self.F_half = self.hamiltonian.dp(y)
