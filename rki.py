@@ -18,6 +18,7 @@
 '''
 Implicit Runge Ketta (symplectic) integrators
 '''
+
 from abc import ABC
 from argparse import ArgumentParser
 from pathlib import Path
@@ -40,7 +41,6 @@ class Driver:
         h_maximum     Step size cannot be increased beyond this value
         atol          Maximum tolerable error
         mult          Used to set a lower bound for error (fraction of epsilon)
-        get_distance  Distance function used to compute error when we solve equations  
     '''
     def __init__(self, integrator, 
                  h_minimum=1.0e-9, h=0.5, h_maximum=1.0, atol=1.0e-9, mult=0.01, 
@@ -54,8 +54,7 @@ class Driver:
             h             Initial step size (variable)
             h_maximum     Step size cannot be increased beyond this value
             atol          Maximum tolerable error
-            mult          Used to set a lower bound for error (fraction of epsilon)
-            get_distance  Distance function used to compute error when we solve equations       
+            mult          Used to set a lower bound for error (fraction of epsilon)     
         '''
         self.integrator = integrator
         self.h_minimum = h_minimum
@@ -63,11 +62,10 @@ class Driver:
         self.epsilon = atol
         self.h = h
         self.min_epsilon = mult * atol
-        self.get_distance = get_distance
-
+ 
     def step(self, y):
         '''
-        Solve for one step, varying step size to keep trncation error within bounds
+        Solve for one step, varying step size to keep truncation error within bounds
         
         Parameters:
            y        Current value of dependent variable
@@ -81,7 +79,7 @@ class Driver:
             y11 = self.integrator.step(0.5 * self.h,
                                        self.integrator.step(0.5 * self.h, y)) # Two half steps
             
-            error = self.integrator.get_distance(y1, y11) # Estimate error by comparing the two estimates for next y
+            error = np.linalg.norm(y1- y11) # Estimate error by comparing the two estimates for next y
 
             if error > self.epsilon:  # too large - reduce step size
                 self.h *= (self.epsilon/error)**(1.0/self.integrator.order)
@@ -99,6 +97,9 @@ class Driver:
     def adjust_stepsize(self,error):
         '''
         Verify that our stepsize isn't too small or too large
+        
+        Parameters:
+            error
         '''
         if error > self.min_epsilon: return
         
@@ -119,15 +120,13 @@ class ImplicitRungeKutta(ABC):
         ''' 
         Exception thrown when we can't solve implicit equations
         '''
-
         def __init__(self, value):
                 self.value = value
 
         def __str__(self):
             return repr(self.value)
 
-    def __init__(self, dy, max_iterations, atol, order, a,b,c,
-                 get_distance=lambda k0, k1: np.linalg.norm(k0-k1)):
+    def __init__(self, dy, max_iterations, atol, order, a,b,c):
         '''
         Initialize
         
@@ -136,7 +135,6 @@ class ImplicitRungeKutta(ABC):
            max_iterations  Maximum number of iterations for solving implicit equations
            atol            Maximum error we can tolerate when solving implicit equations
            order           Order of solver
-           get_distance    Distance function used to compute error when we solve equations
            a               The matrix from the Butcher tableau https://mathworld.wolfram.com/ButcherTableau.html
            b               The b vector from the Butcher tableau
            c               The c vector from the Butcher tableau
@@ -145,7 +143,6 @@ class ImplicitRungeKutta(ABC):
         self.max_iterations = max_iterations
         self.atol = atol
         self.order = order
-        self.get_distance = get_distance
         self.a = a
         self.b = b
         self.c = c
@@ -165,15 +162,18 @@ class ImplicitRungeKutta(ABC):
            h    Step size
            y    Current value of y
         '''
+        diff = 0.0
         k = np.zeros((len(self.b),len(y)))
         for _ in range(self.max_iterations):
             k_new = self.iterate(h, y, k)
-            if max([self.get_distance(k0, k1) for (k0, k1) in zip(k, k_new)]) < self.atol:
+            diff = np.linalg.norm(k - k_new)
+            if diff < self.atol:
                 return y + h*np.inner(self.b,k_new.T)
             else:
                 k = k_new
                 
-        self.fail()
+        raise ImplicitRungeKutta.Failed(
+            f'Failed to converge within {self.atol} after {self.max_iterations} iterations: error={diff}')
 
     def iterate(self, h, y, k):
         '''Iterate One step in solution of iterative equations for k
@@ -185,16 +185,8 @@ class ImplicitRungeKutta(ABC):
         '''
         result = np.zeros((self.s,len(y)))
         for i in range(self.s):
-            result[i] = self.dy(y + h* np.inner(self.a[i,:],k.T))
+            result[i,:] = self.dy(y + h*np.inner(self.a[i,:],k.T))
         return result
-
-    def fail(self):
-        '''
-        Used  to throw Exception if we cannot solve implicit equations
-        '''
-        raise ImplicitRungeKutta.Failed(
-            f'Failed to converge within {self.atol} after {self.max_iterations} iterations')
-
 
 class ImplicitRungeKutta2(ImplicitRungeKutta):
     '''
@@ -234,9 +226,9 @@ class ImplicitRungeKutta4(ImplicitRungeKutta):
         '''
         super().__init__(dy, max_iterations, atol, 6,
                          np.array([
-                                [5.0/36.0, 2.0/9.0 -np.sqrt(15.0)/15.0, 5.0/36.0 -np.sqrt(15.0)/30.0],
-                                [5.0/36.0 +np.sqrt(15.0)/24.0, 2.0/9.0, 5.0/36.0 -np.sqrt(15.0)/24.0],
-                                [5.0/36.0 +np.sqrt(15.0)/30.0, 2.0/9.0 +np.sqrt(15.0)/15.0, 5.0/36.0]
+                                [5.0/36.0, 2.0/9.0 -np.sqrt(15.0)/15.0, 5.0/36.0 - np.sqrt(15.0)/30.0],
+                                [5.0/36.0 + np.sqrt(15.0)/24.0, 2.0/9.0, 5.0/36.0 - np.sqrt(15.0)/24.0],
+                                [5.0/36.0 + np.sqrt(15.0)/30.0, 2.0/9.0 + np.sqrt(15.0)/15.0, 5.0/36.0]
                             ]),
                          np.array([
                                 5.0/18.0,
@@ -244,9 +236,9 @@ class ImplicitRungeKutta4(ImplicitRungeKutta):
                                 5.0/18.0
                             ]),
                          np.array([
-                                0.5 -np.sqrt(15.0)/10.0,
+                                0.5 - np.sqrt(15.0)/10.0,
                                 0.5,
-                                0.5 +np.sqrt(15.0)/10.0
+                                0.5 + np.sqrt(15.0)/10.0
                             ]))
 
 def parse_args():
