@@ -27,7 +27,7 @@ from time import time,strftime
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
-from rki import ImplicitRungeKutta4, ImplicitRungeKutta2
+from rki import ImplicitRungeKutta4, ImplicitRungeKutta2, ImplicitRungeKutta
 from threebody import Hamiltonian
 from verlet import VelocityVerlet
 
@@ -44,13 +44,13 @@ def parse_args():
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('--data', default='./data', help=f'Path to data files')
     parser.add_argument('-n','--n',default=12,type=float,help='Number of orbits')
-    parser.add_argument('--freq',default=100,type=int,help='Print progress every freq steps')
+    parser.add_argument('--freq',default=1000,type=int,help='Print progress every freq steps')
     parser.add_argument('--step',type=float,default=0.0001)
     parser.add_argument('--logs', default='./logs', help=f'Path to log files')
     parser.add_argument('--integrator',default='ImplicitRungeKutta4')
     groupImplicitRungeKutta = parser.add_argument_group('ImplicitRungeKutta','Used with ImplicitRungeKutta')
-    groupImplicitRungeKutta.add_argument('--atol',type=float,default=1e-16)
-    groupImplicitRungeKutta.add_argument('--max_iterations',type=int,default=1000)
+    groupImplicitRungeKutta.add_argument('--atol',type=float,default=1e-7)
+    groupImplicitRungeKutta.add_argument('--max_iterations',type=int,default=2000)
     return parser.parse_args()
 
 def read_data(file_name,dim=2):
@@ -85,7 +85,7 @@ def read_data(file_name,dim=2):
  
         return Q,P,masses
 
-def plot_orbits(R,XY,ax=None):
+def plot_orbits(R,XY,ax=None,end=-1):
     '''
     Plot orbits
     
@@ -94,9 +94,14 @@ def plot_orbits(R,XY,ax=None):
         XY    Computed positions
         ax    Axis for plotting
     '''
-    ax.scatter(XY[:,0],XY[:,1],c='r',marker='*',s=1,label='$m_1$')
-    ax.scatter(XY[:,2],XY[:,3],c='g',marker='*',s=1,label='$m_2$')
-    ax.scatter(XY[:,4],XY[:,5],c='b',marker='*',s=1,label='$m_3$')
+    if end == -1:
+        ax.scatter(XY[:,0],XY[:,1],c='r',marker='*',s=1,label='$m_1$')
+        ax.scatter(XY[:,2],XY[:,3],c='g',marker='*',s=1,label='$m_2$')
+        ax.scatter(XY[:,4],XY[:,5],c='b',marker='*',s=1,label='$m_3$')
+    else:
+        ax.scatter(XY[:end,0],XY[:end,1],c='r',marker='*',s=1,label='$m_1$')
+        ax.scatter(XY[:end,2],XY[:end,3],c='g',marker='*',s=1,label='$m_2$')
+        ax.scatter(XY[:end,4],XY[:end,5],c='b',marker='*',s=1,label='$m_3$')        
     # Plot initial condition for all three masses
     ax.scatter(R[0,0],R[0,1],c='r',marker='+',s=200)
     ax.scatter(R[1,0],R[1,1],c='g',marker='+',s=200)
@@ -115,7 +120,7 @@ def plot_energy(E,ax=None):
          ax    Axis for plotting
     '''
     E_relative = E/np.abs(E[0])
-    ax.plot(range(len(E)),E_relative,c='xkcd:blue',label='Total Energy')
+    ax.plot(E_relative,c='xkcd:blue',label='Total Energy')
     ax.set_ylim((E_relative.min(),E_relative.max()))
     ax.axhline(E_relative[0],label=f'E={E[0]:.6f}',c='xkcd:red',linestyle=':')
     ax.legend()
@@ -176,17 +181,23 @@ def main():
     E = np.zeros((N+1))
     XY[0,:] = hamiltonian.get_coordinates(y)
     E[0] = hamiltonian.get_total_energy(y)
+    n = -1
     for i in range(N):
-        y = integrator.step(args.step,y)
-        XY[i+1,:] = hamiltonian.get_coordinates(y,atol=1.0e-4)
-        E[i+1] = hamiltonian.get_total_energy(y)
-        if i%args.freq == 0:
-            logger.info ((f'Step {i}, E={hamiltonian.get_total_energy(y)}'))
+        try:
+            y = integrator.step(args.step,y)
+            XY[i+1,:] = hamiltonian.get_coordinates(y,atol=1.0e-4)
+            E[i+1] = hamiltonian.get_total_energy(y)
+            if i%args.freq == 0:
+                logger.info ((f'Step {i:,}, E={hamiltonian.get_total_energy(y)}'))
+        except ImplicitRungeKutta.Failed as e:
+            logger.info(e)
+            n = i
+            break
             
     fig = figure(figsize=(12,6))
     fig.suptitle(f'{Path(__file__).stem}, Orbits={args.n:,}, Integrator={integrator}')
-    plot_orbits(R,XY,ax = fig.add_subplot(1,2,1))
-    plot_energy(E,ax = fig.add_subplot(1,2,2))
+    plot_orbits(R,XY[:n,:],ax = fig.add_subplot(1,2,1))
+    plot_energy(E[:n],ax = fig.add_subplot(1,2,2))
 
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
