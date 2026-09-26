@@ -116,26 +116,24 @@ class Hamiltonian:
         assert np.abs(positions.sum()) < atol
         return positions
     
- 
-    
-    def dp(self,y):
+    def dHdq(self,y):
         r,theta,rho,Theta,p,l,P,L = self._extract(y)
         dV =self.dV(r,theta,rho,Theta)
-        dH = np.zeros((2*len(self)))
-        dH[Hamiltonian.index_p] = l**2 / (self.g1*r**3) - dV[Hamiltonian.index_r]       # (30b)
-        dH[Hamiltonian.index_l] = - dV[Hamiltonian.index_theta]                         # (30b)  
-        dH[Hamiltonian.index_P] = L**2 / (self.g2*rho**3) - dV[Hamiltonian.index_rho]   # (30d)
-        dH[Hamiltonian.index_L] = - dV[Hamiltonian.index_Theta]                         # (30d)        
-        return dH[len(self):]
+        dp = np.zeros((2*len(self)))
+        dp[Hamiltonian.index_p] = l**2 / (self.g1*r**3) - dV[Hamiltonian.index_r]       # (30b)
+        dp[Hamiltonian.index_l] = - dV[Hamiltonian.index_theta]                         # (30b)  
+        dp[Hamiltonian.index_P] = L**2 / (self.g2*rho**3) - dV[Hamiltonian.index_rho]   # (30d)
+        dp[Hamiltonian.index_L] = - dV[Hamiltonian.index_Theta]                         # (30d)        
+        return dp[Hamiltonian.index_p:]
         
-    def dq(self,y):
+    def dHdp(self,y):
         r,theta,rho,Theta,p,l,P,L = self._extract(y)
-        dH = np.zeros((len(self)))
-        dH[Hamiltonian.index_r] = p/self.g1                                             # (30a)
-        dH[Hamiltonian.index_theta] = l/(self.g1*r**2)                                  # (30a)
-        dH[Hamiltonian.index_rho] = P/self.g2                                           # (30c)
-        dH[Hamiltonian.index_Theta] = L/(self.g2*rho**2)                                # (30c) 
-        return dH
+        dq = np.zeros((len(self)))
+        dq[Hamiltonian.index_r] = p/self.g1                                             # (30a)
+        dq[Hamiltonian.index_theta] = l/(self.g1*r**2)                                  # (30a)
+        dq[Hamiltonian.index_rho] = P/self.g2                                           # (30c)
+        dq[Hamiltonian.index_Theta] = L/(self.g2*rho**2)                                # (30c) 
+        return dq
     
     def dH(self,y):  # r theta p l R Theta P L
         '''
@@ -242,6 +240,12 @@ class Hamiltonian:
         return T + V
     
     def _extract(self,y):
+        '''
+        Extract the canonical coordinates from a vector
+        
+        Parameters:
+            y
+        '''
         r = y[Hamiltonian.index_r]
         theta = y[Hamiltonian.index_theta]
         rho = y[Hamiltonian.index_rho]
