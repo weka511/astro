@@ -54,14 +54,20 @@ class VelocityVerlet:
         q = y[0:self.n]
         p = y[self.n:]
         if self.first_step == True:
-            self.F_half = self.hamiltonian.dp(y)
+            self.dHdq = self.hamiltonian.dHdq(y)
             self.first_step = False
-        p_half = p - 0.5*h*self.F_half
-        q += h*p_half          # m?
-        self.F_half = self.hamiltonian.dp(y)
-        p = p_half - 0.5*h*self.F_half
+        p_half = p - 0.5*h*self.dHdq
+        
+        y_half = y.copy()
+        y_half[self.n:] = p_half
+        q_full =q + h*self.hamiltonian.dHdp(y_half)
+        
+        y_next = y_half.copy()
+        y_next[0:self.n] = q_full
+        self.dHdq = self.hamiltonian.dHdq(y_next)
+        p_full = p_half - h*self.dHdq
   
-        return np.hstack([q,p])
+        return np.hstack([q_full,p_full])
         
 class SHM:
     '''
@@ -77,12 +83,12 @@ class SHM:
     def get_total_energy(self,p,q):
         return 0.5 * (p**2/self.m + self.k * self.m*q**2)
     
-    def dq(self,y):
+    def dHdp(self,y):
         q = y[0:len(self)]
         p = y[len(self):]
         return p/self.m
     
-    def dp(self,y):
+    def dHdq(self,y):
         q = y[0:len(self)]
         p = y[len(self):]
         return self.k * self.m *q
