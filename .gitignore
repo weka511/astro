@@ -75,3 +75,4 @@ target/
 *.glo
 *.gls
 *.ist
+*.out
