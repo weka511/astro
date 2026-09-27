@@ -51,21 +51,24 @@ class VelocityVerlet:
            h    Step size
            y    Current value of y
         '''
+        # Calculate p at the mid point of the step
         q = y[0:self.n]
         p = y[self.n:]
         if self.first_step == True:
             self.dHdq = self.hamiltonian.dHdq(y)
             self.first_step = False
         p_half = p - 0.5*h*self.dHdq
-        
+ 
+        # Calculate q at the end of the step       
         y_half = y.copy()
         y_half[self.n:] = p_half
-        q_full =q + h*self.hamiltonian.dHdp(y_half)
+        q_full = q + h*self.hamiltonian.dHdp(y_half)
         
+        # Calculate p at the end of the step 
         y_next = y_half.copy()
         y_next[0:self.n] = q_full
         self.dHdq = self.hamiltonian.dHdq(y_next)
-        p_full = p_half - h*self.dHdq
+        p_full = p_half - 0.5*h*self.dHdq
   
         return np.hstack([q_full,p_full])
         

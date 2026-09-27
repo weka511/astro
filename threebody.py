@@ -59,6 +59,9 @@ class Hamiltonian:
         self.g2 = m[2]*self.mu/self.M  # Reduced mass - Section 5 - just after (28) 
         
     def __len__(self):
+        '''
+        Dimension of p and q vectors
+        '''
         return 4
         
     def create_initial_values(self,R,R_dot,m):
@@ -117,16 +120,28 @@ class Hamiltonian:
         return positions
     
     def dHdq(self,y):
+        '''
+        Partial drivative of H by q
+        
+        Parameters:
+            y       A configuration
+        '''
         r,theta,rho,Theta,p,l,P,L = self._extract(y)
         dV =self.dV(r,theta,rho,Theta)
-        dp = np.zeros((2*len(self)))
-        dp[Hamiltonian.index_p] = l**2 / (self.g1*r**3) - dV[Hamiltonian.index_r]       # (30b)
-        dp[Hamiltonian.index_l] = - dV[Hamiltonian.index_theta]                         # (30b)  
-        dp[Hamiltonian.index_P] = L**2 / (self.g2*rho**3) - dV[Hamiltonian.index_rho]   # (30d)
-        dp[Hamiltonian.index_L] = - dV[Hamiltonian.index_Theta]                         # (30d)        
-        return dp[Hamiltonian.index_p:]
+        dHdq = np.zeros((2*len(self)))
+        dHdq[Hamiltonian.index_p] = l**2 / (self.g1*r**3) - dV[Hamiltonian.index_r]       # (30b)
+        dHdq[Hamiltonian.index_l] = - dV[Hamiltonian.index_theta]                         # (30b)  
+        dHdq[Hamiltonian.index_P] = L**2 / (self.g2*rho**3) - dV[Hamiltonian.index_rho]   # (30d)
+        dHdq[Hamiltonian.index_L] = - dV[Hamiltonian.index_Theta]                         # (30d)        
+        return dHdq[Hamiltonian.index_p:]
         
     def dHdp(self,y):
+        '''
+        Partial drivative of H by p
+        
+        Parameters:
+            y       A configuration
+        '''        
         r,theta,rho,Theta,p,l,P,L = self._extract(y)
         dq = np.zeros((len(self)))
         dq[Hamiltonian.index_r] = p/self.g1                                             # (30a)
@@ -166,11 +181,14 @@ class Hamiltonian:
         '''
         Calculate distances between the bodies
         
-        Parameters:
-            r
-            theta
-            rho
-            Theta
+       Parameters:
+            r        Length of vector from r1 to r2
+            theta    Angle of vector
+            rho      Length of vector from centre of mass of r1 & r2 to r3
+            Theta    Angle of vector
+            
+        Returns:
+            The three distances r12,r23,r13
         '''
         r12 = r
         r23 = np.sqrt(rho**2 
@@ -186,10 +204,10 @@ class Hamiltonian:
         Calculate derivatives of potential energy
         
         Parameters:
-            r
-            theta
-            rho
-            Theta
+            r        Length of vector from r1 to r2
+            theta    Angle of vector
+            rho      Length of vector from centre of mass of r1 & r2 to r3
+            Theta    Angle of vector
         '''
         r12,r23,r13 = self.get_r(r,theta,rho,Theta)
 
@@ -244,7 +262,10 @@ class Hamiltonian:
         Extract the canonical coordinates from a vector
         
         Parameters:
-            y
+            y          A configuration in canonical coordinates
+            
+        Returns:
+            r,theta,rho,Theta,p,l,P,L   A tuple with the 8 coordinates of y
         '''
         r = y[Hamiltonian.index_r]
         theta = y[Hamiltonian.index_theta]
