@@ -24,6 +24,7 @@ from time import time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
+import pandas as pd
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -36,7 +37,13 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('names',nargs='+')
+    parser.add_argument('--data', default='./data', help=f'Path to data files')
     return parser.parse_args()
+
+def read_and_filter(path,D_min=100,e_max=0.1):
+    df = pd.read_csv(path)
+    df1 = df[(df['T'] > 0) & (df['R'] > 0.5*D_min) & (df['e'] < e_max)]
+    return df1['T'].to_numpy()
     
 def main():
     '''
@@ -45,10 +52,14 @@ def main():
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
+    for name in args.names:
+        T = read_and_filter((Path(args.data)/name).with_suffix('.csv'))
+        print (name,T)
+
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    ...
+
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
