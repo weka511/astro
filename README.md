@@ -31,6 +31,7 @@ verlet.py|Inegrator using Verlet algorithm
 3.3|jacobi.py|Zero velocity Surfaces for the Jacobi Integral
 -|jacobi3d.py|Potential surfaces for the Jacobi Integral
 3.6|lagrange.py|Calculate Equilibrium points L1, L2, and L3, of Lagrange configuration of the 3 body problem
+A|lmdata.py|Accessor function for data from Appendix A, plus code to validate data
 
 
 ## Docs directory

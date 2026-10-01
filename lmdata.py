@@ -92,8 +92,13 @@ def main():
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    ax1.bar([names[i] for i in index],ratios[index])
-    ax1.set_title(rf'{args.name} $\sigma=${std}')
+    ax1.bar([names[i] for i in index],ratios[index],
+            color=[
+                'xkcd:purple','xkcd:green','xkcd:blue', 'xkcd:pink','xkcd:brown','xkcd:red',
+                'xkcd:light blue','xkcd:teal','xkcd:orange', 'xkcd:light green','xkcd:magenta','xkcd:yellow',
+                'xkcd:sky blue','xkcd:grey','xkcd:lime green', 'xkcd:light purple','xkcd:violet','xkcd:dark green',
+            ])
+    ax1.set_title(rf'{args.name} $\sigma=${std:.3g}')
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
