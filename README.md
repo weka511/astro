@@ -24,6 +24,7 @@ verlet.py|Inegrator using Verlet algorithm
 1.3|uranus.py|Murray & Dermott, Exercise 1.3. Create a number of random sets of orbital periods orbital periods for a model satellite system, similar to the three inner satellites of Uranus. For each set, calculate the mean motion for each satellite and check n1-3n2+2n3.
 1.4|saturn.py|Murray & Dermott, Exercise 1.4. Taking the orbital periods listed in Table A.9 but excluding Epimetheus, Telesto, Calypso and Helen, use the criteria given in Section 1.7 to show there are 28 ratios of mean motions to consider in the Saturn System.
 1.5|commensurability.py|Murray & Dermott, Exercise 1.5. Identify commensurability and estimate probability of value occurring by chance.
+1.6|ratios.py|Exercise 1.6
 2||The Two Body Problem
 2.2|earth_mars.py|Murray and Dermott, Exercise 2.2: times of orbital conjunction between earth & Mars.
 ||orbital.py|Orbital calculations to support *earth_mars.py*
