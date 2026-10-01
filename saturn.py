@@ -22,10 +22,11 @@ motions to consider in the Saturn System.
 '''
 
 from argparse import ArgumentParser
-from csv import DictReader
+
 from pathlib import Path
 from matplotlib.pyplot import figure, show
 import numpy as np
+from lmdata import create_data
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -105,29 +106,7 @@ def parse_args():
      parser.add_argument('--tolerance',default=0.15,type=float)
      return parser.parse_args()
 
-def create_data(data_path,
-                exclude=[
-                     'Epimetheus',
-                     'Telesto',
-                     'Calypso',
-                     'Helene'
-                     ],
-                field='T'):
-     '''
-     Read data from one of the tables from Murray and Dermott, Appendex A
-     
-     Parameters:
-         data_path     Path to scv file containing data
-         exclude       A list of satellites whose data are to be ignored
-         field         The name of the field whose data is to be read
-     '''
-     with open(data_path) as data_file:
-          product = []
-          data_reader = DictReader(data_file)
-          for row in data_reader:
-               if row['Satellite'] not in exclude:
-                    product.append([row['Satellite'],abs(float(row[field]))])     
-     return product
+
 
 def get_bar(mean_motion_ratios,tolerance=0.15):
      '''
