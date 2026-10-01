@@ -60,9 +60,9 @@ class Hamiltonian:
         
     def __len__(self):
         '''
-        Dimension of p and q vectors
+        Dimension of the p vector and the q vector
         '''
-        return 4
+        return Hamiltonian.index_p
         
     def create_initial_values(self,R,R_dot,m):
         '''
@@ -73,17 +73,17 @@ class Hamiltonian:
             R_dot    Velocities of the 3 points
             m        The three masses
         '''
-        r_polar,theta = Geometry.get_polar_coordinates( R[1,:] - R[0,:] ) # Equation (27a)
+        r,theta = Geometry.get_polar_coordinates( R[1,:] - R[0,:] ) # Equation (27a)
         r_dot =  R_dot[1,:] - R_dot[0,:]
         p = self.g1 * Geometry.get_r_velocity(r_dot, theta)                            # Linear momentum
-        l = self.g1 * r_polar**2 * Geometry.get_theta_dot(r_dot, theta, r_polar)       # angular momentum
+        l = self.g1 * r**2 * Geometry.get_theta_dot(r_dot, theta, r)       # angular momentum
         centre_of_mass01 = np.dot(m[:2],R[:2,:])/self.mu
         rho_dot = R_dot[2,:] - centre_of_mass01  # Parallel to formula for rho
         rho_polar,Theta = Geometry.get_polar_coordinates( R[2,:] - centre_of_mass01)
         P = self.g2 * Geometry.get_r_velocity(rho_dot, Theta)                           # Linear momentum
         L = self.g2 * rho_polar**2 * Geometry.get_theta_dot(rho_dot, Theta, rho_polar)  # angular momentum
         
-        return np.array([r_polar,theta,rho_polar,Theta,p,l,P,L])    
+        return np.array([r,theta,rho_polar,Theta,p,l,P,L])    
     
     def create_vectors(self,y):
         '''
@@ -280,16 +280,6 @@ class Hamiltonian:
 class Geometry: 
        
     @staticmethod
-    def get_angle(vector):
-        '''
-        Determine the angle for a vector
-        
-        Parameters:
-            velocity   Velocity vector
-        '''
-        return np.arctan2(vector[1], vector[0])
-
-    @staticmethod
     def get_r_velocity(velocity, theta):
         '''
         Get the radial component of velocity
@@ -314,7 +304,7 @@ class Geometry:
     
     @staticmethod
     def get_polar_coordinates(r):                      
-        return np.linalg.norm(r),Geometry.get_angle(r)
+        return np.linalg.norm(r),np.arctan2(r[1], r[0])
     
 class Test1(TestCase):
     def test1(self):
