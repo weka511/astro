@@ -44,7 +44,17 @@ def read_and_filter(path,D_min=100,e_max=0.1):
     df = pd.read_csv(path)
     df1 = df[(df['T'] > 0) & (df['R'] > 0.5*D_min) & (df['e'] < e_max)]
     return df1['T'].to_numpy()
-    
+ 
+def create_ratios(T):
+    m, = T.shape
+    product = np.zeros((m*(m-1))//2)
+    k = 0
+    for i in range(m):
+        for j in range(i):
+            product[k] = T[i]/T[j]
+            k += 1
+    return product
+
 def main():
     '''
     Do whatever...
@@ -52,14 +62,23 @@ def main():
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
+    ratios = []
     for name in args.names:
         T = read_and_filter((Path(args.data)/name).with_suffix('.csv'))
-        print (name,T)
-
+        if len(T) < 2: continue
+        ratios.append(create_ratios(T))
+    all_ratios= np.hstack(ratios)
+    all_ratios = np.sort(all_ratios)
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-
+    ax1.hist(all_ratios,bins=100)
+    #ax1.bar(all_ratios,10,
+            #color=[
+                #'xkcd:purple','xkcd:green','xkcd:blue', 'xkcd:pink','xkcd:brown','xkcd:red',
+                #'xkcd:light blue','xkcd:teal','xkcd:orange', 'xkcd:light green','xkcd:magenta','xkcd:yellow',
+                #'xkcd:sky blue','xkcd:grey','xkcd:lime green', 'xkcd:light purple','xkcd:violet','xkcd:dark green',
+            #])
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
