@@ -22,7 +22,7 @@ motions to consider in the Saturn System.
 '''
 
 from argparse import ArgumentParser
-from csv import reader
+from csv import DictReader
 from pathlib import Path
 from matplotlib.pyplot import figure, show
 import numpy as np
@@ -111,23 +111,28 @@ def create_data(data_path,
                      'Telesto',
                      'Calypso',
                      'Helene'
-                     ]):
+                     ],
+                field='T'):
      '''
-     Read data file
+     Read data from one of the tables from Murray and Dermott, Appendex A
      
      Parameters:
-         data_path
-         exclude
+         data_path     Path to scv file containing data
+         exclude       A list of satellites whose data are to be ignored
+         field         The name of the field whose data is to be read
      '''
      with open(data_path) as data_file:
           product = []
-          data_reader = reader(data_file)
+          data_reader = DictReader(data_file)
           for row in data_reader:
-               if row[0] not in exclude:
-                    product.append([row[0],abs(float(row[1]))])     
+               if row['Satellite'] not in exclude:
+                    product.append([row['Satellite'],abs(float(row[field]))])     
      return product
 
 def get_bar(mean_motion_ratios,tolerance=0.15):
+     '''
+     Used to display coloured bars in lowest panel
+     '''
      c_indices = np.argsort([abs(c) for _,_,_,_,c in mean_motion_ratios])
      labels = []
      cc = []
