@@ -47,7 +47,12 @@ File | Description
 chenciner.csv|An initial configuration for [Alain Chenciner and Richard Montgomery: A remarkable periodic solution of the three-body problem in the case of equal masses](https://arxiv.org/abs/math/0011268)
 commensurability.csv|Orbital periods for exercise 1.5
 earth_mars.csv|Data files used by *earth_mars.py*
-saturn.csv|Orbital periods for exercise 1.4
+jupiter.csv|Table A.7 from Leighton and Murray, for exercise 1.6
+mars.csv|Table A.6 from Leighton and Murray, for exercise 1.6
+neptune.csv|Table A.13 from Leighton and Murray, for exercise 1.6
+saturn.csv|Table A.9 from Leighton and Murray, for exercises 1.4 and 1.6
+uranus.csv|Table A.11 from Leighton and Murray, for exercise 1.6
+
 
 ## Obsolete
 
