@@ -51,6 +51,7 @@ commensurability.csv|Orbital periods for exercise 1.5
 earth_mars.csv|Data files used by *earth_mars.py*
 jupiter.csv|Table A.7 from Leighton and Murray, for exercise 1.6
 mars.csv|Table A.6 from Leighton and Murray, for exercise 1.6
+planets.csv|Table A.2 from Leighton and Murray, for exercise 1.6
 neptune.csv|Table A.13 from Leighton and Murray, for exercise 1.6
 saturn.csv|Table A.9 from Leighton and Murray, for exercises 1.4 and 1.6
 uranus.csv|Table A.11 from Leighton and Murray, for exercise 1.6
