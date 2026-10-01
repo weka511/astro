@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Access ansd validate Leighton and Murray data'''
+'''Access and validate Leighton and Murray data'''
 
 from argparse import ArgumentParser
 from csv import DictReader
@@ -64,7 +64,9 @@ def create_data(data_path,
     return product
 
 def create_ratios(path):
-
+    '''
+    Compare T**2 and a**3
+    '''
     names_and_periods = create_data(path)
     names_and_semimajor_axes = create_data(path,field='a')
     n = len(names_and_periods)
@@ -79,16 +81,19 @@ def create_ratios(path):
 
 def main():
     '''
-    Do whatever...
+    Validate Leighton and Murray data by comparing T**2 and a**3
     '''
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
+    names,ratios = create_ratios((Path(args.data)/args.name).with_suffix('.csv'))
+    index = np.argsort(ratios)
+    std = ratios.std()    
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    names,ratios = create_ratios((Path(args.data)/args.name).with_suffix('.csv'))
-    ax1.bar(names,ratios)
+    ax1.bar([names[i] for i in index],ratios[index])
+    ax1.set_title(rf'{args.name} $\sigma=${std}')
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
