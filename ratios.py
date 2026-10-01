@@ -40,7 +40,7 @@ def parse_args():
     parser.add_argument('--data', default='./data', help=f'Path to data files')
     return parser.parse_args()
 
-def read_and_filter(path,D_min=100,e_max=0.1):
+def read_and_filter(path,D_min=100,e_max=0.15):
     df = pd.read_csv(path)
     df1 = df[(df['T'] > 0) & (df['R'] > 0.5*D_min) & (df['e'] < e_max)]
     return df1['T'].to_numpy()
