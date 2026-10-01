@@ -33,6 +33,8 @@ def parse_args():
     Parse command line arguments
     '''
     parser = ArgumentParser(description=__doc__)
+    parser.add_argument('--data', default='./data', help=f'Path to data files')
+    parser.add_argument('--name', default='saturn', help=f'Path to data files')
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     return parser.parse_args()
@@ -61,6 +63,17 @@ def create_data(data_path,
                 product.append([row['Satellite'],abs(float(row[field]))])     
     return product
 
+def create_ratios(path):
+
+    names_and_periods = create_data(path)
+    names_and_semimajor_axes = create_data(path,field='a')
+    ratios = []
+    for i in range(len(names_and_periods)):
+        _,T = names_and_periods[i]
+        _,a = names_and_semimajor_axes[i]
+        ratios.append(T**2/a**3)
+    return ratios
+
 def main():
     '''
     Do whatever...
@@ -71,7 +84,7 @@ def main():
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    ...
+    ax1.plot(create_ratios((Path(args.data)/args.name).with_suffix('.csv')))
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
