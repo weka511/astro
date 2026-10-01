@@ -38,11 +38,12 @@ def parse_args():
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('names',nargs='+')
     parser.add_argument('--data', default='./data', help=f'Path to data files')
+    parser.add_argument('--planets', default='planets')
     return parser.parse_args()
 
-def read_and_filter(path,D_min=100,e_max=0.15):
+def read_and_filter(path,R_min=100,e_max=0.15):
     df = pd.read_csv(path)
-    df1 = df[(df['T'] > 0) & (df['R'] > 0.5*D_min) & (df['e'] < e_max)]
+    df1 = df[(df['T'] > 0) & (df['R'] > R_min) & (df['e'] < e_max)]
     return df1['T'].to_numpy()
  
 def create_ratios(T):
@@ -55,6 +56,20 @@ def create_ratios(T):
             k += 1
     return product
 
+def get_periods(path):
+    '''
+    Retrieve periods for planets. If the column for the period has no data,
+    use Kepler's Third Law to calulate periods
+    
+    Parameters:
+        path      Path to planetary data
+    '''
+    df = pd.read_csv(path)
+    try:
+        return df['T']/to_numpy()
+    except KeyError:
+        return df['a'].to_numpy()**(3/2)
+
 def main():
     '''
     Do whatever...
@@ -63,6 +78,10 @@ def main():
     start  = time()
     args = parse_args()
     ratios = []
+    ratios.append(
+        create_ratios(
+            get_periods((Path(args.data)/args.planets).with_suffix('.csv'))))
+
     for name in args.names:
         T = read_and_filter((Path(args.data)/name).with_suffix('.csv'))
         if len(T) < 2: continue
@@ -72,13 +91,13 @@ def main():
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    ax1.hist(all_ratios,bins=100)
-    #ax1.bar(all_ratios,10,
-            #color=[
-                #'xkcd:purple','xkcd:green','xkcd:blue', 'xkcd:pink','xkcd:brown','xkcd:red',
-                #'xkcd:light blue','xkcd:teal','xkcd:orange', 'xkcd:light green','xkcd:magenta','xkcd:yellow',
-                #'xkcd:sky blue','xkcd:grey','xkcd:lime green', 'xkcd:light purple','xkcd:violet','xkcd:dark green',
-            #])
+    #ax1.hist(all_ratios,bins=100)
+    ax1.bar(all_ratios,10,
+            color=[
+                'xkcd:purple','xkcd:green','xkcd:blue', 'xkcd:pink','xkcd:brown','xkcd:red',
+                'xkcd:light blue','xkcd:teal','xkcd:orange', 'xkcd:light green','xkcd:magenta','xkcd:yellow',
+                'xkcd:sky blue','xkcd:grey','xkcd:lime green', 'xkcd:light purple','xkcd:violet','xkcd:dark green',
+            ])
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
