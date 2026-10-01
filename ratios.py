@@ -56,7 +56,7 @@ def create_ratios(T):
             k += 1
     return product
 
-def get_periods(path):
+def get_periods(path,e_max=0.15):
     '''
     Retrieve periods for planets. If the column for the period has no data,
     use Kepler's Third Law to calulate periods
@@ -65,10 +65,11 @@ def get_periods(path):
         path      Path to planetary data
     '''
     df = pd.read_csv(path)
+    df1 = df[df['e'] < e_max]
     try:
-        return df['T']/to_numpy()
+        return df1['T']/to_numpy()
     except KeyError:
-        return df['a'].to_numpy()**(3/2)
+        return df1['a'].to_numpy()**(3/2)
 
 def main():
     '''
@@ -91,7 +92,6 @@ def main():
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    #ax1.hist(all_ratios,bins=100)
     ax1.bar(all_ratios,10,
             color=[
                 'xkcd:purple','xkcd:green','xkcd:blue', 'xkcd:pink','xkcd:brown','xkcd:red',
