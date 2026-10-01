@@ -67,12 +67,15 @@ def create_ratios(path):
 
     names_and_periods = create_data(path)
     names_and_semimajor_axes = create_data(path,field='a')
-    ratios = []
-    for i in range(len(names_and_periods)):
-        _,T = names_and_periods[i]
+    n = len(names_and_periods)
+    names = []
+    ratios = np.zeros((n))
+    for i in range(n):
+        name,T = names_and_periods[i]
         _,a = names_and_semimajor_axes[i]
-        ratios.append(T**2/a**3)
-    return ratios
+        ratios[i] = T**2/a**3
+        names.append(name)
+    return names,ratios/ratios.mean()
 
 def main():
     '''
@@ -84,7 +87,8 @@ def main():
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    ax1.plot(create_ratios((Path(args.data)/args.name).with_suffix('.csv')))
+    names,ratios = create_ratios((Path(args.data)/args.name).with_suffix('.csv'))
+    ax1.bar(names,ratios)
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
