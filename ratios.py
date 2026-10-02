@@ -30,6 +30,7 @@ from sys import float_info
 from time import time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
+from matplotlib.ticker import MaxNLocator
 import numpy as np
 import pandas as pd
 
@@ -93,6 +94,7 @@ def parse_args():
     parser.add_argument('--planets', default='planets')
     parser.add_argument('--R_min', default=100, type=float)
     parser.add_argument('--e_max', default=0.15, type=float)
+    parser.add_argument('--imax',default=7,type=int)
     return parser.parse_args()
 
 def get_periods(path,key='Planet',e_max=0.15,R_min=0):
@@ -127,6 +129,7 @@ def main():
     commensurability.
     '''
     rcParams['text.usetex'] = True
+    rcParams['figure.constrained_layout.use'] = True
     start  = time()
     args = parse_args()
     simple_ratios = SimpleRatios()
@@ -141,7 +144,9 @@ def main():
         
         resonances += Resonance.create(names,periods)
     
-    resonances1 = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
+    acceptable_resonances = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
+    
+    unique_ratios = {f'{resonance.i1}:{resonance.i2}' for resonance in acceptable_resonances}
     
     colours = [
         'xkcd:purple','xkcd:green','xkcd:blue','xkcd:pink','xkcd:brown','xkcd:red',
@@ -149,28 +154,24 @@ def main():
         'xkcd:sky blue','xkcd:grey','xkcd:lime green','xkcd:light purple','xkcd:violet','xkcd:dark green',
         'xkcd:turquoise','xkcd:lavender','xkcd:dark blue','xkcd:tan','xkcd:cyan','xkcd:aqua',
         'xkcd:forest green','xkcd:mauve','xkcd:dark purple','xkcd:bright green','xkcd:maroon','xkcd:olive'
-    ]    
+    ]  
+        
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1)
-    for r in resonances1:
+    for r in acceptable_resonances:
         ax1.scatter(r.i1,r.i2,
                     label=f'{r.name1}-{r.name2} {r.i2}:{r.i1}',
                     c=colours[simple_ratios.get_sequence(r.i1,r.i2)])
-    ax1.legend(ncols=max(1,len(resonances1)//12))
-    
-    #ax1.bar(observed_ratios,5,
-            #width=0.1,
-            #facecolor=colours,
-            #edgecolor='xkcd:white'
-    #)
-    #ax2 = fig.add_subplot(2,1,2)
-    #ax2.bar(matched_ratios,5,
-            #width=0.1,
-            #facecolor=colours,
-            #edgecolor='xkcd:white'
-    #)
-    fig.tight_layout(h_pad=2)
+    ax1.legend(ncols=max(1,len(acceptable_resonances)//12))
+    ax1.set_xlabel('$i_1$')
+    ax1.set_ylabel('$i_2$')
+    ax1.set_ylim((0,args.imax+1))
+    ax1.set_xlim((0,args.imax))
+    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax1.set_title(f'There are {len(acceptable_resonances)} acceptable resonances with {len(unique_ratios)} unique ratios')
+ 
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
     minutes = int(elapsed/60)
@@ -182,3 +183,15 @@ def main():
     
 if __name__=='__main__':
     main()
+
+#ax1.bar(observed_ratios,5,
+        #width=0.1,
+        #facecolor=colours,
+        #edgecolor='xkcd:white'
+#)
+#ax2 = fig.add_subplot(2,1,2)
+#ax2.bar(matched_ratios,5,
+        #width=0.1,
+        #facecolor=colours,
+        #edgecolor='xkcd:white'
+#)
