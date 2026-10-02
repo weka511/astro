@@ -37,6 +37,9 @@ __version__ = '1.0'
 __author__ = 'Simon Crase'
 
 class SimpleRatios:
+    '''
+    This class keeps track of the allowable commensurabilities.
+    '''
     def __init__(self,imax=7):
         self.imax = imax
         self.pairs = sorted([(i1,i2) for i2 in range(1,imax+1) for i1 in range(1,i2)],key=lambda x:x[0]/x[1])
@@ -52,12 +55,16 @@ class SimpleRatios:
         return [i for i in range(len(self.pairs)) if (i1,i2) == self.pairs[i]][0]
     
 class Resonance:
+    '''
+    Thix class keeps track of the actual ratios between orbits
+    '''
     
     @staticmethod
     def create(names,periods):
         return [Resonance(names[i],names[j],periods[i],periods[j]) 
                           for i in range(len(names)) 
-                          for j in range(i+1,len(names))]
+                          for j in range(i+1,len(names))
+                          if periods[i] > 0 and periods[j] > 0]
     
     def __init__(self,name1,name2,T1,T2):
         self.name1 = name1
@@ -88,25 +95,28 @@ def parse_args():
     parser.add_argument('--e_max', default=0.15, type=float)
     return parser.parse_args()
 
- 
-
 def get_periods(path,key='Planet',e_max=0.15,R_min=0):
     '''
-    Retrieve periods for planets and satellites. If the column for the period has no data,
+    Retrieve periods for acceptable planets and satellites. If the column for the period has no data,
     use Kepler's Third Law to calculate periods
     
     Parameters:
         path      Path to planetary data
+        key       Indicates whther we are dealing with planets or satellites
+        e_max     We reject data unless eccentricty less that this value
+        R_min     We require data to have R greater than this value
+        
+    Returns:
+       Names of planets or satellites, and their oribital periods, 
+       either read of calculated
     '''
     df = pd.read_csv(path)
-    df1 = df[df['e'] < e_max]
-    if R_min > 0:                            #FIXME
-        df1 = df1[df1['R'] >= R_min]
+    df_acceptable = df[(df['e'] < e_max) & (df['R'] >= R_min)]
+    names = df_acceptable[key].to_list()
     try:
-        return df1[key].to_list(),df1['T'].to_numpy()
+        return names,df_acceptable['T'].to_numpy()
     except KeyError:
-        return df1[key].to_list(),df1['a'].to_numpy()**(3/2)
-
+        return names,df_acceptable['a'].to_numpy()**(3/2)
 
 def main():
     '''
