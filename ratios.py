@@ -84,24 +84,11 @@ def parse_args():
     parser.add_argument('--e_max', default=0.15, type=float)
     return parser.parse_args()
 
-def read_and_filter(path,R_min=100,e_max=0.15):
-    df = pd.read_csv(path)
-    df1 = df[(df['T'] > 0) & (df['R'] > R_min) & (df['e'] < e_max)]
-    return df1['T'].to_numpy()
  
-def create_ratios(T):
-    m, = T.shape
-    product = np.zeros((m*(m-1))//2)
-    k = 0
-    for i in range(m):
-        for j in range(i):
-            product[k] = T[i]/T[j] if T[i]<T[j] else T[j]/T[i]
-            k += 1
-    return product
 
 def get_periods(path,key='Planet',e_max=0.15,R_min=0):
     '''
-    Retrieve periods for planets. If the column for the period has no data,
+    Retrieve periods for planets and satellites. If the column for the period has no data,
     use Kepler's Third Law to calculate periods
     
     Parameters:
@@ -116,24 +103,6 @@ def get_periods(path,key='Planet',e_max=0.15,R_min=0):
     except KeyError:
         return df1[key].to_list(),df1['a'].to_numpy()**(3/2)
 
-                
-  
-
-def create_observed_ratios(args):
-    ratios = []
-    ratios.append(
-        create_ratios(
-            get_periods((Path(args.data)/args.planets).with_suffix('.csv'),
-                        e_max=args.e_max)))
-
-    for name in args.names:
-        T = read_and_filter((Path(args.data)/name).with_suffix('.csv'),
-                            R_min=args.R_min,
-                            e_max=args.e_max)
-        if len(T) < 2: continue
-        ratios.append(create_ratios(T))
- 
-    return np.sort(np.hstack(ratios))
 
 def main():
     '''
