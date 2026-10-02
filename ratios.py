@@ -15,7 +15,13 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Template for python script'''
+'''
+Exercise 1.6 (e) Use the data in Appendix A to find the periods of all possible pairs of
+periods among the planates and the prograde salellites of Mars, Jupiter, Saturn, Uranus, 
+and Neptune, with mean radii > 100 km and orbital eccentricites < 0.1. Taking i_max =7, show
+that thirty pairs of objects have ratios of orbital periods witin epsilon-max of a permitted
+commensurability.
+'''
 
 from argparse import ArgumentParser
 from csv import reader
@@ -29,8 +35,6 @@ import pandas as pd
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
-
-
 
 class SimpleRatios:
     def __init__(self,imax=7):
@@ -106,7 +110,11 @@ def get_periods(path,key='Planet',e_max=0.15,R_min=0):
 
 def main():
     '''
-    Do whatever...
+    Use the data in Appendix A to find the periods of all possible pairs of
+    periods among the planates and the prograde salellites of Mars, Jupiter, Saturn, Uranus, 
+    and Neptune, with mean radii > 100 km and orbital eccentricites < 0.1. Taking i_max =7, show
+    that thirty pairs of objects have ratios of orbital periods witin epsilon-max of a permitted
+    commensurability.
     '''
     rcParams['text.usetex'] = True
     start  = time()
