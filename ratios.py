@@ -30,7 +30,39 @@ import pandas as pd
 __version__ = '1.0'
 __author__ = 'Simon Crase'
 
+
+
+class SimpleRatios:
+    def __init__(self,imax=7):
+        self.imax = imax
+        self.pairs = sorted([(i1,i2) for i2 in range(1,imax+1) for i1 in range(1,i2)],key=lambda x:x[0]/x[1])
+        self.ratios = [i1/i2 for i1,i2 in self.pairs]
+        differences = [a-b for a in self.ratios for b in self.ratios if a > b]
+        self.eps_max = 0.5*min(differences)
         
+    def get_match(self,ratio):
+        best = np.argmin(abs(ratio-self.ratios))
+        return self.pairs[best],abs(ratio-self.ratios[best])
+    
+    def get_sequence(self,i1,i2):
+        return [i for i in range(len(self.pairs)) if (i1,i2) == self.pairs[i]][0]
+    
+class Resonance:
+    def __init__(self,name1,name2,T1,T2):
+        self.name1 = name1
+        self.name2 = name2
+        self.T1 = T1
+        self.T2 = T2
+        self.i1 = None
+        self.i2 = None
+        
+    def can_match(self,simple_ratios):
+        best_pair,distance = simple_ratios.get_match(self.T1/self.T2)
+        if distance < simple_ratios.eps_max:
+            self.i1,self.i2 = best_pair
+            return True
+        return False
+    
 def parse_args():
     '''
     Parse command line arguments
@@ -63,7 +95,7 @@ def create_ratios(T):
 def get_periods(path,e_max=0.15):
     '''
     Retrieve periods for planets. If the column for the period has no data,
-    use Kepler's Third Law to calulate periods
+    use Kepler's Third Law to calculate periods
     
     Parameters:
         path      Path to planetary data
@@ -71,27 +103,10 @@ def get_periods(path,e_max=0.15):
     df = pd.read_csv(path)
     df1 = df[df['e'] < e_max]
     try:
-        return df1['T']/to_numpy()
+        return df1['Planet'].to_list(),df1['T'].to_numpy()
     except KeyError:
-        return df1['a'].to_numpy()**(3/2)
+        return df1['Planet'].to_list(),df1['a'].to_numpy()**(3/2)
 
-class SimpleRatios:
-    def __init__(self,imax=7):
-        self.imax = imax
-        self.pairs = sorted([(i1,i2) for i2 in range(1,imax+1) for i1 in range(1,i2)],key=lambda x:x[0]/x[1])
-        self.ratios = [i1/i2 for i1,i2 in self.pairs]
-        differences = [a-b for a in self.ratios for b in self.ratios if a > b]
-        self.eps_max = 0.5*min(differences)
-        
-
-    def get_match(self,ratio):
-        best = None
-        distance = float_info.max
-        for i in range(len(self.pairs)):
-            if abs(ratio-self.ratios[i]) < distance:
-                best = i
-                distance = abs(ratio-self.ratios[i])
-        return self.pairs[best],distance
                 
   
 
@@ -119,13 +134,18 @@ def main():
     start  = time()
     args = parse_args()
     simple_ratios = SimpleRatios()
-    observed_ratios = create_observed_ratios(args)
-    matches = []
-    for ratio in observed_ratios:
-        pair,distance = simple_ratios.get_match(ratio)
-        if distance < simple_ratios.eps_max:
-            matches.append(pair)
-    matched_ratios = [i1/i2 for i1,i2 in matches]  
+    names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'),e_max=args.e_max)
+    resonances = [Resonance(names[i],names[j],periods[i],periods[j]) for i in range(len(names)) for j in range(i+1,len(names))]
+    resonances1 = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
+    print (len(resonances),len(resonances1))
+        
+    #observed_ratios = create_observed_ratios(args)
+    #matches = []
+    #for ratio in observed_ratios:
+        #pair,distance = simple_ratios.get_match(ratio)
+        #if distance < simple_ratios.eps_max:
+            #matches.append(pair)
+    #matched_ratios = [i1/i2 for i1,i2 in matches]  
     
     colours = [
         'xkcd:purple','xkcd:green','xkcd:blue','xkcd:pink','xkcd:brown','xkcd:red',
@@ -134,20 +154,26 @@ def main():
         'xkcd:turquoise','xkcd:lavender','xkcd:dark blue','xkcd:tan','xkcd:cyan','xkcd:aqua',
         'xkcd:forest green','xkcd:mauve','xkcd:dark purple','xkcd:bright green','xkcd:maroon','xkcd:olive'
     ]    
-    fig = figure(figsize=(6,6))
+    fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
-    ax1 = fig.add_subplot(2,1,1)
-    ax1.bar(observed_ratios,5,
-            width=0.1,
-            facecolor=colours,
-            edgecolor='xkcd:white'
-    )
-    ax2 = fig.add_subplot(2,1,2)
-    ax2.bar(matched_ratios,5,
-            width=0.1,
-            facecolor=colours,
-            edgecolor='xkcd:white'
-    )
+    ax1 = fig.add_subplot(1,1,1)
+    for r in resonances1:
+        ax1.scatter(r.i1,r.i2,
+                    label=f'{r.name1}-{r.name2} {r.i2}:{r.i1}',
+                    c=colours[simple_ratios.get_sequence(r.i1,r.i2)])
+    ax1.legend()
+    
+    #ax1.bar(observed_ratios,5,
+            #width=0.1,
+            #facecolor=colours,
+            #edgecolor='xkcd:white'
+    #)
+    #ax2 = fig.add_subplot(2,1,2)
+    #ax2.bar(matched_ratios,5,
+            #width=0.1,
+            #facecolor=colours,
+            #edgecolor='xkcd:white'
+    #)
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
@@ -156,6 +182,7 @@ def main():
     print (f'Elapsed Time {minutes} m {seconds:.2f} s')
     if args.show:
         show()
+    
     
 if __name__=='__main__':
     main()
