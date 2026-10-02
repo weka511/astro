@@ -18,7 +18,7 @@
 '''
 Exercise 1.6 (e) Use the data in Appendix A to find the periods of all possible pairs of
 periods among the planates and the prograde salellites of Mars, Jupiter, Saturn, Uranus, 
-and Neptune, with mean radii > 100 km and orbital eccentricites < 0.1. Taking i_max =7, show
+and Neptune, with mean radii > 100 km and orbital eccentricites < 0.15. Taking i_max =7, show
 that thirty pairs of objects have ratios of orbital periods witin epsilon-max of a permitted
 commensurability.
 '''
@@ -89,12 +89,12 @@ def parse_args():
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
-    parser.add_argument('names',nargs='*')
+    parser.add_argument('names',nargs='*',help='File name for satellite data')
     parser.add_argument('--data', default='./data', help=f'Path to data files')
-    parser.add_argument('--planets', default='planets')
-    parser.add_argument('--R_min', default=100, type=float)
-    parser.add_argument('--e_max', default=0.15, type=float)
-    parser.add_argument('--imax',default=7,type=int)
+    parser.add_argument('--planets', default='planets',help='File name for planetary data')
+    parser.add_argument('--R_min', default=100, type=float,help='We require data to have R greater than this value')
+    parser.add_argument('--e_max', default=0.15, type=float,help='We reject data unless eccentricity less than this value')
+    parser.add_argument('--imax',default=7,type=int,help='Limit on denominator for acceptable ratios')
     return parser.parse_args()
 
 def get_periods(path,key='Planet',e_max=0.15,R_min=0):
@@ -105,7 +105,7 @@ def get_periods(path,key='Planet',e_max=0.15,R_min=0):
     Parameters:
         path      Path to planetary data
         key       Indicates whther we are dealing with planets or satellites
-        e_max     We reject data unless eccentricty less that this value
+        e_max     We reject data unless eccentricity less than this value
         R_min     We require data to have R greater than this value
         
     Returns:
@@ -113,7 +113,7 @@ def get_periods(path,key='Planet',e_max=0.15,R_min=0):
        either read of calculated
     '''
     df = pd.read_csv(path)
-    df_acceptable = df[(df['e'] < e_max) & (df['R'] >= R_min)]
+    df_acceptable = df[(df['e'] < e_max) & (df['R'] > R_min)]
     names = df_acceptable[key].to_list()
     try:
         return names,df_acceptable['T'].to_numpy()
@@ -133,14 +133,16 @@ def main():
     start  = time()
     args = parse_args()
     simple_ratios = SimpleRatios()
-    names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'),e_max=args.e_max)
+    names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'),
+                                e_max=args.e_max)
        
     resonances = Resonance.create(names,periods)
     
     for primary in args.names:
         names,periods = get_periods((Path(args.data)/primary).with_suffix('.csv'),
                                     key='Satellite',
-                                    e_max=args.e_max,R_min=args.R_min)
+                                    e_max=args.e_max,
+                                    R_min=args.R_min)
         
         resonances += Resonance.create(names,periods)
     
