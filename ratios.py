@@ -48,6 +48,13 @@ class SimpleRatios:
         return [i for i in range(len(self.pairs)) if (i1,i2) == self.pairs[i]][0]
     
 class Resonance:
+    
+    @staticmethod
+    def create(names,periods):
+        return [Resonance(names[i],names[j],periods[i],periods[j]) 
+                          for i in range(len(names)) 
+                          for j in range(i+1,len(names))]
+    
     def __init__(self,name1,name2,T1,T2):
         self.name1 = name1
         self.name2 = name2
@@ -92,7 +99,7 @@ def create_ratios(T):
             k += 1
     return product
 
-def get_periods(path,e_max=0.15):
+def get_periods(path,key='Planet',e_max=0.15,R_min=0):
     '''
     Retrieve periods for planets. If the column for the period has no data,
     use Kepler's Third Law to calculate periods
@@ -102,10 +109,12 @@ def get_periods(path,e_max=0.15):
     '''
     df = pd.read_csv(path)
     df1 = df[df['e'] < e_max]
+    if R_min > 0:                            #FIXME
+        df1 = df1[df1['R'] >= R_min]
     try:
-        return df1['Planet'].to_list(),df1['T'].to_numpy()
+        return df1[key].to_list(),df1['T'].to_numpy()
     except KeyError:
-        return df1['Planet'].to_list(),df1['a'].to_numpy()**(3/2)
+        return df1[key].to_list(),df1['a'].to_numpy()**(3/2)
 
                 
   
@@ -135,17 +144,17 @@ def main():
     args = parse_args()
     simple_ratios = SimpleRatios()
     names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'),e_max=args.e_max)
-    resonances = [Resonance(names[i],names[j],periods[i],periods[j]) for i in range(len(names)) for j in range(i+1,len(names))]
-    resonances1 = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
-    print (len(resonances),len(resonances1))
+       
+    resonances = Resonance.create(names,periods)
+    
+    for primary in args.names:
+        names,periods = get_periods((Path(args.data)/primary).with_suffix('.csv'),
+                                    key='Satellite',
+                                    e_max=args.e_max,R_min=args.R_min)
         
-    #observed_ratios = create_observed_ratios(args)
-    #matches = []
-    #for ratio in observed_ratios:
-        #pair,distance = simple_ratios.get_match(ratio)
-        #if distance < simple_ratios.eps_max:
-            #matches.append(pair)
-    #matched_ratios = [i1/i2 for i1,i2 in matches]  
+        resonances += Resonance.create(names,periods)
+    
+    resonances1 = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
     
     colours = [
         'xkcd:purple','xkcd:green','xkcd:blue','xkcd:pink','xkcd:brown','xkcd:red',
@@ -161,7 +170,7 @@ def main():
         ax1.scatter(r.i1,r.i2,
                     label=f'{r.name1}-{r.name2} {r.i2}:{r.i1}',
                     c=colours[simple_ratios.get_sequence(r.i1,r.i2)])
-    ax1.legend()
+    ax1.legend(ncols=max(1,len(resonances1)//12))
     
     #ax1.bar(observed_ratios,5,
             #width=0.1,
