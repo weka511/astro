@@ -30,6 +30,7 @@ from time import time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 from matplotlib.ticker import MaxNLocator
+from matplotlib.patches import Patch
 import numpy as np
 import pandas as pd
 
@@ -106,10 +107,10 @@ class Resonance:
         Create a Resonance
         
         Parameters:
-            name1
-            name2
-            T1
-            T2
+            name1    Name of first planet or satellite
+            name2    Name of second planet or satellite
+            T1       Period of first planet or satellite
+            T2       Period of second planet or satellite
         '''
         self.name1 = name1
         self.name2 = name2
@@ -169,12 +170,46 @@ def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0):
     except KeyError:
         return names,df_acceptable['a'].to_numpy()**(3/2)
 
+def create_xkcd_colours():
+    '''
+    48 colours from https://blog.xkcd.com/2010/05/03/color-survey-results/
+    '''
+    return [
+        'xkcd:purple','xkcd:green','xkcd:blue','xkcd:pink','xkcd:brown','xkcd:red',
+        'xkcd:light blue','xkcd:teal','xkcd:orange','xkcd:light green','xkcd:magenta','xkcd:yellow',
+        'xkcd:sky blue','xkcd:grey','xkcd:lime green','xkcd:light purple','xkcd:violet','xkcd:dark green',
+        'xkcd:turquoise','xkcd:lavender','xkcd:dark blue','xkcd:tan','xkcd:cyan','xkcd:aqua',
+        'xkcd:forest green','xkcd:mauve','xkcd:dark purple','xkcd:bright green','xkcd:maroon','xkcd:olive',
+        'xkcd:salmon','xkcd:beige','xkcd:royal blue','xkcd:navy','xkcd:lilac','xkcd:black',
+        'xkcd:hot pink','xkcd:light brown','xkcd:pale green','xkcd:peach','xkcd:olive green','xkcd:dark pink',
+        'xkcd:periwinkle','xkcd:sea green','xkcd:lime','xkcd:indigo','xkcd:mustard','xkcd:light pink'
+    ]  
+
+def create_legend(simple_ratios,unique_ratios,colours,ax,loc='lower center'):
+    '''
+    Used to create a second legend showung the unique ratios
+    
+    Parameters:
+        simple_ratios
+        unique_ratios
+        colours
+        ax
+        loc
+    '''
+    handles = [Patch(color=colours[simple_ratios.get_sequence(ratio[0],ratio[1])],
+                     label=f'{ratio[1]}:{ratio[0]}') 
+               for ratio in unique_ratios]
+    labels = [f'{ratio[1]}:{ratio[0]}' for ratio in unique_ratios]
+    return ax.legend(handles=handles, labels=labels,
+                     ncols=max(1,len(unique_ratios)//4),
+                     loc=loc,title=f'The {len(unique_ratios)} unique ratios')
+
 def main():
     '''
     Use the data in Appendix A to find the periods of all possible pairs of
     periods among the planates and the prograde salellites of Mars, Jupiter, Saturn, Uranus, 
     and Neptune, with mean radii > 100 km and orbital eccentricites < 0.1. Taking i_max =7, show
-    that thirty pairs of objects have ratios of orbital periods witin epsilon-max of a permitted
+    that thirty pairs of objects have ratios of orbital periods within epsilon-max of a permitted
     commensurability.
     '''
     rcParams['text.usetex'] = True
@@ -195,33 +230,28 @@ def main():
         resonances += Resonance.create(names,periods)
     
     acceptable_resonances = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
-    
-    unique_ratios = {f'{resonance.i1}:{resonance.i2}' for resonance in acceptable_resonances}
-    
-    colours = [
-        'xkcd:purple','xkcd:green','xkcd:blue','xkcd:pink','xkcd:brown','xkcd:red',
-        'xkcd:light blue','xkcd:teal','xkcd:orange','xkcd:light green','xkcd:magenta','xkcd:yellow',
-        'xkcd:sky blue','xkcd:grey','xkcd:lime green','xkcd:light purple','xkcd:violet','xkcd:dark green',
-        'xkcd:turquoise','xkcd:lavender','xkcd:dark blue','xkcd:tan','xkcd:cyan','xkcd:aqua',
-        'xkcd:forest green','xkcd:mauve','xkcd:dark purple','xkcd:bright green','xkcd:maroon','xkcd:olive'
-    ]  
-        
+    unique_ratios = {(resonance.i1,resonance.i2) for resonance in acceptable_resonances}
+    colours = create_xkcd_colours()  
+
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
-    ax1 = fig.add_subplot(1,1,1)
+    ax = fig.add_subplot(1,1,1)
     for r in acceptable_resonances:
-        ax1.scatter(r.i1,r.i2,
+        ax.scatter(r.i1,r.i2,
                     label=f'{r.name1}-{r.name2} {r.i2}:{r.i1}',
                     c=colours[simple_ratios.get_sequence(r.i1,r.i2)])
-    ax1.legend(ncols=max(1,len(acceptable_resonances)//12))
-    ax1.set_xlabel('$i_1$')
-    ax1.set_ylabel('$i_2$')
-    ax1.set_ylim((0,args.imax+1))
-    ax1.set_xlim((0,args.imax))
-    ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
-    ax1.set_title(f'$R>${args.R_min}, $e<${args.e_max}, $imax=${args.imax}. ' 
-                  f'There are {len(acceptable_resonances)} acceptable resonances with {len(unique_ratios)} unique ratios')
+    
+    legend1 = create_legend(simple_ratios,unique_ratios,colours,ax)
+    ax.legend(loc='lower right',ncols=max(1,len(acceptable_resonances)//12),
+              title=f'The {len(acceptable_resonances)} acceptable resonances')
+    fig.gca().add_artist(legend1)
+    ax.set_xlabel('$i_1$')
+    ax.set_ylabel('$i_2$')
+    ax.set_ylim((0,args.imax+1))
+    ax.set_xlim((0,args.imax))
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.set_title(f'$R>${args.R_min}, $e<${args.e_max}, $imax=${args.imax}.')
  
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
