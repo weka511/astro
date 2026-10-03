@@ -47,9 +47,9 @@ class SimpleRatios:
         pairs    Allowable ratios expressed as pairs
         ratios   Allowable ratios as floating poinbt values
         eps_max  Half separation of closest two rationals
-        cook     Cook's constant
+        cook     Cook's constant -- used to debug Issue #74 -- remove when fixed
     '''
-    def __init__(self,imax:int=7,cook=1.0):
+    def __init__(self,imax:int=7,cook:float=1.0):
         self.imax = imax
         self.pairs = sorted([(i1,i2) for i2 in range(1,imax+1) for i1 in range(1,i2)],key=lambda x:x[0]/x[1])
         self.ratios = [i1/i2 for i1,i2 in self.pairs]
@@ -126,7 +126,7 @@ class Resonance:
         Used to find the simple integer ratio that best matches this resonance
         
         Parameters:
-            simple_ratios   Object keepting track of commensurabilities   
+            simple_ratios   Object keeping track of commensurabilities   
         '''
         best_pair,distance = simple_ratios.get_match(self.T1/self.T2)
         if distance < simple_ratios.eps_max:
@@ -151,10 +151,11 @@ def parse_args():
     parser.add_argument('--cook',type=float,default=1.0,help='Cook\'s constant')
     return parser.parse_args()
 
-def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0):
+def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0,logger=None):
     '''
     Retrieve periods for acceptable planets and satellites. If the column for the period has no data,
-    use Kepler's Third Law to calculate periods
+    use Kepler's Third Law to calculate periods. (I'd like to remain consistent with Murray and Dermott, 
+    so I am  not using data from third parties except as a check).
     
     Parameters:
         path      Path to planetary data
@@ -165,14 +166,36 @@ def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0):
     Returns:
        Names of planets or satellites, and their orbital periods, 
        either read of calculated
+     
+    I have compared my calcukated values of T with values 
+    from https://en.wikipedia.org/wiki/Orbital_period  
+    
+    Mercury   0.24084236579905632     0.240846
+    Venus     0.6151859910713233      0.615
+    Earth     1.0                     1
+    Mars      1.8807584230745054      1.881
+    Jupiter   11.869327586344829     11.86
+    Saturn    29.452516340193995     29.46
+    Uranus    84.0727581815471       84.01
+    Neptune  164.88365834412897     164.8
+    Pluto    248.08098430718422     248.1
     '''
+    
     df = pd.read_csv(path)
     df_acceptable = df[(df['e'] < e_max) & (df['R'] > R_min)]
     names = df_acceptable[key].to_list()
     try:
         return names,df_acceptable['T'].to_numpy()
     except KeyError:
-        return names,df_acceptable['a'].to_numpy()**(3/2)
+        periods = df_acceptable['a'].to_numpy()**(3/2)
+        m = len(names)
+        
+        try:
+            for i in range(len(names)):
+                logger.info(f'{names[i]},{periods[i]/periods[2]}')
+        except AttributeError:
+            pass
+        return names,periods
 
 def create_xkcd_colours():
     '''
@@ -207,7 +230,7 @@ def create_legend(simple_ratios,unique_ratios,colours,ax,loc='lower center',max_
                      loc=loc,
                      title=f'The {len(unique_ratios)} unique ratios')
 
-def create_logger(path_name):
+def create_logger(path_name:str):
     '''
     Set up console logger and file logger
     
@@ -239,8 +262,7 @@ def main():
     args = parse_args()
     logger = create_logger(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     simple_ratios = SimpleRatios(cook=args.cook)
-    names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'))
-     
+    names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'),logger=logger) 
     resonances = Resonance.create(names,periods)
     
     for primary in args.names:
