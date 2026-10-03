@@ -41,10 +41,10 @@ class SimpleRatios:
     This class keeps track of the allowable commensurabilities.
     
     Attributes:
-        imax
-        pairs
-        ratios
-        eps_max
+        imax     Ratios are of from i1/i2 where i1<i2, i2 <= imax
+        pairs    Allowable ratios expressed as pairs
+        ratios   Allowable ratios as floating poinbt values
+        eps_max  Half sepration of closest two rationals
     '''
     def __init__(self,imax:int=7):
         self.imax = imax
@@ -78,12 +78,12 @@ class Resonance:
     This class keeps track of the actual ratios between a pair of orbits
     
     Attributes:
-        name1
-        name2
-        T1
-        T2
-        i1
-        i2
+        name1    Name of first planet or satellite
+        name2    Name of second planet or satellite
+        T1       Period of first planet or satellite
+        T2       Period of second planet or satellite
+        i1       First member of pair representing T1/T2
+        i2       Second member of pair representing T1/T2
     '''
     
     @staticmethod
@@ -141,12 +141,12 @@ def parse_args():
     parser.add_argument('names',nargs='*',help='File name for satellite data')
     parser.add_argument('--data', default='./data', help=f'Path to data files')
     parser.add_argument('--planets', default='planets',help='File name for planetary data')
-    parser.add_argument('--R_min', default=100, type=float,help='We require data to have R greater than this value')
-    parser.add_argument('--e_max', default=0.15, type=float,help='We reject data unless eccentricity less than this value')
+    parser.add_argument('--R_min', default=100, type=float,help='We require data for satellites to have R greater than this value')
+    parser.add_argument('--e_max', default=0.15, type=float,help='We require data for satellites to have eccentricity less than this value')
     parser.add_argument('--imax',default=7,type=int,help='Limit on denominator for acceptable ratios')
     return parser.parse_args()
 
-def get_periods(path:Path,key:str='Planet',e_max:float=0.15,R_min:float=0):
+def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0):
     '''
     Retrieve periods for acceptable planets and satellites. If the column for the period has no data,
     use Kepler's Third Law to calculate periods
@@ -182,8 +182,7 @@ def main():
     start  = time()
     args = parse_args()
     simple_ratios = SimpleRatios()
-    names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'),
-                                e_max=args.e_max)
+    names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'))
        
     resonances = Resonance.create(names,periods)
     
@@ -235,15 +234,3 @@ def main():
     
 if __name__=='__main__':
     main()
-
-#ax1.bar(observed_ratios,5,
-        #width=0.1,
-        #facecolor=colours,
-        #edgecolor='xkcd:white'
-#)
-#ax2 = fig.add_subplot(2,1,2)
-#ax2.bar(matched_ratios,5,
-        #width=0.1,
-        #facecolor=colours,
-        #edgecolor='xkcd:white'
-#)
