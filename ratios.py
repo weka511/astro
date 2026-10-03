@@ -185,7 +185,7 @@ def create_xkcd_colours():
         'xkcd:periwinkle','xkcd:sea green','xkcd:lime','xkcd:indigo','xkcd:mustard','xkcd:light pink'
     ]  
 
-def create_legend(simple_ratios,unique_ratios,colours,ax,loc='lower center'):
+def create_legend(simple_ratios,unique_ratios,colours,ax,loc='lower center',max_rows=4):
     '''
     Used to create a second legend showung the unique ratios
     
@@ -195,14 +195,13 @@ def create_legend(simple_ratios,unique_ratios,colours,ax,loc='lower center'):
         colours
         ax
         loc
-    '''
-    handles = [Patch(color=colours[simple_ratios.get_sequence(ratio[0],ratio[1])],
-                     label=f'{ratio[1]}:{ratio[0]}') 
-               for ratio in unique_ratios]
-    labels = [f'{ratio[1]}:{ratio[0]}' for ratio in unique_ratios]
-    return ax.legend(handles=handles, labels=labels,
-                     ncols=max(1,len(unique_ratios)//4),
-                     loc=loc,title=f'The {len(unique_ratios)} unique ratios')
+    ''' 
+    return ax.legend(handles = [Patch(color=colours[simple_ratios.get_sequence(ratio[0],ratio[1])],
+                                      label=f'{ratio[1]}:{ratio[0]}') 
+                                for ratio in unique_ratios], 
+                     ncols=max(1,len(unique_ratios)//max_rows),
+                     loc=loc,
+                     title=f'The {len(unique_ratios)} unique ratios')
 
 def main():
     '''
@@ -218,7 +217,7 @@ def main():
     args = parse_args()
     simple_ratios = SimpleRatios()
     names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'))
-       
+     
     resonances = Resonance.create(names,periods)
     
     for primary in args.names:
@@ -251,7 +250,8 @@ def main():
     ax.set_xlim((0,args.imax))
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.set_title(f'$R>${args.R_min}, $e<${args.e_max}, $imax=${args.imax}.')
+    names = ', '.join(name.title() for name in args.names)
+    ax.set_title(f'Planets, plus satellites of {names}: $R>${args.R_min}, $e<${args.e_max}, $imax=${args.imax}.')
  
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
@@ -260,7 +260,6 @@ def main():
     print (f'Elapsed Time {minutes} m {seconds:.2f} s')
     if args.show:
         show()
-    
     
 if __name__=='__main__':
     main()
