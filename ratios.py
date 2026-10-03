@@ -24,9 +24,10 @@ commensurability.
 '''
 
 from argparse import ArgumentParser
+from logging import basicConfig,getLogger,INFO,FileHandler,StreamHandler,Formatter
 from pathlib import Path
 from sys import float_info
-from time import time
+from time import strftime,time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 from matplotlib.ticker import MaxNLocator
@@ -45,13 +46,14 @@ class SimpleRatios:
         imax     Ratios are of from i1/i2 where i1<i2, i2 <= imax
         pairs    Allowable ratios expressed as pairs
         ratios   Allowable ratios as floating poinbt values
-        eps_max  Half sepration of closest two rationals
+        eps_max  Half separation of closest two rationals
+        cook     Cook's constant
     '''
-    def __init__(self,imax:int=7):
+    def __init__(self,imax:int=7,cook=1.0):
         self.imax = imax
         self.pairs = sorted([(i1,i2) for i2 in range(1,imax+1) for i1 in range(1,i2)],key=lambda x:x[0]/x[1])
         self.ratios = [i1/i2 for i1,i2 in self.pairs]
-        self.eps_max = 0.5*min([a-b for a in self.ratios for b in self.ratios if a > b])
+        self.eps_max = cook*0.5/(imax*(imax-1))
         
     def get_match(self,target:float):
         '''
@@ -141,10 +143,12 @@ def parse_args():
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('names',nargs='*',help='File name for satellite data')
     parser.add_argument('--data', default='./data', help=f'Path to data files')
-    parser.add_argument('--planets', default='planets',help='File name for planetary data')
-    parser.add_argument('--R_min', default=100, type=float,help='We require data for satellites to have R greater than this value')
-    parser.add_argument('--e_max', default=0.15, type=float,help='We require data for satellites to have eccentricity less than this value')
+    parser.add_argument('--planets',default='planets',help='File name for planetary data')
+    parser.add_argument('--R_min',default=100, type=float,help='We require data for satellites to have R greater than this value')
+    parser.add_argument('--e_max',default=0.15, type=float,help='We require data for satellites to have eccentricity less than this value')
     parser.add_argument('--imax',default=7,type=int,help='Limit on denominator for acceptable ratios')
+    parser.add_argument('--logs',default='./logs', help=f'Path to log files')
+    parser.add_argument('--cook',type=float,default=1.0,help='Cook\'s constant')
     return parser.parse_args()
 
 def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0):
@@ -187,7 +191,7 @@ def create_xkcd_colours():
 
 def create_legend(simple_ratios,unique_ratios,colours,ax,loc='lower center',max_rows=4):
     '''
-    Used to create a second legend showung the unique ratios
+    Used to create a second legend showing the unique ratios
     
     Parameters:
         simple_ratios
@@ -203,6 +207,24 @@ def create_legend(simple_ratios,unique_ratios,colours,ax,loc='lower center',max_
                      loc=loc,
                      title=f'The {len(unique_ratios)} unique ratios')
 
+def create_logger(path_name):
+    '''
+    Set up console logger and file logger
+    
+    Parameters:
+        path_name    Path name for log file
+    '''
+    def add_handler(handler,logger,formatter=Formatter('%(message)s')):
+        handler.setLevel(INFO)
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)    
+    product = getLogger(__name__)
+    product.setLevel(INFO)
+    add_handler(FileHandler(path_name),product)
+    add_handler(StreamHandler(),product)   
+    np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
+    return product
+
 def main():
     '''
     Use the data in Appendix A to find the periods of all possible pairs of
@@ -215,7 +237,8 @@ def main():
     rcParams['figure.constrained_layout.use'] = True
     start  = time()
     args = parse_args()
-    simple_ratios = SimpleRatios()
+    logger = create_logger(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
+    simple_ratios = SimpleRatios(cook=args.cook)
     names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'))
      
     resonances = Resonance.create(names,periods)
@@ -230,15 +253,20 @@ def main():
     
     acceptable_resonances = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
     unique_ratios = {(resonance.i1,resonance.i2) for resonance in acceptable_resonances}
+    logger.info('Unique resonances')
+    for ratio in unique_ratios:
+        logger.info(f'{ratio[1]}:{ratio[0]}')
     colours = create_xkcd_colours()  
 
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax = fig.add_subplot(1,1,1)
+    logger.info('All resonances')
     for r in acceptable_resonances:
         ax.scatter(r.i1,r.i2,
                     label=f'{r.name1}-{r.name2} {r.i2}:{r.i1}',
                     c=colours[simple_ratios.get_sequence(r.i1,r.i2)])
+        logger.info(f'{r.name1}-{r.name2} {r.i2}:{r.i1}')
     
     legend1 = create_legend(simple_ratios,unique_ratios,colours,ax)
     ax.legend(loc='lower right',ncols=max(1,len(acceptable_resonances)//12),
