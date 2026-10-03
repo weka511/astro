@@ -24,7 +24,6 @@ commensurability.
 '''
 
 from argparse import ArgumentParser
-from csv import reader
 from pathlib import Path
 from sys import float_info
 from time import time
@@ -40,34 +39,78 @@ __author__ = 'Simon Crase'
 class SimpleRatios:
     '''
     This class keeps track of the allowable commensurabilities.
+    
+    Attributes:
+        imax
+        pairs
+        ratios
+        eps_max
     '''
-    def __init__(self,imax=7):
+    def __init__(self,imax:int=7):
         self.imax = imax
         self.pairs = sorted([(i1,i2) for i2 in range(1,imax+1) for i1 in range(1,i2)],key=lambda x:x[0]/x[1])
         self.ratios = [i1/i2 for i1,i2 in self.pairs]
-        differences = [a-b for a in self.ratios for b in self.ratios if a > b]
-        self.eps_max = 0.5*min(differences)
+        self.eps_max = 0.5*min([a-b for a in self.ratios for b in self.ratios if a > b])
         
-    def get_match(self,ratio):
-        best = np.argmin(abs(ratio-self.ratios))
-        return self.pairs[best],abs(ratio-self.ratios[best])
+    def get_match(self,target:float):
+        '''
+        Find the pair whose ratio is the best match to one that has been supplied
+        
+        Parameters:
+            target  
+        '''
+        best = np.argmin(abs(target - self.ratios))
+        return self.pairs[best],abs(target-self.ratios[best])
     
-    def get_sequence(self,i1,i2):
-        return [i for i in range(len(self.pairs)) if (i1,i2) == self.pairs[i]][0]
+    def get_sequence(self,i1:int,i2:int):
+        '''
+        A function used to assign a sequence number to each pair,
+        e.g. for selecting colours
+        
+        Parameters:
+            i1
+            i2
+        '''
+        return self.pairs.index((i1,i2))
     
 class Resonance:
     '''
-    Thix class keeps track of the actual ratios between orbits
+    This class keeps track of the actual ratios between a pair of orbits
+    
+    Attributes:
+        name1
+        name2
+        T1
+        T2
+        i1
+        i2
     '''
     
     @staticmethod
-    def create(names,periods):
+    def create(names:[str],periods:[float]):
+        '''
+        Populate a list with all possible pairs of orbits 
+        from a group of planets or satellites
+        
+        Parameters:
+           names     List of names of planets or satellites
+           periods   List of periods for orbits, one for each name
+        '''
         return [Resonance(names[i],names[j],periods[i],periods[j]) 
                           for i in range(len(names)) 
                           for j in range(i+1,len(names))
                           if periods[i] > 0 and periods[j] > 0]
     
-    def __init__(self,name1,name2,T1,T2):
+    def __init__(self,name1:str,name2:str,T1:float,T2:float):
+        '''
+        Create a Resonance
+        
+        Parameters:
+            name1
+            name2
+            T1
+            T2
+        '''
         self.name1 = name1
         self.name2 = name2
         self.T1 = T1
@@ -76,6 +119,12 @@ class Resonance:
         self.i2 = None
         
     def can_match(self,simple_ratios):
+        '''
+        Used to find the simple integer ratio that best matches this resonance
+        
+        Parameters:
+            simple_ratios   Object keepting track of commensurabilities   
+        '''
         best_pair,distance = simple_ratios.get_match(self.T1/self.T2)
         if distance < simple_ratios.eps_max:
             self.i1,self.i2 = best_pair
@@ -97,7 +146,7 @@ def parse_args():
     parser.add_argument('--imax',default=7,type=int,help='Limit on denominator for acceptable ratios')
     return parser.parse_args()
 
-def get_periods(path,key='Planet',e_max=0.15,R_min=0):
+def get_periods(path:Path,key:str='Planet',e_max:float=0.15,R_min:float=0):
     '''
     Retrieve periods for acceptable planets and satellites. If the column for the period has no data,
     use Kepler's Third Law to calculate periods
@@ -109,7 +158,7 @@ def get_periods(path,key='Planet',e_max=0.15,R_min=0):
         R_min     We require data to have R greater than this value
         
     Returns:
-       Names of planets or satellites, and their oribital periods, 
+       Names of planets or satellites, and their orbital periods, 
        either read of calculated
     '''
     df = pd.read_csv(path)
@@ -172,7 +221,8 @@ def main():
     ax1.set_xlim((0,args.imax))
     ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax1.yaxis.set_major_locator(MaxNLocator(integer=True))
-    ax1.set_title(f'There are {len(acceptable_resonances)} acceptable resonances with {len(unique_ratios)} unique ratios')
+    ax1.set_title(f'$R>${args.R_min}, $e<${args.e_max}, $imax=${args.imax}. ' 
+                  f'There are {len(acceptable_resonances)} acceptable resonances with {len(unique_ratios)} unique ratios')
  
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
