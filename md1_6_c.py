@@ -86,7 +86,7 @@ def calculate_ratios(Max_imax):
         Nr_naive.append(imax*(imax-1)//2)
         for i in range(1,imax):
             ratios.append((i,imax))
-        ratios = purge_duplicates(ratios)
+        ratios = sorted(purge_duplicates(ratios),key=lambda ratio:ratio[1]*imax+ratio[0])
         Nrs.append((len(ratios)))
         Logger.instance.info(ratios)
         
