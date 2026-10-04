@@ -46,13 +46,17 @@ class SimpleRatios:
         imax     Ratios are of from i1/i2 where i1<i2, i2 <= imax
         pairs    Allowable ratios expressed as pairs
         ratios   Allowable ratios as floating poinbt values
-        eps_max  Half separation of closest two rationals
     '''
-    def __init__(self,imax:int=7,cook:float=1.0):
+    def __init__(self,imax:int=7):
         self.imax = imax
         self.pairs = sorted([(i1,i2) for i2 in range(1,imax+1) for i1 in range(1,i2)],key=lambda x:x[0]/x[1])
         self.ratios = [i1/i2 for i1,i2 in self.pairs]
-        self.eps_max = 0.5/(imax*(imax-1))
+        
+    def get_eps_max(self):
+        '''
+        Half the separation of the two closest ratios
+        '''
+        return 0.5/(self.imax*(self.imax-1))
         
     def get_match(self,target:float):
         '''
@@ -128,7 +132,7 @@ class Resonance:
             simple_ratios   Object keeping track of commensurabilities   
         '''
         best_pair,distance = simple_ratios.get_match(self.T1/self.T2)
-        if distance < simple_ratios.eps_max:
+        if distance < simple_ratios.get_eps_max():
             self.i1,self.i2 = best_pair
             return True
         return False
