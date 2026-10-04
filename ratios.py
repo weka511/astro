@@ -214,7 +214,7 @@ def create_xkcd_colours():
         'xkcd:periwinkle','xkcd:sea green','xkcd:lime','xkcd:indigo','xkcd:mustard','xkcd:light pink'
     ]  
 
-def create_legend(simple_ratios,unique_ratios,colours,ax,loc='lower center',max_rows=4):
+def create_legend(simple_ratios,unique_ratios,colours,ax,loc='lower left',max_rows=4):
     '''
     Used to create a second legend showing the unique ratios
     
@@ -276,6 +276,7 @@ def main():
         resonances += Resonance.create(names,periods)
     
     acceptable_resonances = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
+    logger.info(f'There were {len(acceptable_resonances)} out of {len(resonances)} possible')
     unique_ratios = {(resonance.i1,resonance.i2) for resonance in acceptable_resonances}
     logger.info('Unique resonances')
     for ratio in unique_ratios:
@@ -293,8 +294,8 @@ def main():
         logger.info(f'{r.name1}-{r.name2} {r.i2}:{r.i1}')
     
     legend1 = create_legend(simple_ratios,unique_ratios,colours,ax)
-    ax.legend(loc='lower right',ncols=max(1,len(acceptable_resonances)//12),
-              title=f'The {len(acceptable_resonances)} acceptable resonances')
+    ax.legend(loc='lower right',ncols=max(1,len(acceptable_resonances)//8),
+              title=f'The {len(acceptable_resonances)} acceptable resonances out of out of {len(resonances)} ')
     fig.gca().add_artist(legend1)
     ax.set_xlabel('$i_1$')
     ax.set_ylabel('$i_2$')
