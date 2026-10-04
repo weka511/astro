@@ -41,24 +41,27 @@ def parse_args():
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('-I','--Max_imax',type=int, default=7)
     return parser.parse_args()
- 
-def create_logger(path_name:str):
-    '''
-    Set up console logger and file logger
+
+class Logger: 
+    instance = None
     
-    Parameters:
-        path_name    Path name for log file
-    '''
-    def add_handler(handler,logger,formatter=Formatter('%(message)s'),level:int=INFO):
-        handler.setLevel(level)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)    
-    product = getLogger(__name__)
-    product.setLevel(DEBUG)
-    add_handler(FileHandler(path_name),product,level=DEBUG)
-    add_handler(StreamHandler(),product)   
-    np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
-    return product
+    @staticmethod
+    def create(path_name:str):
+        '''
+        Set up console logger and file logger
+        
+        Parameters:
+            path_name    Path name for log file
+        '''
+        def add_handler(handler,logger,formatter=Formatter('%(message)s'),level:int=INFO):
+            handler.setLevel(level)
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)    
+        Logger.instance = getLogger(__name__)
+        Logger.instance.setLevel(DEBUG)
+        add_handler(FileHandler(path_name),Logger.instance,level=DEBUG)
+        add_handler(StreamHandler(),Logger.instance)   
+        np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
 
 def purge_duplicates(ratios):
     result = set()
@@ -73,6 +76,22 @@ def purge_duplicates(ratios):
                    
     return list(result)
 
+def calculate_ratios(Max_imax):
+    ratios = [(1,2)]
+    Nrs = []
+    i_maxen = []
+    Nr_naive = []
+    for imax in range(3,Max_imax+1):
+        i_maxen.append(imax)
+        Nr_naive.append(imax*(imax-1)//2)
+        for i in range(1,imax):
+            ratios.append((i,imax))
+        ratios = purge_duplicates(ratios)
+        Nrs.append((len(ratios)))
+        Logger.instance.info(ratios)
+        
+    return i_maxen,Nr_naive,Nrs
+
 def main():
     '''
     Monte Carlo simulation for Murray & Dermott 1.6 (c) and (d)
@@ -80,19 +99,9 @@ def main():
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
-    logger = create_logger(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
-    ratios = [(1,2)]
-    Nrs = []
-    i_maxen = []
-    Nr_naive = []
-    for imax in range(3,args.Max_imax+1):
-        i_maxen.append(imax)
-        Nr_naive.append(imax*(imax-1)//2)
-        for i in range(1,imax):
-            ratios.append((i,imax))
-        ratios = purge_duplicates(ratios)
-        Nrs.append((len(ratios)))
-
+    Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
+    
+    i_maxen,Nr_naive,Nrs = calculate_ratios(args.Max_imax)
         
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
