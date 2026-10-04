@@ -24,7 +24,7 @@ commensurability.
 '''
 
 from argparse import ArgumentParser
-from logging import basicConfig,getLogger,INFO,FileHandler,StreamHandler,Formatter
+from logging import basicConfig,getLogger,INFO,FileHandler,StreamHandler,Formatter,DEBUG
 from pathlib import Path
 from sys import float_info
 from time import strftime,time
@@ -194,7 +194,7 @@ def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0,logger=
         
         try:
             for i in range(len(names)):
-                logger.info(f'{names[i]},{periods[i]/periods[2]}')
+                logger.debug(f'{names[i]},{periods[i]/periods[2]}')
         except AttributeError:
             pass
         return names,periods
@@ -239,13 +239,13 @@ def create_logger(path_name:str):
     Parameters:
         path_name    Path name for log file
     '''
-    def add_handler(handler,logger,formatter=Formatter('%(message)s')):
-        handler.setLevel(INFO)
+    def add_handler(handler,logger,formatter=Formatter('%(message)s'),level:int=INFO):
+        handler.setLevel(level)
         handler.setFormatter(formatter)
         logger.addHandler(handler)    
     product = getLogger(__name__)
-    product.setLevel(INFO)
-    add_handler(FileHandler(path_name),product)
+    product.setLevel(DEBUG)
+    add_handler(FileHandler(path_name),product,level=DEBUG)
     add_handler(StreamHandler(),product)   
     np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
     return product
