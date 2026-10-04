@@ -63,34 +63,37 @@ class Logger:
         add_handler(StreamHandler(),Logger.instance)   
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
 
-def purge_duplicates(ratios):
-    result = set()
-    for a,b in ratios:
-        factor = 2
-        while factor <= a:
-            if a%factor == 0 and b%factor == 0:
-                a //= factor
-                b //= factor
-            factor += 1
-        result.add((a,b))
-                   
-    return list(result)
-
-def calculate_ratios(Max_imax):
-    ratios = [(1,2)]
-    Nrs = []
-    i_maxen = []
-    Nr_naive = []
-    for imax in range(3,Max_imax+1):
-        i_maxen.append(imax)
-        Nr_naive.append(imax*(imax-1)//2)
-        for i in range(1,imax):
-            ratios.append((i,imax))
-        ratios = sorted(purge_duplicates(ratios),key=lambda ratio:ratio[1]*imax+ratio[0])
-        Nrs.append((len(ratios)))
-        Logger.instance.debug(ratios)
+class Ratios:
+    def __init__(self):
+        self.ratios = [(1,2)]
+        self.Nrs = []
+        self.i_maxen = []
+        self.Nr_naive = []
         
-    return i_maxen,Nr_naive,Nrs
+    def build(self,Max_imax):
+        for imax in range(3,Max_imax+1):
+            self.i_maxen.append(imax)
+            self.Nr_naive.append(imax*(imax-1)//2)
+            for i in range(1,imax):
+                self.ratios.append((i,imax))
+            self.ratios = sorted(self._purge_duplicates(self.ratios),
+                                 key=lambda ratio:ratio[1]*imax+ratio[0])
+            self.Nrs.append((len(self.ratios)))
+            Logger.instance.debug(self.ratios)
+            
+    def _purge_duplicates(self,ratios):
+        result = set()
+        for a,b in ratios:
+            factor = 2
+            while factor <= a:
+                if a%factor == 0 and b%factor == 0:
+                    a //= factor
+                    b //= factor
+                factor += 1
+            result.add((a,b))
+                       
+        return list(result)    
+
 
 def main():
     '''
@@ -101,13 +104,14 @@ def main():
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     
-    i_maxen,Nr_naive,Nrs = calculate_ratios(args.Max_imax)
+    ratios = Ratios()
+    ratios.build(args.Max_imax)
         
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    ax1.scatter(i_maxen,Nr_naive,marker='x')
-    ax1.scatter(i_maxen,Nrs,marker='+')
+    ax1.scatter(ratios.i_maxen,ratios.Nr_naive,marker='x')
+    ax1.scatter(ratios.i_maxen,ratios.Nrs,marker='+')
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
