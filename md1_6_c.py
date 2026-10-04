@@ -59,7 +59,20 @@ def create_logger(path_name:str):
     add_handler(StreamHandler(),product)   
     np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
     return product
-    
+
+def purge_duplicates(ratios):
+    result = set()
+    for a,b in ratios:
+        factor = 2
+        while factor <= a:
+            if a%factor == 0 and b%factor == 0:
+                a //= factor
+                b //= factor
+            factor += 1
+        result.add((a,b))
+                   
+    return list(result)
+
 def main():
     '''
     Monte Carlo simulation for Murray & Dermott 1.6 (c) and (d)
@@ -68,15 +81,24 @@ def main():
     start  = time()
     args = parse_args()
     logger = create_logger(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
-    Nr = 0
+    ratios = [(1,2)]
+    Nrs = []
+    i_maxen = []
     Nr_naive = []
-    for imax in range(args.Max_imax+1):
-        Nr_naive.append(imax*(imax+1)/2)
+    for imax in range(3,args.Max_imax+1):
+        i_maxen.append(imax)
+        Nr_naive.append(imax*(imax-1)//2)
+        for i in range(1,imax):
+            ratios.append((i,imax))
+        ratios = purge_duplicates(ratios)
+        Nrs.append((len(ratios)))
+
         
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
-    ax1.plot(Nr_naive)
+    ax1.scatter(i_maxen,Nr_naive,marker='x')
+    ax1.scatter(i_maxen,Nrs,marker='+')
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
