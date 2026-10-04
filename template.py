@@ -39,23 +39,30 @@ def parse_args():
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     return parser.parse_args()
 
-def create_logger(path_name:str):
+
+class Logger: 
     '''
-    Set up console logger and file logger
+    Singleton Logger
+    '''
+    instance = None
     
-    Parameters:
-        path_name    Path name for log file
-    '''
-    def add_handler(handler,logger,formatter=Formatter('%(message)s'),level:int=INFO):
-        handler.setLevel(level)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)    
-    product = getLogger(__name__)
-    product.setLevel(DEBUG)
-    add_handler(FileHandler(path_name),product,level=DEBUG)
-    add_handler(StreamHandler(),product)   
-    np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
-    return product
+    @staticmethod
+    def create(path_name:str):
+        '''
+        Set up console logger and file logger
+        
+        Parameters:
+            path_name    Path name for log file
+        '''
+        def add_handler(handler,logger,formatter=Formatter('%(message)s'),level:int=INFO):
+            handler.setLevel(level)
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)    
+        Logger.instance = getLogger(__name__)
+        Logger.instance.setLevel(DEBUG)
+        add_handler(FileHandler(path_name),Logger.instance,level=DEBUG)
+        add_handler(StreamHandler(),Logger.instance)   
+        np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
     
 def main():
     '''
@@ -64,7 +71,7 @@ def main():
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
-    logger = create_logger(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
+    Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
