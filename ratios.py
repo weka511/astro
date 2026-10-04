@@ -47,13 +47,12 @@ class SimpleRatios:
         pairs    Allowable ratios expressed as pairs
         ratios   Allowable ratios as floating poinbt values
         eps_max  Half separation of closest two rationals
-        cook     Cook's constant -- used to debug Issue #74 -- remove when fixed
     '''
     def __init__(self,imax:int=7,cook:float=1.0):
         self.imax = imax
         self.pairs = sorted([(i1,i2) for i2 in range(1,imax+1) for i1 in range(1,i2)],key=lambda x:x[0]/x[1])
         self.ratios = [i1/i2 for i1,i2 in self.pairs]
-        self.eps_max = cook*0.5/(imax*(imax-1))
+        self.eps_max = 0.5/(imax*(imax-1))
         
     def get_match(self,target:float):
         '''
@@ -148,7 +147,6 @@ def parse_args():
     parser.add_argument('--e_max',default=0.15, type=float,help='We require data for satellites to have eccentricity less than this value')
     parser.add_argument('--imax',default=7,type=int,help='Limit on denominator for acceptable ratios')
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
-    parser.add_argument('--cook',type=float,default=1.0,help='Cook\'s constant')
     return parser.parse_args()
 
 def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0,logger=None):
@@ -261,7 +259,7 @@ def main():
     start  = time()
     args = parse_args()
     logger = create_logger(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
-    simple_ratios = SimpleRatios(cook=args.cook)
+    simple_ratios = SimpleRatios()
     names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'),logger=logger) 
     resonances = Resonance.create(names,periods)
     
