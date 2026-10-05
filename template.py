@@ -74,7 +74,7 @@ def main():
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
-    ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
+    ax1 = fig.add_subplot(1,1,1)
     ...
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
