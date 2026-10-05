@@ -266,7 +266,8 @@ class Ratios:
     
     def get_P(self,Np,Nobs,p):
         '''
-        Probability that ensemble of ratios is commensurable
+        Probability that ensemble of ratios is commensurable.
+        This is just the binomial distribution.
         '''        
         return binom(Np,Nobs) * p**Np * (1-p)**(Np-Nobs)
                  
@@ -278,7 +279,6 @@ class Ratios:
             self.ratios = sorted(self._purge_duplicates(self.ratios),
                                  key=lambda ratio:ratio[1]*imax+ratio[0])
         self.Nrs.append((len(self.ratios)))
-        Logger.instance.info(self.ratios)
             
     def _purge_duplicates(self,ratios):
         result = set()
@@ -349,9 +349,20 @@ def main():
     start  = time()
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
+    
+    ratios = Ratios()
+    ratios.build(args.imax)
+    p_commensurable = ratios.get_p()
+    
     simple_ratios = SimpleRatios()
     names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv')) 
     resonances = Resonance.create(names,periods)
+    
+    all_acceptable_resonances = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
+    
+    P1 = ['All Planets']
+    P2 = [ratios.get_P(len(all_acceptable_resonances),len(periods),p_commensurable)]
+    Logger.instance.info(f'P ({P1[-1]}) = {P2[-1]}')
     
     for primary in args.names:
         names,periods = get_periods((Path(args.data)/primary).with_suffix('.csv'),
@@ -359,28 +370,28 @@ def main():
                                     e_max=args.e_max,
                                     R_min=args.R_min)
         
-        resonances += Resonance.create(names,periods)
-    
-    acceptable_resonances = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
-    Logger.instance.info(f'There were {len(acceptable_resonances)} out of {len(resonances)} possible')
-    unique_ratios = {(resonance.i1,resonance.i2) for resonance in acceptable_resonances}
-    Logger.instance.info('Unique resonances')
-    for ratio in unique_ratios:
-        Logger.instance.info(f'{ratio[1]}:{ratio[0]}')
+        resonances = Resonance.create(names,periods)
+        acceptable_resonances = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
+        if len(acceptable_resonances) > 0:
+            P1.append(primary)
+            P2.append(ratios.get_P(len(acceptable_resonances),len(periods),p_commensurable))
+            Logger.instance.info(f'P ({P1[-1]}) = {P2[-1]}')
+            all_acceptable_resonances += acceptable_resonances
         
-    ratios = Ratios()
-    ratios.build(args.imax)
-    p = ratios.get_p()
-    P = ratios.get_P(70,30,p)
+    unique_ratios = {(resonance.i1,resonance.i2) for resonance in all_acceptable_resonances}
+    Logger.instance.debug('Unique resonances')
+    for ratio in unique_ratios:
+        Logger.instance.debug(f'{ratio[1]}:{ratio[0]}')
+
     colours = create_xkcd_colours()  
 
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
-    ax = fig.add_subplot(1,1,1)
-    Logger.instance.info('All resonances')
+    ax = fig.add_subplot(2,1,1)
+    Logger.instance.debug('All resonances')
     counts = {}
     labels = {}
-    for r in acceptable_resonances:
+    for r in all_acceptable_resonances:
         try:
             counts[f'{r.i1}:{r.i2}'] += 1
             labels[f'{r.i1}:{r.i2}'] += f', {r.name1}-{r.name2}'
@@ -388,15 +399,14 @@ def main():
             counts[f'{r.i1}:{r.i2}'] = 1
             labels[f'{r.i1}:{r.i2}'] = f'{r.i1}:{r.i2} {r.name1}-{r.name2}'
  
-        Logger.instance.info(f'{r.name1}-{r.name2} {r.i2}:{r.i1}')
+        Logger.instance.debug(f'{r.name1}-{r.name2} {r.i2}:{r.i1}')
     keys =  sorted(list(counts.keys()),key=frac)  
     ax.bar(keys,[counts[key] for key in keys],
            width=0.5,
            color=colours,label=[labels[key] for key in keys])
     ax.set_xlim((-0.6, len(keys) - 0.4))
-    ax.legend(ncols=2,title=f'There are {len(acceptable_resonances)} acceptable resonances')
+    ax.legend(ncols=2,title=f'There are {len(all_acceptable_resonances)} acceptable resonances')
     
-
     ax.set_xlabel('$i_1$')
     ax.set_ylabel('$i_2$')
     ax.set_xmargin(0.5)
@@ -404,6 +414,11 @@ def main():
     names = ', '.join(name.title() for name in args.names)
     ax.set_title(f'Planets, plus satellites of {names}: $R>${args.R_min}, $e<${args.e_max}, $imax=${args.imax}.')
  
+    ax2 = fig.add_subplot(2,1,2)
+    ax2.bar(P1,P2,width=0.5,color=colours[len(keys):],label=P1)
+    ax2.legend()
+    ax2.set_title('Probabality of observed nmber of commensurabilities')
+    
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
     minutes = int(elapsed/60)
