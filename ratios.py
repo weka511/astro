@@ -23,15 +23,8 @@ that thirty pairs of objects have ratios of orbital periods witin epsilon-max of
 commensurability.
 '''
 
-from argparse import ArgumentParser
-from logging import basicConfig,getLogger,INFO,FileHandler,StreamHandler,Formatter,DEBUG
 from pathlib import Path
-#from sys import float_info
-#from time import strftime,time
-#from matplotlib.pyplot import figure, show
-#from matplotlib import rcParams
-#from matplotlib.ticker import MaxNLocator
-#from matplotlib.patches import Patch
+from unittest import main,TestCase
 import numpy as np
 from scipy.special import binom
 import pandas as pd
@@ -286,5 +279,13 @@ def factorize(n,primes):
             n //= p
     return factors   
 
+def get_bounds(n1,n2):
+    return (3,2)
 
+class TestBounds(TestCase):
+    def test32(self):
+        self.assertEqual((3,2),get_bounds(5,6))
+        
+if __name__ == '__main__':
+    main()
 
