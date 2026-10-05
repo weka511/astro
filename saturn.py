@@ -25,7 +25,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 from matplotlib.pyplot import figure, show
 import numpy as np
-from lmdata import create_data
+from md_data import create_data
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -108,10 +108,8 @@ def parse_args():
                          default=['Epimetheus','Telesto','Calypso','Helene'],
                          nargs='*',
                          help='A list of satellites whose data are to be ignored') 
-     parser.add_argument('--bins',default=10,type=int,help='Number of bins for histogram')
+     parser.add_argument('--bins',default=100,type=int,help='Number of bins for histogram')
      return parser.parse_args()
-
-
 
 def get_bar(mean_motion_ratios,tolerance=0.15):
      '''
