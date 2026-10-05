@@ -253,6 +253,12 @@ class Ratios:
             self.Nr_naive.append(imax*(imax-1)//2)
             self._add_ratios(imax,primes)
             self.eps_max.append(0.5/(imax*(imax-1)))
+            
+    def get_p(self):
+        Nr = max(self.Nrs)
+        imax = max(self.i_maxen)
+        eps_max = min(self.eps_max)
+        return (2*eps_max*Nr) / ((imax-2)/imax+ eps_max)
                  
     def _add_ratios(self,imax,primes):
         for i in range(1,imax):
@@ -351,6 +357,10 @@ def main():
     Logger.instance.info('Unique resonances')
     for ratio in unique_ratios:
         Logger.instance.info(f'{ratio[1]}:{ratio[0]}')
+        
+    ratios = Ratios()
+    ratios.build(args.imax)
+    p = ratios.get_p()
     colours = create_xkcd_colours()  
 
     fig = figure(figsize=(12,12))
