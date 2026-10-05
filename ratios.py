@@ -33,6 +33,7 @@ from matplotlib import rcParams
 from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Patch
 import numpy as np
+from scipy.special import binom
 import pandas as pd
 
 __version__ = '1.0'
@@ -255,10 +256,19 @@ class Ratios:
             self.eps_max.append(0.5/(imax*(imax-1)))
             
     def get_p(self):
+        '''
+        Probability that a given ratio is commensurable
+        '''
         Nr = max(self.Nrs)
         imax = max(self.i_maxen)
         eps_max = min(self.eps_max)
         return (2*eps_max*Nr) / ((imax-2)/imax+ eps_max)
+    
+    def get_P(self,Np,Nobs,p):
+        '''
+        Probability that ensemble of ratios is commensurable
+        '''        
+        return binom(Np,Nobs) * p**Np * (1-p)**(Np-Nobs)
                  
     def _add_ratios(self,imax,primes):
         for i in range(1,imax):
@@ -361,6 +371,7 @@ def main():
     ratios = Ratios()
     ratios.build(args.imax)
     p = ratios.get_p()
+    P = ratios.get_P(70,30,p)
     colours = create_xkcd_colours()  
 
     fig = figure(figsize=(12,12))
