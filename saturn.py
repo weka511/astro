@@ -22,7 +22,6 @@ motions to consider in the Saturn System.
 '''
 
 from argparse import ArgumentParser
-
 from pathlib import Path
 from matplotlib.pyplot import figure, show
 import numpy as np
@@ -104,6 +103,12 @@ def parse_args():
      parser.add_argument('--data', default='./data', help=f'Path to data files')
      parser.add_argument('--figs', default='./figs', help=f'Path to plots')
      parser.add_argument('--tolerance',default=0.15,type=float)
+     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+     parser.add_argument('--exclude',
+                         default=['Epimetheus','Telesto','Calypso','Helene'],
+                         nargs='*',
+                         help='A list of satellites whose data are to be ignored') 
+     parser.add_argument('--bins',default=10,type=int,help='Number of bins for histogram')
      return parser.parse_args()
 
 
@@ -125,14 +130,16 @@ def get_bar(mean_motion_ratios,tolerance=0.15):
 
 def main():
      args = parse_args()
-     names_and_periods = create_data((Path(args.data)/Path(__file__).stem).with_suffix('.csv'))
+     names_and_periods = create_data(
+                              (Path(args.data)/Path(__file__).stem).with_suffix('.csv'),
+                              exclude=args.exclude )
      mean_motion_ratios,count = create_mean_motion_ratios(names_and_periods)
 
      labels,cc,bar_colours = get_bar(mean_motion_ratios,tolerance=args.tolerance)
      cs = sorted([abs(c) for _,_,_,_,c in mean_motion_ratios])
      fig = figure(figsize=(12, 12))
      ax1 = fig.add_subplot(2, 1, 1)
-     ax1.hist(cs,bins=100,color='skyblue', edgecolor='white' )
+     ax1.hist(cs,bins=args.bins,color='skyblue', edgecolor='white' )
      ax1.set_title(f'Distribution of c. There are {count} distinct ratios')
      ax1.set_xlabel('c')
      ax2 = fig.add_subplot(2, 1, 2)
@@ -142,7 +149,8 @@ def main():
      fig.tight_layout(h_pad=2)
      fig.savefig(Path(args.figs)/Path(__file__).stem)
 
-     show()
+     if args.show:
+          show()
 
 if __name__ == '__main__':
      main()
