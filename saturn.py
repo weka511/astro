@@ -36,7 +36,7 @@ def get_bounds(n_ratio):
      We use r0 for the lower bound (MD p'/(p'+1)) and r1 for the upper
      
      Parameters:
-         n_ratio
+         n_ratio    A number that we want to approximate using an allowable ratio
          
      Returns:
          r0,r1, integer ratios, r0 < n_ration < r1
