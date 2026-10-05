@@ -360,9 +360,9 @@ def main():
     
     all_acceptable_resonances = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
     
-    P1 = ['All Planets']
-    P2 = [ratios.get_P(len(all_acceptable_resonances),len(periods),p_commensurable)]
-    Logger.instance.info(f'P ({P1[-1]}) = {P2[-1]}')
+    Label_Observations = ['All Planets']
+    P_Observations = [ratios.get_P(len(all_acceptable_resonances),len(periods),p_commensurable)]
+    Logger.instance.info(f'P ({Label_Observations[-1]}) = {P_Observations[-1]}')
     
     for primary in args.names:
         names,periods = get_periods((Path(args.data)/primary).with_suffix('.csv'),
@@ -373,10 +373,12 @@ def main():
         resonances = Resonance.create(names,periods)
         acceptable_resonances = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
         if len(acceptable_resonances) > 0:
-            P1.append(primary)
-            P2.append(ratios.get_P(len(acceptable_resonances),len(periods),p_commensurable))
-            Logger.instance.info(f'P ({P1[-1]}) = {P2[-1]}')
+            Label_Observations.append(primary)
+            P_Observations.append(ratios.get_P(len(acceptable_resonances),len(periods),p_commensurable))
+            Logger.instance.info(f'P ({Label_Observations[-1]}) = {P_Observations[-1]}')
             all_acceptable_resonances += acceptable_resonances
+        else:
+            Logger.instance.info(f'No acceptable resonance for {primary}')
         
     unique_ratios = {(resonance.i1,resonance.i2) for resonance in all_acceptable_resonances}
     Logger.instance.debug('Unique resonances')
@@ -407,17 +409,19 @@ def main():
     ax.set_xlim((-0.6, len(keys) - 0.4))
     ax.legend(ncols=2,title=f'There are {len(all_acceptable_resonances)} acceptable resonances')
     
-    ax.set_xlabel('$i_1$')
-    ax.set_ylabel('$i_2$')
+    ax.set_xlabel('Resonances')
+    ax.set_ylabel('Count')
     ax.set_xmargin(0.5)
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     names = ', '.join(name.title() for name in args.names)
     ax.set_title(f'Planets, plus satellites of {names}: $R>${args.R_min}, $e<${args.e_max}, $imax=${args.imax}.')
  
     ax2 = fig.add_subplot(2,1,2)
-    ax2.bar(P1,P2,width=0.5,color=colours[len(keys):],label=P1)
+    ax2.bar(Label_Observations,P_Observations,width=0.5,color=colours[len(keys):],label=Label_Observations)
     ax2.legend()
-    ax2.set_title('Probabality of observed nmber of commensurabilities')
+    ax2.set_xlabel('Primary')
+    ax2.set_ylabel('P')
+    ax2.set_title('Probability of observed nmber of commensurabilities')
     
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
