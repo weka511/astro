@@ -153,7 +153,7 @@ def parse_args():
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     return parser.parse_args()
 
-def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0,logger=None):
+def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0):
     '''
     Retrieve periods for acceptable planets and satellites. If the column for the period has no data,
     use Kepler's Third Law to calculate periods. (I'd like to remain consistent with Murray and Dermott, 
@@ -194,7 +194,7 @@ def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0,logger=
         
         try:
             for i in range(len(names)):
-                logger.debug(f'{names[i]},{periods[i]/periods[2]}')
+                Logger.instance.debug(f'{names[i]},{periods[i]/periods[2]}')
         except AttributeError:
             pass
         return names,periods
@@ -214,41 +214,111 @@ def create_xkcd_colours():
         'xkcd:periwinkle','xkcd:sea green','xkcd:lime','xkcd:indigo','xkcd:mustard','xkcd:light pink'
     ]  
 
-def create_legend(simple_ratios,unique_ratios,colours,ax,loc='lower left',max_rows=4):
-    '''
-    Used to create a second legend showing the unique ratios
-    
-    Parameters:
-        simple_ratios
-        unique_ratios
-        colours
-        ax
-        loc
-    ''' 
-    return ax.legend(handles = [Patch(color=colours[simple_ratios.get_sequence(ratio[0],ratio[1])],
-                                      label=f'{ratio[1]}:{ratio[0]}') 
-                                for ratio in unique_ratios], 
-                     ncols=max(1,len(unique_ratios)//max_rows),
-                     loc=loc,
-                     title=f'The {len(unique_ratios)} unique ratios')
 
-def create_logger(path_name:str):
+
+class Logger: 
+    instance = None
+    
+    @staticmethod
+    def create(path_name:str):
+        '''
+        Set up console logger and file logger
+        
+        Parameters:
+            path_name    Path name for log file
+        '''
+        def add_handler(handler,logger,formatter=Formatter('%(message)s'),level:int=INFO):
+            handler.setLevel(level)
+            handler.setFormatter(formatter)
+            logger.addHandler(handler)    
+        Logger.instance = getLogger(__name__)
+        Logger.instance.setLevel(DEBUG)
+        add_handler(FileHandler(path_name),Logger.instance,level=DEBUG)
+        add_handler(StreamHandler(),Logger.instance)   
+        np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
+
+class Ratios:
+    def __init__(self):
+        self.ratios = [(1,2)]
+        self.Nrs = []
+        self.i_maxen = []
+        self.Nr_naive = []
+        self.primes = []
+        self.eps_max = []
+        
+    def build(self,Max_imax):
+        primes = create_primes(Max_imax)
+        for imax in range(3,Max_imax+1):
+            self.i_maxen.append(imax)
+            self.Nr_naive.append(imax*(imax-1)//2)
+            self._add_ratios(imax,primes)
+            self.eps_max.append(0.5/(imax*(imax-1)))
+                 
+    def _add_ratios(self,imax,primes):
+        for i in range(1,imax):
+            self.ratios.append((i,imax))
+        factors = factorize(imax,primes)
+        if len(factors) > 1:
+            self.ratios = sorted(self._purge_duplicates(self.ratios),
+                                 key=lambda ratio:ratio[1]*imax+ratio[0])
+        self.Nrs.append((len(self.ratios)))
+        Logger.instance.info(self.ratios)
+            
+    def _purge_duplicates(self,ratios):
+        result = set()
+        for a,b in ratios:
+            factor = 2
+            while factor <= a:
+                if a%factor == 0 and b%factor == 0:
+                    a //= factor
+                    b //= factor
+                factor += 1
+            result.add((a,b))
+                       
+        return list(result)    
+
+def create_primes(N):
     '''
-    Set up console logger and file logger
+    Create a list of prime numbers using the sieve of Eratosthenes
     
     Parameters:
-        path_name    Path name for log file
+        N          Largest condidate to be considered
+        
+    Returns:
+        List of primes up to (and, if relevant), N
     '''
-    def add_handler(handler,logger,formatter=Formatter('%(message)s'),level:int=INFO):
-        handler.setLevel(level)
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)    
-    product = getLogger(__name__)
-    product.setLevel(DEBUG)
-    add_handler(FileHandler(path_name),product,level=DEBUG)
-    add_handler(StreamHandler(),product)   
-    np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
-    return product
+    canditates = list(range(2,N+1))
+    i = 0
+    while i < len(canditates):
+        sieved = canditates[0:i+1]
+        for j in range(i+1,len(canditates)):
+            if canditates[j] % canditates[i] != 0:
+                sieved.append(canditates[j])
+        canditates = sieved
+        i += 1
+    return canditates
+            
+def factorize(n,primes):
+    '''
+    Factorize a number into a list of primes
+    
+    Parameters:
+        n       Number to be factorized
+        primes  List of primes to be considered
+        
+    Returns:
+      List of factors (repeated as many times as necessary)
+    '''
+    factors = []
+    for p in primes:
+        while n%p == 0:
+            factors.append(p)
+            n //= p
+    return factors   
+
+def frac(s):
+    ss = [int(x) for x in s.split(':')]
+    return 100*ss[1] + ss[0]
 
 def main():
     '''
@@ -262,9 +332,9 @@ def main():
     rcParams['figure.constrained_layout.use'] = True
     start  = time()
     args = parse_args()
-    logger = create_logger(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
+    Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     simple_ratios = SimpleRatios()
-    names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv'),logger=logger) 
+    names,periods = get_periods((Path(args.data)/args.planets).with_suffix('.csv')) 
     resonances = Resonance.create(names,periods)
     
     for primary in args.names:
@@ -276,32 +346,39 @@ def main():
         resonances += Resonance.create(names,periods)
     
     acceptable_resonances = [resonance for resonance in resonances if resonance.can_match(simple_ratios)]
-    logger.info(f'There were {len(acceptable_resonances)} out of {len(resonances)} possible')
+    Logger.instance.info(f'There were {len(acceptable_resonances)} out of {len(resonances)} possible')
     unique_ratios = {(resonance.i1,resonance.i2) for resonance in acceptable_resonances}
-    logger.info('Unique resonances')
+    Logger.instance.info('Unique resonances')
     for ratio in unique_ratios:
-        logger.info(f'{ratio[1]}:{ratio[0]}')
+        Logger.instance.info(f'{ratio[1]}:{ratio[0]}')
     colours = create_xkcd_colours()  
 
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax = fig.add_subplot(1,1,1)
-    logger.info('All resonances')
+    Logger.instance.info('All resonances')
+    counts = {}
+    labels = {}
     for r in acceptable_resonances:
-        ax.scatter(r.i1,r.i2,
-                    label=f'{r.name1}-{r.name2} {r.i2}:{r.i1}',
-                    c=colours[simple_ratios.get_sequence(r.i1,r.i2)])
-        logger.info(f'{r.name1}-{r.name2} {r.i2}:{r.i1}')
+        try:
+            counts[f'{r.i1}:{r.i2}'] += 1
+            labels[f'{r.i1}:{r.i2}'] += f', {r.name1}-{r.name2}'
+        except KeyError:
+            counts[f'{r.i1}:{r.i2}'] = 1
+            labels[f'{r.i1}:{r.i2}'] = f'{r.i1}:{r.i2} {r.name1}-{r.name2}'
+ 
+        Logger.instance.info(f'{r.name1}-{r.name2} {r.i2}:{r.i1}')
+    keys =  sorted(list(counts.keys()),key=frac)  
+    ax.bar(keys,[counts[key] for key in keys],
+           width=0.5,
+           color=colours,label=[labels[key] for key in keys])
+    ax.set_xlim((-0.6, len(keys) - 0.4))
+    ax.legend(ncols=2,title=f'There are {len(acceptable_resonances)} acceptable resonances')
     
-    legend1 = create_legend(simple_ratios,unique_ratios,colours,ax)
-    ax.legend(loc='lower right',ncols=max(1,len(acceptable_resonances)//8),
-              title=f'The {len(acceptable_resonances)} acceptable resonances out of out of {len(resonances)} ')
-    fig.gca().add_artist(legend1)
+
     ax.set_xlabel('$i_1$')
     ax.set_ylabel('$i_2$')
-    ax.set_ylim((0,args.imax+1))
-    ax.set_xlim((0,args.imax))
-    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.set_xmargin(0.5)
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
     names = ', '.join(name.title() for name in args.names)
     ax.set_title(f'Planets, plus satellites of {names}: $R>${args.R_min}, $e<${args.e_max}, $imax=${args.imax}.')
