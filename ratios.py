@@ -23,6 +23,7 @@ that thirty pairs of objects have ratios of orbital periods witin epsilon-max of
 commensurability.
 '''
 
+
 from pathlib import Path
 from unittest import main,TestCase
 import numpy as np
@@ -133,7 +134,7 @@ class Resonance:
     
 
 
-def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0):
+def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=-1):
     '''
     Retrieve periods for acceptable planets and satellites. If the column for the period has no data,
     use Kepler's Third Law to calculate periods. (I'd like to remain consistent with Murray and Dermott, 
@@ -149,7 +150,7 @@ def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0):
        Names of planets or satellites, and their orbital periods, 
        either read of calculated
      
-    I have compared my calcukated values of T with values 
+    I have compared my calculated values of T with values 
     from https://en.wikipedia.org/wiki/Orbital_period  
     
     Mercury   0.24084236579905632     0.240846
@@ -164,7 +165,7 @@ def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=0):
     '''
     
     df = pd.read_csv(path)
-    df_acceptable = df[(df['e'] < e_max) & (df['R'] > R_min)]
+    df_acceptable = df[(df['e'] < e_max) & (df['R'] > R_min)] if R_min>0 else df[(df['e'] < e_max)]
     names = df_acceptable[key].to_list()
     try:
         return names,df_acceptable['T'].to_numpy()
@@ -280,11 +281,37 @@ def factorize(n,primes):
     return factors   
 
 def get_bounds(n1,n2):
-    return (3,2)
-
+    def get_ratio(p):
+        return p/(p+1)
+    assert n1 < n2
+    ratio = n1/n2
+    if 1/3 < ratio < 1/2:
+        return 2,3
+    p1 = 0
+    p2 = 1
+    while get_ratio(p2) <= ratio:
+        p2 *= 2
+    while p1 < p2 - 1:
+        mid0 = (p1 + p2)/2
+        if get_ratio(mid0) < ratio:
+            p1 = np.floor(mid0)
+        else:
+            p2 = np.ceil(mid0)
+    assert p1+1 == p2
+    assert get_ratio(p1) < ratio and ratio < get_ratio(p2) 
+    return int(p1),int(p2)
+        
+def get_abc(n1,n2,p1,p2):
+    a = (n1/n2 - p1/(p1+1))/(p2/(p2+1) - p1/(p1+1))   # Murray & Dermott (1.19)
+    b = 0 if a <= 0.5 else 1     # Murray & Dermott (1.20)
+    c = 2*np.pi*(a - b)          # Murray & Dermott (1.21)
+    return a,b,c
+    
 class TestBounds(TestCase):
     def test32(self):
-        self.assertEqual((3,2),get_bounds(5,6))
+        p1,p2 = get_bounds(598, 626)
+        self.assertEqual(21,p1)
+        self.assertEqual(22,p2)
         
 if __name__ == '__main__':
     main()
