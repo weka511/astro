@@ -281,37 +281,64 @@ def factorize(n,primes):
     return factors   
 
 def get_bounds(n1,n2):
-    def get_ratio(p):
-        return p/(p+1)
-    assert n1 < n2
-    ratio = n1/n2
-    if 1/3 < ratio < 1/2:
-        return 2,3
-    p1 = 0
-    p2 = 1
-    while get_ratio(p2) <= ratio:
-        p2 *= 2
-    while p1 < p2 - 1:
-        mid0 = (p1 + p2)/2
-        if get_ratio(mid0) < ratio:
-            p1 = np.floor(mid0)
-        else:
-            p2 = np.ceil(mid0)
-    assert p1+1 == p2
-    assert get_ratio(p1) < ratio and ratio < get_ratio(p2) 
-    return int(p1),int(p2)
+    '''
+    Establish bounds for a ratio (M&D Section 1.7)
+    
+    Parameters:
+        n1     Mean motion of one orbit
+        n2     Mean motion of second orbit: n1 < n2
         
-def get_abc(n1,n2,p1,p2):
-    a = (n1/n2 - p1/(p1+1))/(p2/(p2+1) - p1/(p1+1))   # Murray & Dermott (1.19)
-    b = 0 if a <= 0.5 else 1     # Murray & Dermott (1.20)
-    c = 2*np.pi*(a - b)          # Murray & Dermott (1.21)
+    Returns:
+        Closest set of inegers, p,p_prime, such that 
+        p_prime/(p_prime+1) < n1/n2 < p(p+1)
+    '''
+    
+    assert n1 < n2
+    r = n1/n2
+    #if 1/3 < r < 1/2:
+        #return 3,2
+    p = int(np.ceil(r/(1-r)))
+    p_prime = p-1
+    assert p_prime/(p_prime+1) < r < p/(p+1)
+    return p,p_prime
+        
+def get_abc(n1,n2,p,p_prime):
+    '''
+    Calculate metrics from Murray & Dermott Section 1.7
+    
+    Parameters:
+        n1
+        n2
+        p
+        p_prime
+    '''
+    r_prime = 1/3 if 1/3 < n1/n2 and n1/n2 < 1/2 else p_prime/(p_prime+1)
+    a = (n1/n2 - r_prime) / ( p/(p+1) - r_prime)    # M & D (1.19)     
+    b = 0 if a <= 0.5 else 1                 # M & D (1.20)
+    c = 2*np.pi*(a - b)                      # M & D (1.21)
     return a,b,c
     
 class TestBounds(TestCase):
     def test32(self):
-        p1,p2 = get_bounds(598, 626)
-        self.assertEqual(21,p1)
-        self.assertEqual(22,p2)
+        p,p_prime = get_bounds(598, 626)
+        self.assertEqual(22,p)
+        self.assertEqual(21,p_prime)
+        
+    def test_atlas_pan(self):
+        n1 = 360/0.6019
+        n2 = 360/0.575
+        p,p_prime = get_bounds(n1, n2)
+        self.assertLess(p_prime/(p_prime+1), n1/n2)
+        self.assertLess(n1/n2, p/(p+1))
+        
+        
+    def test_enceladus_pan(self):
+        n1 = 360/1.370218
+        n2 = 360/0.575
+        p,p_prime = get_bounds(n1, n2)
+        self.assertLess(p_prime/(p_prime+1), n1/n2)
+        self.assertLess(n1/n2, p/(p+1))   
+
         
 if __name__ == '__main__':
     main()
