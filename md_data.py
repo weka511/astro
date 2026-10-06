@@ -58,7 +58,7 @@ def create_data(data_path,
                 exclude=[],
                 field='T'):
     '''
-    Read data from one of the tables from Murray and Dermott, Appendex A
+    Read data from one of the tables from Murray and Dermott, Appendix A
 
     Parameters:
         data_path     Path to csv file containing data
