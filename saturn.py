@@ -22,50 +22,50 @@ motions to consider in the Saturn System.
 '''
 
 from argparse import ArgumentParser
+from logging import basicConfig,getLogger,INFO,FileHandler,StreamHandler,Formatter,DEBUG
 from pathlib import Path
+from time import strftime,time
 from matplotlib.pyplot import figure, show
 import numpy as np
 from md_data import create_data
-
+from ratios import get_bounds,get_abc
 __version__ = '1.0'
 __author__ = 'Simon Crase'
 
-def get_bounds(n_ratio):
-     '''
-     calculate p and p' from Murray and Dermott, Section 1.7.
-     We use r0 for the lower bound (MD p'/(p'+1)) and r1 for the upper
-     
-     Parameters:
-         n_ratio    A number that we want to approximate using an allowable ratio
-         
-     Returns:
-         r0,r1, integer ratios, r0 < n_ration < r1
-     '''  
-     r0 = 0
-     r1 = 0
-     p = 1
+class Logger: 
+     instance = None
 
-     while r1 < n_ratio:
-          r0 = r1
-          r1 = max(r1,p/(p + 1))
-          p += 1
+     @staticmethod
+     def create(path_name:str):
+          '''
+          Set up console logger and file logger
+
+          Parameters:
+              path_name    Path name for log file
+          '''
+          def add_handler(handler,logger,formatter=Formatter('%(message)s'),level:int=INFO):
+               handler.setLevel(level)
+               handler.setFormatter(formatter)
+               logger.addHandler(handler)    
+          Logger.instance = getLogger(__name__)
+          Logger.instance.setLevel(DEBUG)
+          add_handler(FileHandler(path_name),Logger.instance,level=DEBUG)
+          add_handler(StreamHandler(),Logger.instance)   
+          np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
           
-     if 1/3 < n_ratio and n_ratio < 1/2: 
-          r0 = 1/3
-     return (r0, r1)
-
 def generate_pairs(data):
      '''
      Used to iterate through data, returning each pair once (unordered).
      '''
-     for i in range(len(data)):
-          name_i, T1 = data[i]
-          n1 = 360/T1
-          for j in range(len(data)):
-               name_j, T2 = data[j]
-               n2 = 360/T2
+     def generate_periods():
+          for i in range(len(data)):
+               name, T = data[i]
+               yield name,360/T
+     
+     for name1,n1 in generate_periods():
+          for name2,n2 in generate_periods():
                if n1 < n2:
-                    yield name_i,name_j,n1,n2
+                    yield name1,name2,n1,n2
                     
 def create_mean_motion_ratios(names_and_periods):
      '''
@@ -83,25 +83,29 @@ def create_mean_motion_ratios(names_and_periods):
           c
      '''
      product = []
-     cache0 = []
-     cache1 = []
+     cache1 = set()
+     cache2 = set()
+     counts = dict()
      for name_i,name_j,n1,n2 in generate_pairs(names_and_periods):
-          (r0, r1) = get_bounds(n1/n2)
-          a = (n1/n2 - r0)/(r1 - r0)   # Murray & Dermott (1.19)
-          b = 0 if a <= 0.5 else 1     # Murray & Dermott (1.20)
-          c = 2*np.pi*(a - b)          # Murray & Dermott (1.21)
-          product.append((name_i,name_j,r0, r1, c))
-          if r0 in cache0 and r1 in cache1: continue
-          cache0.append(r0)
-          cache1.append(r1)
-    
-     return product,len(cache0)
+          (p1, p2) = get_bounds(n1,n2)
+          a,b,c = get_abc(n1,n2,p1,p2)
+          product.append((name_i,name_j, p1, p2, c))
+          cache1.add(p1)
+          cache2.add(p2)
+          Logger.instance.info(f'{name_i},{name_j},{n1},{n2},{p1},{p2}')
+          try:
+               counts[f'{p1}-{p2}'] += 1
+          except KeyError:
+               counts[f'{p1}-{p2}'] = 1
+               
+     return product,len(cache1)
 
 
 def parse_args():
      parser = ArgumentParser(description='Calculate probability of delta_n<0.1 for problem 1.4.')
      parser.add_argument('--data', default='./data', help=f'Path to data files')
      parser.add_argument('--figs', default='./figs', help=f'Path to plots')
+     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
      parser.add_argument('--tolerance',default=0.15,type=float)
      parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
      parser.add_argument('--exclude',
@@ -128,10 +132,12 @@ def get_bar(mean_motion_ratios,tolerance=0.15):
 
 def main():
      args = parse_args()
-     names_and_periods = create_data(
-                              (Path(args.data)/Path(__file__).stem).with_suffix('.csv'),
-                              exclude=args.exclude )
-     mean_motion_ratios,count = create_mean_motion_ratios(names_and_periods)
+     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
+
+     mean_motion_ratios,count = create_mean_motion_ratios(
+                                   create_data(
+                                        (Path(args.data)/Path(__file__).stem).with_suffix('.csv'),
+                                        exclude=args.exclude ))
 
      labels,cc,bar_colours = get_bar(mean_motion_ratios,tolerance=args.tolerance)
      cs = sorted([abs(c) for _,_,_,_,c in mean_motion_ratios])

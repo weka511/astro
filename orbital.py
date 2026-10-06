@@ -290,7 +290,14 @@ def create_orbit(planet,
          Incr        Interval from one sample to the next
          is2D        Used to force a 2D calculcation
     '''
-    a,e,I,varpi,Omega,lambda0 = planet
+    a = planet['a'].item()
+    e = planet['e'].item()
+    I = planet['I'].item()
+    varpi = planet['varpi'].item()
+    Omega = planet['Omega'].item()
+    lambda0 = planet['lambda0'].item()
+    #a,e,I,varpi,Omega,lambda0 = planet
+ 
     if is2D: 
         I = 0
     Xs = []

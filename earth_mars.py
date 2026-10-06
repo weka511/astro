@@ -27,10 +27,10 @@ Murray and Dermott, Exercise 2.2
 '''
 
 from argparse import ArgumentParser
-from csv import reader
 from pathlib import Path
 from math import floor
 import numpy as np
+import pandas as pd
 from matplotlib.pyplot import figure, show
 from mpl_toolkits.mplot3d import Axes3D
 from orbital import get_mean_longitude,Calendar,create_orbit,is_minimum,get_distance
@@ -74,6 +74,7 @@ def parse_args():
      parser.add_argument('--2D',dest='is2D',action='store_true',help='Ignore inclindations')
      parser.add_argument('--figs', default='./figs', help=f'Path to plots')
      parser.add_argument('--data', default='./data', help=f'Path to data files')
+     parser.add_argument('--planets',default='planets',help='File name for planetary data')
      return parser.parse_args()
 
 def get_planetary_data(data_file_name):
@@ -102,11 +103,14 @@ def get_date(string):
      
 def main():
      args = parse_args()
-     data = get_planetary_data((Path(args.data)/Path(__file__).stem).with_suffix('.csv'))
+     #data = get_planetary_data((Path(args.data)/args.planets).with_suffix('.csv'))
+     df = pd.read_csv((Path(args.data)/args.planets).with_suffix('.csv'))
+     #df.set_index('Planet')
+     #r = df.loc[df['Planet'] == 'Earth']
      f1,f2,f3 = get_date(args.from_date)
      t1,t2,t3 = get_date(args.to_date)
      fig = figure(figsize=(20, 20), dpi=80)
-     conjunctions = Conjunctions(data['Earth'],data['Mars'],
+     conjunctions = Conjunctions(df.loc[df['Planet'] == 'Earth'],df.loc[df['Planet'] == 'Mars'],
                          From=Calendar.get_julian_date(f1,f2,f3),
                          To=Calendar.get_julian_date(t1,t2,t3),
                          Incr=args.incr,
