@@ -16,8 +16,10 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 '''
-Murray & Dermott, Exercise 1.5. Identify commensurability and estimate probability of value occurring by chance.
+Murray & Dermott, Exercise 1.5. Identify commensurability and 
+estimate probability of value occurring by chance.
 '''
+
 from argparse import ArgumentParser
 from csv import reader
 from pathlib import Path
@@ -89,35 +91,43 @@ def parse_args():
      parser.add_argument('--seed', '-s', help='Seed for random number generator', default=None)
      parser.add_argument('--figs', default='./figs', help=f'Path to plots')
      parser.add_argument('--data', default='./data', help=f'Path to data files')
+     parser.add_argument('--commensurability',default='commensurability',help='File name for planetary data')
      parser.add_argument('--show', default=False, action='store_true', help='Controls whether plot will be displayed')
      return parser.parse_args()
 
-def get_data(file_path):
+def get_data(path):
      '''
      Load periods from file
      
      Parameters:
-         file_path
+         path     Identifies data file
      '''
-     with open(file_path) as data:
+     with open(path) as data:
           data_reader = reader(data)
           return np.array([float(row[0]) for row in data_reader])
           
 def main():
+     '''
+     Identify commensurability and estimate probability of value occurring by chance.
+     '''
      args = parse_args()
      rng = np.random.default_rng(args.seed)
-     periods = get_data((Path(args.data)/Path(__file__).stem).with_suffix('.csv'))
+     periods = get_data((Path(args.data)/args.commensurability).with_suffix('.csv'))
      commensurabilities = identify_commensurabilities(periods)
      probs = [sample(len(periods), args.M, commensurabilities, rng=rng) for i in range(args.N)]
      fig = figure()
      fig.suptitle('Murray and Dermott, Exercise 1.5')
-     cc2 = commensurabilities[0][2]
-     cc3 = commensurabilities[0][3]
+     ratio = commensurabilities[0][2]
+     p = commensurabilities[0][3]
 
      ax = fig.add_subplot(1,1,1)
      ax.hist(probs,
-             color='xkcd:blue',bins='fd',density=True,label=f'N={args.N}, mean={np.mean(probs):.4f}, std={np.std(probs):.4f}')
-     ax.set_title(f'Closest ratio to {cc2:.5} is {cc3/(cc3+1):.5} ({cc3})')
+             color='xkcd:blue',
+             bins='fd',
+             density=True,
+             label=f'N={args.N},mean={np.mean(probs):.4f},std={np.std(probs):.4f}')
+             
+     ax.set_title(f'Closest ratio to {ratio:.5} is {p/(p+1):.5}, from ({p})')
      ax.set_xlabel(r'$\frac{p}{p+1}$')
      ax.legend()
      fig.savefig(Path(args.figs)/Path(__file__).stem)
