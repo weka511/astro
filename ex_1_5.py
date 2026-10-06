@@ -16,45 +16,79 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 '''
-Murray & Dermott, Exercise 1.5. Identify commensurability and 
-estimate probability of value occurring by chance.
+Murray & Dermott, Exercise 1.5. We are given the periods of six planets orbiting a star. 
+By considering the fifteen possible ratios and the ten first order commensurabilities, 
+identify the pairs of planets such that ratios ae within 0.0001 of the commensurabilities. 
+Estimate probability of this occurring by chance if the periods were randomly distributed. 
 '''
 
 from argparse import ArgumentParser
 from csv import reader
+from logging import basicConfig,getLogger,INFO,FileHandler,StreamHandler,Formatter,DEBUG
 from pathlib import Path
+from time import strftime
 from matplotlib.pyplot import figure, show
 import numpy as np
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
 
-def identify_commensurabilities(periods, atol=0.001, maxp=10):
+class Logger: 
+     instance = None
+
+     @staticmethod
+     def create(path_name:str):
+          '''
+          Set up console logger and file logger
+
+          Parameters:
+              path_name    Path name for log file
+          '''
+          def add_handler(handler,logger,formatter=Formatter('%(message)s'),level:int=INFO):
+               handler.setLevel(level)
+               handler.setFormatter(formatter)
+               logger.addHandler(handler)    
+          Logger.instance = getLogger(__name__)
+          Logger.instance.setLevel(DEBUG)
+          add_handler(FileHandler(path_name),Logger.instance,level=DEBUG)
+          add_handler(StreamHandler(),Logger.instance)   
+          np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
+          
+def identify_commensurabilities(periods, atol=0.001, p_max=10):
      '''
-     Find the ratios that are close to an integer ratio
+     Find the ratios that are close to integer ratios p/(p+1)
      
      Parameters:
-         periods
-         atol
-         maxp
-     '''
-     def is_close(x,p):
-          '''
-          Verify that a supplied number is within tolerance of a ratio that is defined by an integer
-          
-          Parameters:
-              x
-              p
-          '''
-          return abs(x - p / (p + 1)) < atol
-     
-     ratios = sorted([(i, j, periods[i] / periods[j]) for j in range(len(periods)) for i in range(j)],
+         periods  Orbital periods, used to calculate ratios
+         atol     Tolerance: two numbers are deemed equal if they are within atol of each other
+         p_max    Maximum value of p in p(p+1)
+         
+     Returns:
+        List of tuples (i, j, r, p), where i and j are the indices of the periods that define the ratio,
+                                     r is the ratio, and p the corresponding integer such that p(p+1)
+                                     is within atol of r.
+     '''   
+     ratios = sorted([(i, j, periods[i] / periods[j]) 
+                         for j in range(len(periods)) 
+                         for i in range(j)],
                      key=lambda x: x[2])
-     return [(i, j, ratio, p) for p in range(1, maxp + 1) for i, j, ratio in ratios if is_close(ratio,p)]
+     for i,j,r in ratios:
+          Logger.instance.debug(f'{i}, {j}, {r}')
+     commensurabilities = [p/(p+1) for p in range(1,p_max+1)]
+     for c in commensurabilities:
+          Logger.instance.debug(f'{c}')
+                               
+     for i, j, r in ratios:
+          distances = [abs(r-c) for c in commensurabilities]
+          index = np.argmin(distances)     
+ 
+     return [(i, j, r, p) for p in range(1, p_max + 1) 
+               for i, j, r in ratios
+               if abs(r - p / (p + 1)) < atol]
 
 
 def sample(m, N, target, 
-                T=20, maxp=10, rng=np.random.default_rng()):
+                T=20, p_max=10, rng=np.random.default_rng()):
      '''
      Sample possible orbits
      
@@ -63,7 +97,7 @@ def sample(m, N, target,
          N         Number of samples
          target    The commensurabilities identified in dataset
          T         Upper bound on orbital periods
-         maxp      Largest integer to be considered in ratios p/(p+1)
+         p_max      Largest integer to be considered in ratios p/(p+1)
          rng       Random number generator
      '''
      def sample_single():
@@ -78,7 +112,7 @@ def sample(m, N, target,
      _, _, _, target_p = target[0]
  
      ps = sample_single()
-     counts = np.zeros((maxp+1))
+     counts = np.zeros((p_max+1))
      for p in ps:
           counts[p] += 1
      return counts[target_p] / counts.sum()    
@@ -93,6 +127,7 @@ def parse_args():
      parser.add_argument('--data', default='./data', help=f'Path to data files')
      parser.add_argument('--commensurability',default='commensurability',help='File name for planetary data')
      parser.add_argument('--show', default=False, action='store_true', help='Controls whether plot will be displayed')
+     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
      return parser.parse_args()
 
 def get_data(path):
@@ -111,9 +146,12 @@ def main():
      Identify commensurability and estimate probability of value occurring by chance.
      '''
      args = parse_args()
+     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
      rng = np.random.default_rng(args.seed)
      periods = get_data((Path(args.data)/args.commensurability).with_suffix('.csv'))
      commensurabilities = identify_commensurabilities(periods)
+     for (i, j, r, p) in commensurabilities:
+          Logger.instance.info(f'({i},{j})=>{r} {p} {p/(p+1)} {abs(r-p/(p+1))}')
      probs = [sample(len(periods), args.M, commensurabilities, rng=rng) for i in range(args.N)]
      fig = figure()
      fig.suptitle('Murray and Dermott, Exercise 1.5')
