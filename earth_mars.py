@@ -75,21 +75,8 @@ def parse_args():
      parser.add_argument('--figs', default='./figs', help=f'Path to plots')
      parser.add_argument('--data', default='./data', help=f'Path to data files')
      parser.add_argument('--planets',default='planets',help='File name for planetary data')
+     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
      return parser.parse_args()
-
-def get_planetary_data(data_file_name):
-     '''
-     Construct map containing elements for planets
-     
-     Parameters:
-         data_file_name
-     '''
-     with open(data_file_name) as data_file:
-          data = {}
-          data_reader = reader(data_file)
-          for row in data_reader:
-               data[row[0]] = [abs(float(datum)) for datum in row[1:]]
-          return data
 
 def get_date(string):
      '''
@@ -103,10 +90,7 @@ def get_date(string):
      
 def main():
      args = parse_args()
-     #data = get_planetary_data((Path(args.data)/args.planets).with_suffix('.csv'))
      df = pd.read_csv((Path(args.data)/args.planets).with_suffix('.csv'))
-     #df.set_index('Planet')
-     #r = df.loc[df['Planet'] == 'Earth']
      f1,f2,f3 = get_date(args.from_date)
      t1,t2,t3 = get_date(args.to_date)
      fig = figure(figsize=(20, 20), dpi=80)
@@ -139,7 +123,8 @@ def main():
      fig.tight_layout(pad=2,h_pad=5,w_pad=3)
      fig.savefig((Path(args.figs)/Path(__file__).stem).with_suffix('.png'))
      
-     show()
+     if args.show:
+          show()
      
 if __name__=='__main__':
      main()
