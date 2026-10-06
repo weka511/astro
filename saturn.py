@@ -72,33 +72,33 @@ def create_mean_motion_ratios(names_and_periods):
      Calculate ratios between periods for each pair of orbits
      
      Parameters:
-         names_and_periods
+         names_and_periods  A list of pairs, name and period.
          
      Returns:
         A list of tuples for each pair:
-          name1
-          name2
-          ratio1
-          ratio2
-          c
+          First satellite in pair
+          Second satellite in pair
+          Integer p s.t. p/(p+1) is upper bound of ratio of mean motions
+          Integer p' s.t. p'/(p'+1) is upper bound of ratio of mean motions
+          Number calculate by M&D (1.22)
      '''
      product = []
-     cache1 = set()
-     cache2 = set()
      counts = dict()
+     
      for name_i,name_j,n1,n2 in generate_pairs(names_and_periods):
-          (p1, p2) = get_bounds(n1,n2)
-          a,b,c = get_abc(n1,n2,p1,p2)
-          product.append((name_i,name_j, p1, p2, c))
-          cache1.add(p1)
-          cache2.add(p2)
-          Logger.instance.info(f'{name_i},{name_j},{n1},{n2},{p1},{p2}')
+          (p,p_prime) = get_bounds(n1,n2)
+          assert p_prime/(p_prime+1) < n1/n2 < p/(p+1)
+          a,b,c = get_abc(n1,n2,p,p_prime)
+          product.append((name_i,name_j, p,p_prime, c))
+          Logger.instance.info(f'{name_i},{name_j},{n1},{n2},{p},{p_prime}')
           try:
-               counts[f'{p1}-{p2}'] += 1
+               counts[f'{p}-{p_prime}'] += 1
           except KeyError:
-               counts[f'{p1}-{p2}'] = 1
-               
-     return product,len(cache1)
+               counts[f'{p}-{p_prime}'] = 1
+     Logger.instance.info(f'{len(counts)} pairs')
+     for k,v in counts.items():
+          Logger.instance.info(f'{k} {v}')
+     return product,len(counts)
 
 
 def parse_args():
