@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Access and validate data Murray and Dermott'''
+'''Access and validate data from Murray and Dermott'''
 
 from argparse import ArgumentParser
 from csv import DictReader
@@ -61,7 +61,7 @@ def create_data(data_path,
     Read data from one of the tables from Murray and Dermott, Appendex A
 
     Parameters:
-        data_path     Path to scv file containing data
+        data_path     Path to csv file containing data
         exclude       A list of satellites whose data are to be ignored
         field         The name of the field whose data is to be read
     '''
