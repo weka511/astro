@@ -97,7 +97,7 @@ def sample(m, N, target,
          N         Number of samples
          target    The commensurabilities identified in dataset
          T         Upper bound on orbital periods
-         p_max      Largest integer to be considered in ratios p/(p+1)
+         p_max     Largest integer to be considered in ratios p/(p+1)
          rng       Random number generator
      '''
      def sample_single():
@@ -140,7 +140,14 @@ def get_data(path):
      with open(path) as data:
           data_reader = reader(data)
           return np.array([float(row[0]) for row in data_reader])
-          
+ 
+def get_title(commensurabilities):
+     '''
+     Display the commensurabilities
+     '''
+     (i, j, r, p) = commensurabilities[0]
+     return f'Planets {i+1} & {j+1} have ratio {r:.5f}, within {abs(r-p/(p+1)):.5f} of {p}:{p+1}'
+
 def main():
      '''
      Identify commensurability and estimate probability of value occurring by chance.
@@ -150,14 +157,11 @@ def main():
      rng = np.random.default_rng(args.seed)
      periods = get_data((Path(args.data)/args.commensurability).with_suffix('.csv'))
      commensurabilities = identify_commensurabilities(periods)
-     for (i, j, r, p) in commensurabilities:
-          Logger.instance.info(f'({i},{j})=>{r} {p} {p/(p+1)} {abs(r-p/(p+1))}')
+
      probs = [sample(len(periods), args.M, commensurabilities, rng=rng) for i in range(args.N)]
      fig = figure()
-     fig.suptitle('Murray and Dermott, Exercise 1.5')
-     ratio = commensurabilities[0][2]
-     p = commensurabilities[0][3]
-
+     fig.suptitle(f'Exercise 1.5: There is {len(commensurabilities)} commensurability')
+ 
      ax = fig.add_subplot(1,1,1)
      ax.hist(probs,
              color='xkcd:blue',
@@ -165,7 +169,7 @@ def main():
              density=True,
              label=f'N={args.N},mean={np.mean(probs):.4f},std={np.std(probs):.4f}')
              
-     ax.set_title(f'Closest ratio to {ratio:.5} is {p/(p+1):.5}, from ({p})')
+     ax.set_title(get_title(commensurabilities))
      ax.set_xlabel(r'$\frac{p}{p+1}$')
      ax.legend()
      fig.savefig(Path(args.figs)/Path(__file__).stem)
