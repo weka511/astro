@@ -104,7 +104,7 @@ def sample(m, N, target,
           ps = []
           for i in range(N):
                commensurabilities = identify_commensurabilities(rng.uniform(low=0,high=T,size=m))
-               if len(commensurabilities) == 1:
+               if len(commensurabilities) == len(target):
                     _, _, _, p = commensurabilities[0]
                     ps.append(p)
           return ps     
@@ -159,7 +159,7 @@ def main():
      commensurabilities = identify_commensurabilities(periods)
 
      probs = [sample(len(periods), args.M, commensurabilities, rng=rng) for i in range(args.N)]
-     fig = figure()
+     fig = figure(figsize=(8,8))
      fig.suptitle(f'Exercise 1.5: There is {len(commensurabilities)} commensurability')
  
      ax = fig.add_subplot(1,1,1)
@@ -171,7 +171,7 @@ def main():
              
      ax.set_title(get_title(commensurabilities))
      ax.set_xlabel(r'$\frac{p}{p+1}$')
-     ax.legend()
+     ax.legend(title='Monte Carlo simulation')
      fig.savefig(Path(args.figs)/Path(__file__).stem)
 
      if args.show:
