@@ -295,11 +295,11 @@ def get_bounds(n1,n2):
     
     assert n1 < n2
     r = n1/n2
-    #if 1/3 < r < 1/2:
-        #return 3,2
+    if 1/3 < r < 1/2:
+        return 3,1
     p = int(np.ceil(r/(1-r)))
-    p_prime = p-1
-    assert p_prime/(p_prime+1) < r < p/(p+1)
+    p_prime = p - 1
+    assert p_prime/(p_prime+1) < r and r < p/(p+1)
     return p,p_prime
         
 def get_abc(n1,n2,p,p_prime):
@@ -312,7 +312,7 @@ def get_abc(n1,n2,p,p_prime):
         p
         p_prime
     '''
-    r_prime = 1/3 if 1/3 < n1/n2 and n1/n2 < 1/2 else p_prime/(p_prime+1)
+    r_prime = p_prime/(p_prime+1)
     a = (n1/n2 - r_prime) / ( p/(p+1) - r_prime)    # M & D (1.19)     
     b = 0 if a <= 0.5 else 1                 # M & D (1.20)
     c = 2*np.pi*(a - b)                      # M & D (1.21)

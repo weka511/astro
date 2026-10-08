@@ -87,17 +87,16 @@ def create_mean_motion_ratios(names_and_periods):
      
      for name_i,name_j,n1,n2 in generate_pairs(names_and_periods):
           (p,p_prime) = get_bounds(n1,n2)
-          assert p_prime/(p_prime+1) < n1/n2 < p/(p+1)
+          if p_prime == 0: continue       
           a,b,c = get_abc(n1,n2,p,p_prime)
+          if abs(c) >= 0.15: continue   
           product.append((name_i,name_j, p,p_prime, c))
-          Logger.instance.info(f'{name_i},{name_j},{n1},{n2},{p},{p_prime}')
+
           try:
                counts[f'{p}-{p_prime}'] += 1
           except KeyError:
                counts[f'{p}-{p_prime}'] = 1
-     Logger.instance.info(f'{len(counts)} pairs')
-     for k,v in counts.items():
-          Logger.instance.info(f'{k} {v}')
+  
      return product,len(counts)
 
 
@@ -109,9 +108,10 @@ def parse_args():
      parser.add_argument('--tolerance',default=0.15,type=float)
      parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
      parser.add_argument('--exclude',
-                         default=['Epimetheus','Telesto','Calypso','Helene'],
+                         default=['Epimetheus','Telesto','Calypso','Helene','Phoebe'],
                          nargs='*',
                          help='A list of satellites whose data are to be ignored') 
+     parser.add_argument('--planet',default='saturn',help='File name for planetary data')
      parser.add_argument('--bins',default=100,type=int,help='Number of bins for histogram')
      return parser.parse_args()
 
@@ -120,6 +120,7 @@ def get_bar(mean_motion_ratios,tolerance=0.15):
      Used to display coloured bars in lowest panel
      '''
      c_indices = np.argsort([abs(c) for _,_,_,_,c in mean_motion_ratios])
+     
      labels = []
      cc = []
      for i in c_indices:
@@ -127,7 +128,7 @@ def get_bar(mean_motion_ratios,tolerance=0.15):
           if r0 > 0 and abs(c) < tolerance:
                labels.append(f'{name_i}-{name_j}')
                cc.append(abs(c))
-               print (mean_motion_ratios[i])
+               #print (mean_motion_ratios[i])
      return labels,cc,['xkcd:red','xkcd:green','xkcd:blue','xkcd:yellow']
 
 def main():
@@ -136,11 +137,12 @@ def main():
 
      mean_motion_ratios,count = create_mean_motion_ratios(
                                    create_data(
-                                        (Path(args.data)/Path(__file__).stem).with_suffix('.csv'),
+                                        (Path(args.data)/args.planet).with_suffix('.csv'),
                                         exclude=args.exclude ))
 
      labels,cc,bar_colours = get_bar(mean_motion_ratios,tolerance=args.tolerance)
      cs = sorted([abs(c) for _,_,_,_,c in mean_motion_ratios])
+
      fig = figure(figsize=(12, 12))
      ax1 = fig.add_subplot(2, 1, 1)
      ax1.hist(cs,bins=args.bins,color='skyblue', edgecolor='white' )
