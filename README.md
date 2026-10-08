@@ -28,7 +28,7 @@ verlet.py|Inegrator using Verlet algorithm
 -||ratios.py|Functions and classes to support exercises from Section 1.7
 2|||The Two Body Problem
 2.4|2.2|ex_2_2.py|Determine average times or orbital conjunction between Earth & Mars. how that the minimum distance varies by factor of almost 2. Determine orbital motions over the period 1982-2002. 
--|||orbital.py|Orbital calculations to support *earth_mars.py*
+-||orbital.py|Orbital calculations to support Exercise 2.2
 3|||The Restricted Three Body Problem
 3.3|jacobi.py|Zero velocity Surfaces for the Jacobi Integral
 -||jacobi3d.py|Potential surfaces for the Jacobi Integral
