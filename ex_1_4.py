@@ -87,16 +87,15 @@ def create_mean_motion_ratios(names_and_periods):
      
      for name_i,name_j,n1,n2 in generate_pairs(names_and_periods):
           (p,p_prime) = get_bounds(n1,n2)
-          if p_prime == 0: continue       
-          a,b,c = get_abc(n1,n2,p,p_prime)
-          if abs(c) >= 0.15: continue   
-          product.append((name_i,name_j, p,p_prime, c))
-
           try:
                counts[f'{p}-{p_prime}'] += 1
           except KeyError:
-               counts[f'{p}-{p_prime}'] = 1
-  
+               counts[f'{p}-{p_prime}'] = 1          
+          if p_prime == 0: continue       
+          a,b,c = get_abc(n1,n2,p,p_prime)
+          if abs(c) < 0.15:   
+               product.append((name_i,name_j, p,p_prime, c))
+
      return product,len(counts)
 
 
@@ -108,7 +107,7 @@ def parse_args():
      parser.add_argument('--tolerance',default=0.15,type=float)
      parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
      parser.add_argument('--exclude',
-                         default=['Epimetheus','Telesto','Calypso','Helene','Phoebe'],
+                         default=['Epimetheus','Telesto','Calypso','Helene'],
                          nargs='*',
                          help='A list of satellites whose data are to be ignored') 
      parser.add_argument('--planet',default='saturn',help='File name for planetary data')
