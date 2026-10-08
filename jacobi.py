@@ -42,12 +42,12 @@ def parse_args():
 @np.vectorize
 def jacobi(x, y, n=1, mu2=0.2, Cj=0):
     '''
-    Evaluate the Jacobi Entegral --Murray & Dermott (3.29)
+    Evaluate the Jacobi Integral -- Murray & Dermott (3.29)
     '''
     mu1 = 1 - mu2
     r1 = np.sqrt((x + mu2)**2 + y**2)
     r2 = np.sqrt((x - mu1)**2 + y**2)
-    return n**2 * (x**2 + y**2) + 2 * (mu1 / r1 + mu2 / r2) - Cj
+    return n**2*(x**2 + y**2) + 2*(mu1/r1 + mu2/r2) - Cj
 
 def plot_jacobi(fig, n=1, mu2=0.2, Cj=3.9, limit=5, origin='lower'):
     X, Y = np.meshgrid(np.linspace(-limit, limit + 0.001, 100), 
