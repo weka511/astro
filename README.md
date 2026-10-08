@@ -27,8 +27,8 @@ verlet.py|Inegrator using Verlet algorithm
 -|1.6|ex_1_6.py|Exercise 1.6 (e) Use the data in Appendix A to find the periods of all possible pairs of periods among the planets and the prograde satellites of Mars, Jupiter, Saturn, Uranus, and Neptune, with mean radii > 100 km and orbital eccentricities < 0.15. Taking i_max =7, show that thirty pairs of objects have ratios of orbital periods within epsilon-max of a permitted commensurability.
 -||ratios.py|Functions and classes to support exercises from Section 1.7
 2|||The Two Body Problem
-2.2||earth_mars.py|Murray and Dermott, Exercise 2.2: times of orbital conjunction between earth & Mars.
-|||orbital.py|Orbital calculations to support *earth_mars.py*
+2.4|2.2|ex_2_2.py|Determine average times or orbital conjunction between Earth & Mars. how that the minimum distance varies by factor of almost 2. Determine orbital motions over the period 1982-2002. 
+-|||orbital.py|Orbital calculations to support *earth_mars.py*
 3|||The Restricted Three Body Problem
 3.3|jacobi.py|Zero velocity Surfaces for the Jacobi Integral
 -||jacobi3d.py|Potential surfaces for the Jacobi Integral

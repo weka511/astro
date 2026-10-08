@@ -19,11 +19,10 @@
 Orbital calculations to support earth_mars.py, based on
 Murray and Dermott, Solar System Dynamics
 '''
-from math import isclose,floor,modf
 from unittest import TestCase,main
 import numpy as np
 
-_version__ = '1.0'
+__version__ = '1.0'
 __author__ = 'Simon Crase'
 
 class Calendar:
@@ -59,8 +58,8 @@ class Calendar:
             raise ValueError(f'There is no such date as {Y}-{M}-{D}')
             
         y,m = (Y-1,M+12) if M <= 2 else (Y,M)                                        # A.1
-        B = floor(y/400) - floor(y/100) if is_gregorian() else -2                    # A.2
-        return floor(365.25 * y) + floor(30.6001*(m+1)) + B + 1720996.5 + D + UT/24  # A.3
+        B = np.floor(y/400) - np.floor(y/100) if is_gregorian() else -2                    # A.2
+        return np.floor(365.25 * y) + np.floor(30.6001*(m+1)) + B + 1720996.5 + D + UT/24  # A.3
     
     @staticmethod
     def get_calendar_date(JD):
@@ -73,22 +72,22 @@ class Calendar:
         Returns:
              Y,M,D
         '''
-        frac_JD,a = modf(JD + 0.5)    # A.4
+        frac_JD,a = np.modf(JD + 0.5)    # A.4
         
         # Deal with transition between calendars
         
         if a < 2299161:               # A.5
             c = a + 1524              # A.5
         else:
-            b = floor((a-1867216.25)/36524.25) # A.6
-            c = a + b - floor(b/4) + 1525      # A.7
+            b = np.floor((a-1867216.25)/36524.25) # A.6
+            c = a + b - np.floor(b/4) + 1525      # A.7
             
-        d = floor((c-122.1)/365.25)                # A.8
-        e = floor(365.25*d)                        # A.9
-        f = floor((c-e)/30.6001)                   # A.10
-        D = c - e - floor(30.6001*f) + frac_JD     # A.11
-        M = f - 1 - 12*floor(f/14)                 # A.12
-        Y = d - 4715 - floor((7+M)/10)             # A.13
+        d = np.floor((c-122.1)/365.25)                # A.8
+        e = np.floor(365.25*d)                        # A.9
+        f = np.floor((c-e)/30.6001)                   # A.10
+        D = c - e - np.floor(30.6001*f) + frac_JD     # A.11
+        M = f - 1 - 12*np.floor(f/14)                 # A.12
+        Y = d - 4715 - np.floor((7+M)/10)             # A.13
         
         return (Y,M,D)
     
@@ -105,8 +104,8 @@ def rotate3D(omega=0,I=0,Omega=0):
         '''
         Rotation about z-axis, used for both omega and Omega
         '''
-        c = np.cos(omega)
-        s = np.sin(omega)
+        c = np.cos(omega.item())
+        s = np.sin(omega.item())
         return np.array([[c, -s, 0],
                          [s,  c, 0],
                          [0,  0, 1]])
@@ -115,8 +114,8 @@ def rotate3D(omega=0,I=0,Omega=0):
         '''
         Rotation about x-axis
         '''
-        c = np.cos(I)
-        s = np.sin(I)   
+        c = np.cos(I.item())
+        s = np.sin(I.item())   
         return np.array([[1, 0, 0],
                          [0, c, -s], 
                          [0, s, c]])
@@ -251,7 +250,7 @@ def get_eccentric_anomaly(e=0,M=0,rel_tol=1e-7, abs_tol=1e-9,N=10000,k=0.85):
     
     for i in range(N):
         correction = (E - e * np.sin(E) - M)/(1 - e * np.cos(E))
-        if isclose(correction,0,rel_tol=rel_tol,abs_tol=abs_tol): return E
+        if np.isclose(correction,0,rtol=rel_tol,atol=abs_tol): return E
         E -= correction
         
     allowable = max(rel_tol * abs(correction), abs_tol)    
@@ -290,13 +289,12 @@ def create_orbit(planet,
          Incr        Interval from one sample to the next
          is2D        Used to force a 2D calculcation
     '''
-    a = planet['a'].item()
-    e = planet['e'].item()
-    I = planet['I'].item()
-    varpi = planet['varpi'].item()
-    Omega = planet['Omega'].item()
-    lambda0 = planet['lambda0'].item()
-    #a,e,I,varpi,Omega,lambda0 = planet
+    a = planet['a']
+    e = planet['e']
+    I = planet['I']
+    varpi = planet['varpi']
+    Omega = planet['Omega']
+    lambda0 = planet['lambda0']
  
     if is2D: 
         I = 0
@@ -310,7 +308,7 @@ def create_orbit(planet,
 
     for t,T in generate_times(From=From,To=To,Incr=Incr):
         lambdaT = get_mean_longitude(T,lambda0=lambda0,lambda_dot=lambda_dot,Nr=Nr)        
-        x,y = get_xy(T=T,lambdaT=lambdaT,e=e,a=a,varpi=np.radians(varpi))
+        x,y = get_xy(T=T,lambdaT=lambdaT.item(),e=e.item(),a=a.item(),varpi=np.radians(varpi.item()))
         W = np.matmul(Rotation,np.array([x,y,0]).T)
         Xs.append(W[0])
         Ys.append(W[1])
@@ -449,7 +447,8 @@ class TestOrbit(TestCase):
         '''
         see https://www.timeanddate.com/astronomy/perihelion-aphelion-solstice.html 
         '''
-        Xs,Ys,Zs,Ts = create_orbit(( 1.00000011, 0.01671022, 0.00005, 102.94719, 348.93936, 100.46435),
+        Xs,Ys,Zs,Ts = create_orbit({ 'a':1.00000011, 'e':0.01671022, 'I':0.00005, 'varpi':102.94719, 
+                                     'Omega':348.93936, 'lambda0':100.46435},
                                    lambda_dot = 1293740.63,
                                    Nr = 99,
                                    From = Calendar.get_julian_date(2018,12,31),

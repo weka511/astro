@@ -18,9 +18,9 @@
 '''
 Murray and Dermott, Exercise 2.2
 
- 1. Determine average times or orbital conjunction between earth & Mars
+ 1. Determine average times of orbital conjunction between Earth & Mars
  2. Show that the minimum distance varies by factor of almost 2.
- 3. Determine prbital motions over the period 1982-2002. Neglecting the 
+ 3. Determine orbital motions over the period 1982-2002. Neglecting the 
     relative orbital inclinations, show that the closest opposition occurred
     in September 1988, and the furthest in February 1995, and determine
     the minimum distances at these times.
@@ -35,7 +35,7 @@ from matplotlib.pyplot import figure, show
 from mpl_toolkits.mplot3d import Axes3D
 from orbital import get_mean_longitude,Calendar,create_orbit,is_minimum,get_distance
 
-_version__ = '1.0'
+__version__ = '1.0'
 __author__ = 'Simon Crase'
 
 class Conjunctions:
