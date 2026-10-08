@@ -56,11 +56,3 @@ planets_physical.csv|Table A.4 from Leighton and Murray, for exercise 1.6
 neptune.csv|Table A.13 from Leighton and Murray, for exercise 1.6
 saturn.csv|Table A.9 from Leighton and Murray, for exercises 1.4 and 1.6
 uranus.csv|Table A.11 from Leighton and Murray, for exercise 1.6
-
-
-## Obsolete
-
-File | Purpose |
---------------------------|---------------------------------------------------------------------
-plot_points.py|Display data that has been stored by tracking.py
-tracking.py|Record results in logfile so they can be played back, and analyses can be restarted
