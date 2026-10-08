@@ -16,8 +16,8 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 '''
-Calculate Equilibrium points L1, L2, and L3,
-of Lagrange configuration of the 3 body problem
+Calculate Equilibrium points L1, L2, and L3, plus Jacobi constants, 
+for Lagrange configuration of the 3 body problem
 '''
 
 from argparse import ArgumentParser
@@ -45,8 +45,33 @@ def fn_L1(r2, mu2):
     mu1 = 1 - mu2
     return (3*r2**3*
             (1 - r2 + r2**2 / 3) / 
-            ((1 + r2 + r2**2) * (1 - r2)**3) - mu2/mu1)
+            ((1 + r2 + r2**2) * (1 - r2)**3) 
+            - mu2/mu1)
 
+def fn_L2(r2, mu2):
+    '''
+    We want to  solve  Murray & Dermott (3.86)
+    
+    Parameters:
+        Smaller of the two main masses
+    '''
+    mu1 = 1 - mu2
+    return (3*r2**3*
+            (1 + r2 + r2**2/3) / 
+            ((1 + r2)**2 * (1 - r2**3)) 
+            - mu2/mu1)
+
+def fn_L3(r1, mu2):
+    '''
+    We want to  solve  Murray & Dermott (3.91)
+    
+    Parameters:
+        Smaller of the two main masses
+    '''
+    mu1 = 1 - mu2
+    return ((1-r1**3)*(1+r1)**2/
+            (r1**3*(r1**2+3*r1+3))
+            - mu2/mu1)
 
 def get_alpha(mu2):
     '''
@@ -77,8 +102,12 @@ def get_u(r2, mu2):
 def main():
     args = parse_args()
     alpha = get_alpha(args.mu2)
-    r2 = newton(lambda x:fn_L1(x, args.mu2),alpha-0.1,x1=alpha+0.1,tol=1e-12)
-    print (f'r2={r2},fn(r2, mu2)={fn_L1(r2, args.mu2)},Jacobi={2*get_u(r2,\
-           args.mu2)}')
+    L1 = newton(lambda x:fn_L1(x, args.mu2),alpha-0.1,x1=alpha+0.1,tol=1e-12)
+    print (f'L1={L1},fn(r2, mu2)={fn_L1(L1, args.mu2)},Jacobi={2*get_u(L1,args.mu2)}')
+    L2 = newton(lambda x:fn_L2(x, args.mu2),alpha-0.1,x1=alpha+0.1,tol=1e-12)
+    print (f'L2={L2},fn(r2, mu2)={fn_L2(L2, args.mu2)},Jacobi={2*get_u(L2,args.mu2)}') 
+    beta = -(7/12) *args.mu2/(1-args.mu2) +(7/12) * (args.mu2/(1-args.mu2))**2 - (13223/20736)* (args.mu2/(1-args.mu2))**3
+    L3 = newton(lambda x:fn_L3(x, args.mu2),beta-0.9,x1=beta+0.9,tol=1e-12)
+    print (f'L3={L3},fn(r1, mu2)={fn_L3(L3, args.mu2)},Jacobi={2*get_u(L3,args.mu2)}')     
   
 main()
