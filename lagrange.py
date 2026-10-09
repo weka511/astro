@@ -21,10 +21,13 @@ for Lagrange configuration of the 3 body problem
 '''
 
 from abc import ABC,abstractmethod
-
 from argparse import ArgumentParser
+from matplotlib.pyplot import figure, show
+from matplotlib import rcParams
+from matplotlib.pyplot import cm
 import numpy as np
 from scipy.optimize import newton
+
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -75,7 +78,7 @@ class L1(LagrangianPoint):
         We want to  solve  Murray & Dermott (3.74)
         
         Parameters:
-            Smaller of the two main masses
+            r2  Distance of smallest mass from mu2
         '''
         return (3*r2**3*
                 (1 - r2 + r2**2/3) / 
@@ -91,13 +94,12 @@ class L2(LagrangianPoint):
         We want to  solve  Murray & Dermott (3.86)
         
         Parameters:
-            Smaller of the two main masses
+            r2    Distance of smallest mass from mu2
         '''
-        mu1 = 1 - mu2
         return (3*r2**3*
                 (1 + r2 + r2**2/3) / 
                 ((1 + r2)**2 * (1 - r2**3)) 
-                - mu2/mu1)    
+                - self.mu2/self.mu1)    
         
 class L3(LagrangianPoint):
     def __init__(self,mu2):
@@ -108,7 +110,7 @@ class L3(LagrangianPoint):
         We want to  solve  Murray & Dermott (3.91)
         
         Parameters:
-            Smaller of the two main masses
+            r1   Distance of smallest mass from mu1
         '''
         return ((1 - r1**3)*(1 + r1)**2/
                 (r1**3*(r1**2 + 3*r1 + 3))
@@ -121,7 +123,14 @@ def parse_args():
     '''
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--mu2', default=0.2, type=float,help='Smaller of the two main masses')
+    parser.add_argument('--show',default=False,action='store_true')
     return parser.parse_args()
+
+@np.vectorize
+def jacobi(x,y,point=None, Cj=0):
+    r1 = np.sqrt((x+point.mu2)**2 + y**2)
+    r2 = np.sqrt((x-point.mu1)**2 + y**2)
+    return point.get_u(r1,r2)
 
 def main():
     args = parse_args()
@@ -131,17 +140,37 @@ def main():
     r2,err = solver1.solve(alpha)
     jacobi1 = 2*solver1.get_u(1-r2,r2)
     print (f'L1: r2={r2},err={err},Jacobi={jacobi1}')
+
+    limit = 3
+    X, Y = np.meshgrid(np.linspace(-limit, limit + 0.001, 100), 
+                       np.linspace(-limit, limit + 0.001, 100))
+    Z = jacobi(X, Y, point=solver1, Cj=jacobi1)
+    z0 = np.floor(Z.min())
+    z1 = np.ceil(Z.max())
+    levels = [0,1,2,3]#list(range(z0, 0, 10)) + list(range(0, z1 + 1, 10))
+    origin='lower'
+    ticks = [z0, 0, z1]
+    fig = figure(figsize=(8,8))
+    ax = fig.add_subplot(1,1,1)    
+    CS3 = ax.contourf(X, Y, Z, levels, cmap=cm.jet, origin=origin)
+    CS2 = ax.contour(X, Y, Z, levels=[0], colors='w', origin=origin, linewidths=(1,))
+    ax.scatter(r2,0,marker='+',label=f'L1: r2={r2:3f},err={err:.3g},Jacobi={jacobi1:3f}')
+    ax.legend()
+    #plot_jacobi(figure(),Cj=jacobi1)
     
     #start = alpha + alpha**2/3 - alpha**3/9 - 31*alpha**4/81
     #L2 = newton(lambda x:fn_L2(x, args.mu2),start-0.1,x1=start+0.1,tol=1e-12)
     #print (f'L2={L2},fn(r2, mu2)={fn_L2(L2, args.mu2)},Jacobi={2*get_u(L2,args.mu2)}') 
 
-    solver3 = L3(args.mu2)
-    beta = -(7/12)*solver3.mu2/solver3.mu1 + (7/12)*(solver3.mu2/solver3.mu1)**2 - (13223/20736)*(solver3.mu2/solver3.mu1)**3
-    r1,err = solver1.solve(beta + 1,bound=0.01)
-    jacobi3 = 2*solver3.get_u(r1,r1-1)
-    z=0
+    #solver3 = L3(args.mu2)
+    #beta = -(7/12)*solver3.mu2/solver3.mu1 + (7/12)*(solver3.mu2/solver3.mu1)**2 - (13223/20736)*(solver3.mu2/solver3.mu1)**3
+    #r1,err = solver1.solve(beta + 1,bound=0.01)
+    #jacobi3 = 2*solver3.get_u(r1,r1-1)
+    #z=0
     #L3 = newton(lambda x:fn_L3(x, args.mu2),beta-0.9,x1=beta+0.9,tol=1e-12)
-    #print (f'L3={L3},fn(r1, mu2)={fn_L3(L3, args.mu2)},Jacobi={2*get_u(L3,args.mu2)}')     
+    #print (f'L3={L3},fn(r1, mu2)={fn_L3(L3, args.mu2)},Jacobi={2*get_u(L3,args.mu2)}') 
+    
+    if args.show:
+        show()
   
 main()
