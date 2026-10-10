@@ -23,6 +23,7 @@ for Lagrange configuration of the 3 body problem
 from abc import ABC,abstractmethod
 from argparse import ArgumentParser
 from pathlib import Path
+from time import strftime,time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 from matplotlib.pyplot import cm
@@ -137,13 +138,18 @@ def jacobi(x,y,point=None, Cj=0):
     return point.get_u(r1,r2)
 
 def main():
+    '''
+    Calculate Equilibrium points L1, L2, and L3, plus Jacobi constants, 
+    for Lagrange configuration of the 3 body problem
+    '''    
+    rcParams['text.usetex'] = True
+    start  = time()    
     args = parse_args()
     
     solver1 = L1(args.mu2)
     alpha = solver1.get_alpha()
     r2_1,err1 = solver1.solve(alpha)
     jacobi1 = 2*solver1.get_u(1-r2_1,r2_1)
-    #print (f'L1: r2={r2},err={err},Jacobi={jacobi1}')
     
     solver2 = L2(args.mu2)
     r2_2,err2 = solver2.solve(alpha)
@@ -157,27 +163,33 @@ def main():
     X, Y = np.meshgrid(np.linspace(-args.limit, args.limit + 1/args.step, args.step), 
                        np.linspace(-args.limit, args.limit + 1/args.step, args.step))
     Z = jacobi(X, Y, point=solver1, Cj=jacobi1)
-    z0 = int(np.floor(Z.min()))
-    z1 = int(np.ceil(Z.max()))
-    levels = list(range(z0, z1, 10))
+
     fig = figure(figsize=(8,8))
+    fig.suptitle(Path(__file__).stem)
     ax = fig.add_subplot(1,1,1)    
-    CS3 = ax.contourf(X, Y, Z, levels, cmap=cm.viridis, origin=None)
-    CS2 = ax.contour(X, Y, Z, levels=[0], colors='w', origin=None, linewidths=(1,))
-    cbar = fig.colorbar(ax.pcolormesh(X, Y, Z), 
-                        orientation='vertical', 
-                        ticks=None)
+    CS3 = ax.contourf(X, Y, Z)
+    CS2 = ax.contour(X, Y, Z, levels=[jacobi1], colors='xkcd:red', linewidths=(1,))
+    CS3 = ax.contour(X, Y, Z, levels=[jacobi2], colors='xkcd:cyan', linewidths=(1,))
+    CS4 = ax.contour(X, Y, Z, levels=[jacobi3], colors='xkcd:bright green', linewidths=(1,))
+    cbar = fig.colorbar(ax.pcolormesh(X, Y, Z), orientation='vertical')
 
     cbar.add_lines(CS2)
+    cbar.add_lines(CS3)
+    cbar.add_lines(CS4)
 
     ax.scatter(r2_1,0,marker='+',label=f'L1: r2={r2_1:3f},err={err1:.3g},Jacobi={jacobi1:3f}',c='xkcd:red')
     ax.scatter(r2_2,0,marker='x',label=f'L2: r2={r2_2:3f},err={err2:.3g},Jacobi={jacobi2:3f}',c='xkcd:cyan')
     ax.scatter(r1_3,0,marker='X',label=f'L2: r2={r1_3:3f},err={err3:.3g},Jacobi={jacobi3:3f}',c='xkcd:bright green')
     
-    ax.legend(title='Lagrange points')
+    ax.legend(title='Lagrange points',loc='lower center')
       
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
+    
+    elapsed = time() - start
+    minutes = int(elapsed/60)
+    seconds = elapsed - 60*minutes
+    print (f'Elapsed Time {minutes} m {seconds:.2f} s')
     
     if args.show:
         show()
