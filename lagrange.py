@@ -159,37 +159,23 @@ def main():
     Z = jacobi(X, Y, point=solver1, Cj=jacobi1)
     z0 = int(np.floor(Z.min()))
     z1 = int(np.ceil(Z.max()))
-    levels = [0,1,2,3]#list(range(z0, 0, 10)) + list(range(0, z1 + 1, 10))
-    origin=None#'lower'
-    #ticks = [z0, 0, z1]
+    levels = list(range(z0, z1, 10))
     fig = figure(figsize=(8,8))
     ax = fig.add_subplot(1,1,1)    
-    CS3 = ax.contourf(X, Y, Z, levels, cmap=cm.viridis, origin=origin)
-    CS2 = ax.contour(X, Y, Z, levels=[0], colors='w', origin=origin, linewidths=(1,))
+    CS3 = ax.contourf(X, Y, Z, levels, cmap=cm.viridis, origin=None)
+    CS2 = ax.contour(X, Y, Z, levels=[0], colors='w', origin=None, linewidths=(1,))
     cbar = fig.colorbar(ax.pcolormesh(X, Y, Z), 
                         orientation='vertical', 
                         ticks=None)
-    #cbar.ax.set_yticklabels(['min', '0', 'max'])  
+
     cbar.add_lines(CS2)
-    1
+
     ax.scatter(r2_1,0,marker='+',label=f'L1: r2={r2_1:3f},err={err1:.3g},Jacobi={jacobi1:3f}',c='xkcd:red')
-    ax.scatter(r2_2,0,marker='x',label=f'L2: r2={r2_2:3f},err={err2:.3g},Jacobi={jacobi2:3f}',c='xkcd:magenta')
-    ax.scatter(r1_3,0,marker='o',label=f'L2: r2={r1_3:3f},err={err3:.3g},Jacobi={jacobi3:3f}',c='xkcd:light pink')
+    ax.scatter(r2_2,0,marker='x',label=f'L2: r2={r2_2:3f},err={err2:.3g},Jacobi={jacobi2:3f}',c='xkcd:cyan')
+    ax.scatter(r1_3,0,marker='X',label=f'L2: r2={r1_3:3f},err={err3:.3g},Jacobi={jacobi3:3f}',c='xkcd:bright green')
     
     ax.legend(title='Lagrange points')
-    
-    #start = alpha + alpha**2/3 - alpha**3/9 - 31*alpha**4/81
-    #L2 = newton(lambda x:fn_L2(x, args.mu2),start-0.1,x1=start+0.1,tol=1e-12)
-    #print (f'L2={L2},fn(r2, mu2)={fn_L2(L2, args.mu2)},Jacobi={2*get_u(L2,args.mu2)}') 
-
-    #solver3 = L3(args.mu2)
-    #beta = -(7/12)*solver3.mu2/solver3.mu1 + (7/12)*(solver3.mu2/solver3.mu1)**2 - (13223/20736)*(solver3.mu2/solver3.mu1)**3
-    #r1,err = solver1.solve(beta + 1,bound=0.01)
-    #jacobi3 = 2*solver3.get_u(r1,r1-1)
-    #z=0
-    #L3 = newton(lambda x:fn_L3(x, args.mu2),beta-0.9,x1=beta+0.9,tol=1e-12)
-    #print (f'L3={L3},fn(r1, mu2)={fn_L3(L3, args.mu2)},Jacobi={2*get_u(L3,args.mu2)}') 
-    
+      
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     
