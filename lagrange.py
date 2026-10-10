@@ -35,6 +35,10 @@ __version__ = '1.0'
 __author__ = 'Simon Crase'
 
 class LagrangianPoint:
+    '''
+    Classes descended from this ones performs the calculations needed to locate one 
+    of the three colinear Lagrangian points
+    '''
     def __init__(self,mu2):
         self.mu1 = 1 - mu2
         self.mu2 = mu2
@@ -52,10 +56,20 @@ class LagrangianPoint:
         
     @abstractmethod
     def fn(self,r):
-        ...
+        '''
+        This function is implemented in each subclass: fn(r)==0 is the equation
+        satisifed by the Lagrangian point.
+        '''
     
-    def solve(self,alpha,bound=0.1,tol=1e-12):
-        r = newton(self.fn,alpha-bound,x1=alpha+bound,tol=tol)
+    def solve(self,start,bound=0.1,tol=1e-12):
+        '''
+        Solve equation to locate lagrangian point
+        Parameters:
+            start  Used to define initial interval for solution
+            bound  Used to define initial interval for solution
+            tol    Acceptable error
+        '''
+        r = newton(self.fn,start-bound,x1=start+bound,tol=tol)
         err = self.fn(r)
         return r,err
     
@@ -66,12 +80,16 @@ class LagrangianPoint:
         Murray & Dermott, (3.64)
         
         Parameters:
-            mu2   Smaller of the two main masses
-            r2    Distance of smallest mass from mu2
+            r1    Distance of a point from the larger mass
+            r2    Distance of a point from the smaller mass
         '''  
         return self.mu1*(1/r1 + r1**2/2) + self.mu2*(1/r2 + r2**2/2) - self.mu1*self.mu2/2    
         
 class L1(LagrangianPoint):
+    '''
+    This class performs the calculations needed to locate one 
+    the first colinear Lagrangian point
+    '''    
     def __init__(self,mu2):
         super().__init__(mu2)
         
@@ -88,6 +106,10 @@ class L1(LagrangianPoint):
                 - self.mu2/self.mu1)
     
 class L2(LagrangianPoint):
+    '''
+    This class performs the calculations needed to locate one 
+    the second colinear Lagrangian point
+    '''       
     def __init__(self,mu2):
         super().__init__(mu2)
         
@@ -104,6 +126,10 @@ class L2(LagrangianPoint):
                 - self.mu2/self.mu1)    
         
 class L3(LagrangianPoint):
+    '''
+    This class performs the calculations needed to locate one 
+    the third colinear Lagrangian point
+    '''       
     def __init__(self,mu2):
         super().__init__(mu2)  
         
@@ -127,7 +153,7 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--mu2', default=0.2, type=float,help='Smaller of the two main masses')
     parser.add_argument('--show',default=False,action='store_true')
-    parser.add_argument('--limit',default=1.0,type=float)
+    parser.add_argument('--limit',default=2.0,type=float)
     parser.add_argument('--step',default=100,type=int)
     return parser.parse_args()
 
@@ -156,7 +182,9 @@ def main():
     jacobi2 = 2*solver2.get_u(1-r2_2,r2_2)  
     
     solver3 = L3(args.mu2)
-    beta = -(7/12)*solver3.mu2/solver3.mu1 + (7/12)*(solver3.mu2/solver3.mu1)**2 - (13223/20736)*(solver3.mu2/solver3.mu1)**3
+    beta = (-(7/12)*solver3.mu2/solver3.mu1 
+            + (7/12)*(solver3.mu2/solver3.mu1)**2 
+            - (13223/20736)*(solver3.mu2/solver3.mu1)**3)
     r1_3,err3 = solver3.solve(beta + 1,bound=0.01)       
     jacobi3 = 2*solver3.get_u(r1_3,1-r1_3)
     
@@ -164,10 +192,10 @@ def main():
                        np.linspace(-args.limit, args.limit + 1/args.step, args.step))
     Z = jacobi(X, Y, point=solver1, Cj=jacobi1)
 
-    fig = figure(figsize=(8,8))
+    fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax = fig.add_subplot(1,1,1)    
-    CS3 = ax.contourf(X, Y, Z)
+    ax.contourf(X, Y, Z)
     CS2 = ax.contour(X, Y, Z, levels=[jacobi1], colors='xkcd:red', linewidths=(1,))
     CS3 = ax.contour(X, Y, Z, levels=[jacobi2], colors='xkcd:cyan', linewidths=(1,))
     CS4 = ax.contour(X, Y, Z, levels=[jacobi3], colors='xkcd:bright green', linewidths=(1,))
@@ -177,12 +205,32 @@ def main():
     cbar.add_lines(CS3)
     cbar.add_lines(CS4)
 
-    ax.scatter(r2_1,0,marker='+',label=f'L1: r2={r2_1:3f},err={err1:.3g},Jacobi={jacobi1:3f}',c='xkcd:red')
-    ax.scatter(r2_2,0,marker='x',label=f'L2: r2={r2_2:3f},err={err2:.3g},Jacobi={jacobi2:3f}',c='xkcd:cyan')
-    ax.scatter(r1_3,0,marker='X',label=f'L2: r2={r1_3:3f},err={err3:.3g},Jacobi={jacobi3:3f}',c='xkcd:bright green')
+    # Plot L1, using (3.72)
+    ax.scatter(solver1.mu1-r2_1,0,
+               marker='+',
+               label=rf'L1: $r_2$={r2_1:3f},err={err1:.3g},Jacobi={jacobi1:3f}',
+               c='xkcd:red')
+    
+    # Plot L2, using (3.84)
+    ax.scatter(r2_2+solver2.mu1,0,
+               marker='+',
+               label=rf'L2: $r_2$={r2_2:3f},err={err2:.3g},Jacobi={jacobi2:3f}',
+               c='xkcd:cyan')
+    
+    # Plot L3, using (3.89)
+    ax.scatter(-r1_3-solver3.mu2,0,
+               marker='+',
+               label=rf'L3: $r_1$={r1_3:3f},err={err3:.3g},Jacobi={jacobi3:3f}',
+               c='xkcd:bright green')
+    
+    # The origin, and the two masses
+    
+    ax.scatter(0,0,marker='o',label='Centre of Mass',color='xkcd:green')
+    ax.scatter(-solver1.mu2,0,marker='*',label=r'$\mu_1$',color='xkcd:white')
+    ax.scatter(solver1.mu1,0,marker='*',label=r'$\mu_2$',color='xkcd:yellow')
     
     ax.legend(title='Lagrange points',loc='lower center')
-      
+    ax.set_title(rf'$\mu2={args.mu2}$')  
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     
