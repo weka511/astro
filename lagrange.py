@@ -22,6 +22,7 @@ for Lagrange configuration of the 3 body problem
 
 from abc import ABC,abstractmethod
 from argparse import ArgumentParser
+from pathlib import Path
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 from matplotlib.pyplot import cm
@@ -105,7 +106,7 @@ class L3(LagrangianPoint):
     def __init__(self,mu2):
         super().__init__(mu2)  
         
-    def fn(r1):
+    def fn(self,r1):
         '''
         We want to  solve  Murray & Dermott (3.91)
         
@@ -122,8 +123,11 @@ def parse_args():
     Parse command line arguments
     '''
     parser = ArgumentParser(description=__doc__)
+    parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--mu2', default=0.2, type=float,help='Smaller of the two main masses')
     parser.add_argument('--show',default=False,action='store_true')
+    parser.add_argument('--limit',default=1.0,type=float)
+    parser.add_argument('--step',default=100,type=int)
     return parser.parse_args()
 
 @np.vectorize
@@ -137,26 +141,42 @@ def main():
     
     solver1 = L1(args.mu2)
     alpha = solver1.get_alpha()
-    r2,err = solver1.solve(alpha)
-    jacobi1 = 2*solver1.get_u(1-r2,r2)
-    print (f'L1: r2={r2},err={err},Jacobi={jacobi1}')
-
-    limit = 3
-    X, Y = np.meshgrid(np.linspace(-limit, limit + 0.001, 100), 
-                       np.linspace(-limit, limit + 0.001, 100))
+    r2_1,err1 = solver1.solve(alpha)
+    jacobi1 = 2*solver1.get_u(1-r2_1,r2_1)
+    #print (f'L1: r2={r2},err={err},Jacobi={jacobi1}')
+    
+    solver2 = L2(args.mu2)
+    r2_2,err2 = solver2.solve(alpha)
+    jacobi2 = 2*solver2.get_u(1-r2_2,r2_2)  
+    
+    solver3 = L3(args.mu2)
+    beta = -(7/12)*solver3.mu2/solver3.mu1 + (7/12)*(solver3.mu2/solver3.mu1)**2 - (13223/20736)*(solver3.mu2/solver3.mu1)**3
+    r1_3,err3 = solver3.solve(beta + 1,bound=0.01)       
+    jacobi3 = 2*solver3.get_u(r1_3,1-r1_3)
+    
+    X, Y = np.meshgrid(np.linspace(-args.limit, args.limit + 1/args.step, args.step), 
+                       np.linspace(-args.limit, args.limit + 1/args.step, args.step))
     Z = jacobi(X, Y, point=solver1, Cj=jacobi1)
-    z0 = np.floor(Z.min())
-    z1 = np.ceil(Z.max())
+    z0 = int(np.floor(Z.min()))
+    z1 = int(np.ceil(Z.max()))
     levels = [0,1,2,3]#list(range(z0, 0, 10)) + list(range(0, z1 + 1, 10))
-    origin='lower'
-    ticks = [z0, 0, z1]
+    origin=None#'lower'
+    #ticks = [z0, 0, z1]
     fig = figure(figsize=(8,8))
     ax = fig.add_subplot(1,1,1)    
-    CS3 = ax.contourf(X, Y, Z, levels, cmap=cm.jet, origin=origin)
+    CS3 = ax.contourf(X, Y, Z, levels, cmap=cm.viridis, origin=origin)
     CS2 = ax.contour(X, Y, Z, levels=[0], colors='w', origin=origin, linewidths=(1,))
-    ax.scatter(r2,0,marker='+',label=f'L1: r2={r2:3f},err={err:.3g},Jacobi={jacobi1:3f}')
-    ax.legend()
-    #plot_jacobi(figure(),Cj=jacobi1)
+    cbar = fig.colorbar(ax.pcolormesh(X, Y, Z), 
+                        orientation='vertical', 
+                        ticks=None)
+    #cbar.ax.set_yticklabels(['min', '0', 'max'])  
+    cbar.add_lines(CS2)
+    1
+    ax.scatter(r2_1,0,marker='+',label=f'L1: r2={r2_1:3f},err={err1:.3g},Jacobi={jacobi1:3f}',c='xkcd:red')
+    ax.scatter(r2_2,0,marker='x',label=f'L2: r2={r2_2:3f},err={err2:.3g},Jacobi={jacobi2:3f}',c='xkcd:magenta')
+    ax.scatter(r1_3,0,marker='o',label=f'L2: r2={r1_3:3f},err={err3:.3g},Jacobi={jacobi3:3f}',c='xkcd:light pink')
+    
+    ax.legend(title='Lagrange points')
     
     #start = alpha + alpha**2/3 - alpha**3/9 - 31*alpha**4/81
     #L2 = newton(lambda x:fn_L2(x, args.mu2),start-0.1,x1=start+0.1,tol=1e-12)
@@ -169,6 +189,9 @@ def main():
     #z=0
     #L3 = newton(lambda x:fn_L3(x, args.mu2),beta-0.9,x1=beta+0.9,tol=1e-12)
     #print (f'L3={L3},fn(r1, mu2)={fn_L3(L3, args.mu2)},Jacobi={2*get_u(L3,args.mu2)}') 
+    
+    fig.tight_layout(h_pad=2)
+    fig.savefig(Path(args.figs)/Path(__file__).stem)    
     
     if args.show:
         show()
