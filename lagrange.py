@@ -153,15 +153,15 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--mu2', default=0.2, type=float,help='Smaller of the two main masses')
     parser.add_argument('--show',default=False,action='store_true')
-    parser.add_argument('--limit',default=2.0,type=float)
+    parser.add_argument('--limit',default=0.5,type=float)
     parser.add_argument('--step',default=100,type=int)
     return parser.parse_args()
 
 @np.vectorize
-def jacobi(x,y,point=None, Cj=0):
+def jacobi(x,y,point=None):
     r1 = np.sqrt((x+point.mu2)**2 + y**2)
     r2 = np.sqrt((x-point.mu1)**2 + y**2)
-    return point.get_u(r1,r2)
+    return 2*point.get_u(r1,r2)
 
 def main():
     '''
@@ -188,18 +188,21 @@ def main():
     r1_3,err3 = solver3.solve(beta + 1,bound=0.01)       
     jacobi3 = 2*solver3.get_u(r1_3,1-r1_3)
     
-    X, Y = np.meshgrid(np.linspace(-args.limit, args.limit + 1/args.step, args.step), 
+    xs = [solver1.mu1-r2_1,r2_2+solver2.mu1,-r1_3-solver3.mu2]
+    X, Y = np.meshgrid(np.linspace(min(xs)-1/args.step, max(xs) + 1/args.step, args.step), 
                        np.linspace(-args.limit, args.limit + 1/args.step, args.step))
-    Z = jacobi(X, Y, point=solver1, Cj=jacobi1)
-
+    Z = jacobi(X, Y, point=solver1)
+    Z = np.clip(Z,a_min=Z.min(),a_max=Z.max())
+    
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
+    
     ax = fig.add_subplot(1,1,1)    
-    ax.contourf(X, Y, Z)
+    C1 = ax.contourf(X, Y, Z,cmap='seismic')
     CS2 = ax.contour(X, Y, Z, levels=[jacobi1], colors='xkcd:red', linewidths=(1,))
     CS3 = ax.contour(X, Y, Z, levels=[jacobi2], colors='xkcd:cyan', linewidths=(1,))
     CS4 = ax.contour(X, Y, Z, levels=[jacobi3], colors='xkcd:bright green', linewidths=(1,))
-    cbar = fig.colorbar(ax.pcolormesh(X, Y, Z), orientation='vertical')
+    cbar = fig.colorbar(C1, orientation='vertical')
 
     cbar.add_lines(CS2)
     cbar.add_lines(CS3)
@@ -230,7 +233,11 @@ def main():
     ax.scatter(solver1.mu1,0,marker='*',label=r'$\mu_2$',color='xkcd:yellow')
     
     ax.legend(title='Lagrange points',loc='lower center')
-    ax.set_title(rf'$\mu2={args.mu2}$')  
+    ax.set_title(rf'$\mu2={args.mu2}$')
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_aspect('equal', adjustable='box') 
+    
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     
@@ -242,4 +249,6 @@ def main():
     if args.show:
         show()
   
-main()
+if __name__ == '__main__':
+    main()
+
