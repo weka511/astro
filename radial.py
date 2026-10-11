@@ -70,45 +70,61 @@ class Logger:
     
 def main():
     '''
-    Do whatever...
+    Calculate and plot the Lagrangian points
     '''
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
 
-    xs = np.linspace(-3,-10,10)
-    mu2s = np.exp(xs)
-    Ls = np.full((3,len(xs)),float('nan'))
+    xs = np.linspace(-2,-10,100)
+    Ls = np.full((6,len(xs)),float('nan'))
     for i in range(len(xs)):
-        solver1 = L1(mu2s[i])
-        solver2 = L2(mu2s[i])
-        solver3 = L3(mu2s[i])
+        mu2 = np.exp(xs[i])
+        mu1 = 1 - mu2
+        solver1 = L1(mu2)
+        solver2 = L2(mu2)
+        solver3 = L3(mu2)
         alpha = solver1.get_alpha()
         try:
-            Ls[0,i],_ = solver1.solve(alpha)
+            r2,_ = solver1.solve(alpha)
+            Ls[0,i] = r2 + mu1
         except RuntimeError:
             pass
-        try:
-            Ls[1,i],_ = solver2.solve(alpha)
-        except RuntimeError:
-            pass
-        try:
-            beta = (-(7/12)*solver3.mu2/solver3.mu1 
-                    + (7/12)*(solver3.mu2/solver3.mu1)**2 
-                    - (13223/20736)*(solver3.mu2/solver3.mu1)**3)            
-            Ls[2,i],_ = solver3.solve(beta + 1,bound=0.01)
-        except RuntimeError:
-            pass                
         
-    fig = figure(figsize=(12,12))
+        try:
+            r2,_ = solver2.solve(alpha)
+            Ls[1,i] = r2 + mu1
+        except RuntimeError:
+            pass
+        
+        beta = (-(7/12)*solver3.mu2/solver3.mu1 
+                + (7/12)*(solver3.mu2/solver3.mu1)**2 
+                - (13223/20736)*(solver3.mu2/solver3.mu1)**3)              
+        try:      
+            r1,_ = solver3.solve(beta + 1,bound=0.01)
+            Ls[2,i] = r1 - mu2
+        except RuntimeError:
+            pass   
+        
+        Ls[4,i] = alpha + (1/3)*alpha**2 -(1/9) *alpha**3 -(31/81)*alpha**4 + mu1   # (3.83)
+        Ls[3,i] = np.sqrt(1+mu1**2-mu1)
+        Ls[5,i] = alpha - (1/3)*alpha**2-(1/9)*alpha**3-(23/81)*alpha**4 +mu1    #  (3.83)
+        
+    fig = figure(figsize=(8,8))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1) 
-    ax1.plot(xs,Ls[0,:],label='L1')
-    ax1.plot(xs,Ls[1,:],label='L2')
-    ax1.plot(xs,Ls[2,:],label='L3')
+    ax1.plot(xs,Ls[0,:],label='L1',c='xkcd:purple')
+    ax1.plot(xs,Ls[1,:],label='L2',c='xkcd:green')
+    ax1.plot(xs,Ls[2,:],label='L3',c='xkcd:blue')
+    ax1.plot(xs,Ls[3,:],label='L4,L5',c='xkcd:pink')
+    ax1.plot(xs,Ls[4,:],label='L2 (3.88)',c='xkcd:brown',ls=':')
+    ax1.plot(xs,Ls[5,:],label='L1 (3.83)',c='xkcd:red',ls=':')
     ax1.xaxis.set_inverted(True)
-    ax1.legend()
+    ax1.set_yticks(np.arange(0.9, 1.1, 0.05))
+    ax1.set_xlabel(r'$\log{\mu_2}$')
+    ax1.set_ylabel('Radial Distance')
+    ax1.legend(title='Lagrangian Points',loc='upper right')
     
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
