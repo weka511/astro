@@ -28,7 +28,7 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
-from lagrange import L1
+from lagrange import L1,L2,L3
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -79,19 +79,36 @@ def main():
 
     xs = np.linspace(-3,-10,10)
     mu2s = np.exp(xs)
-    L1s = np.zeros_like(xs)
+    Ls = np.full((3,len(xs)),float('nan'))
     for i in range(len(xs)):
         solver1 = L1(mu2s[i])
+        solver2 = L2(mu2s[i])
+        solver3 = L3(mu2s[i])
         alpha = solver1.get_alpha()
         try:
-            L1s[i],_ = solver1.solve(alpha)
+            Ls[0,i],_ = solver1.solve(alpha)
         except RuntimeError:
-            L1s[i] = float('nan')
+            pass
+        try:
+            Ls[1,i],_ = solver2.solve(alpha)
+        except RuntimeError:
+            pass
+        try:
+            beta = (-(7/12)*solver3.mu2/solver3.mu1 
+                    + (7/12)*(solver3.mu2/solver3.mu1)**2 
+                    - (13223/20736)*(solver3.mu2/solver3.mu1)**3)            
+            Ls[2,i],_ = solver3.solve(beta + 1,bound=0.01)
+        except RuntimeError:
+            pass                
         
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1) 
-    ax1.plot(xs,L1s)
+    ax1.plot(xs,Ls[0,:],label='L1')
+    ax1.plot(xs,Ls[1,:],label='L2')
+    ax1.plot(xs,Ls[2,:],label='L3')
+    ax1.xaxis.set_inverted(True)
+    ax1.legend()
     
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
