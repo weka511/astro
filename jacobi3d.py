@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-'''Potential surfaces for the Jacobi Integral'''
+'''Plot Potential surfaces for the Jacobi Integral'''
 
 from argparse import ArgumentParser
 from pathlib import Path
@@ -36,45 +36,42 @@ def parse_args():
     parser = ArgumentParser(description=__doc__)
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--show', default=False, action='store_true', help='Used to display figure')
-    parser.add_argument('--limit',default=1,type=float)
-    parser.add_argument('--eps',default=0.001,type=float)
-    parser.add_argument('--minZ',default=-3.9,type=float)
-    parser.add_argument('--maxZ',default=-2.89,type=float)
-    parser.add_argument('--steps',default=1000,type=int)
+    parser.add_argument('--limit',default=1,type=float,help='Used to set upper and lower bounds for X and Y')
+    parser.add_argument('--minZ',default=-3.9,type=float,help='Used to normalize Z (lower limit)')
+    parser.add_argument('--maxZ',default=-2.89,type=float,help='Used to normalize Z (upper limit)')
+    parser.add_argument('--steps',default=1000,type=int,help='Number of steps when data generated')
     return parser.parse_args()
 
-def create(limit=2, eps=0.001, minZ=-3.9, maxZ=-2.84, steps=1000):
+def create(limit=2,  minZ=-3.9, maxZ=-2.84, steps=1000):
     '''
     Create X, Y, and Z cordinates for surfaces
     
     Parameters:
-        limit
-        eps
-        minZ
-        maxZ
-        steps
+        limit   Used to set upper and lower bounds for X and Y 
+        minZ    Used to normalize Z (lower limit)
+        maxZ    Used to normalize Z (upper limit)
+        steps   Number of steps when data generated
     '''    
-    xlist = np.linspace(-limit, limit + eps, steps)
-    ylist = np.linspace(-limit, limit + eps, steps)
+    xlist = np.linspace(-limit, limit, steps)
+    ylist = np.linspace(-limit, limit, steps)
     X, Y = np.meshgrid(xlist, ylist)
     Z = -jacobi.jacobi(X, Y)
     Z[Z < minZ] = np.nan
     Z[Z > maxZ] = np.nan
     return X,Y,Z
 
-def plot_3d(file_name,X,Y,Z,limit=1, eps=0.001, minZ=-3.9, maxZ=-2.84,heading=''):
+def plot_3d(file_name,X,Y,Z,limit=1,  minZ=-3.9, maxZ=-2.84,heading=''):
     '''
     Plot the surfaces
     
     Parameters:
-        file_name
-        X
-        Y
-        Z
-        limit
-        eps
-        minZ
-        maxZ
+        file_name   Name of file where figure will be stored
+        X           X coordinates for data to be plotted
+        Y           Y coordinates for data to be plotted
+        Z           Z coordinates for data to be plotted
+        limit       Used to set upper and lower bounds for X and Y 
+        minZ        Used to normalize Z (lower limit)
+        maxZ        Used to normalize Z (upper limit)
     '''
     fig = figure(figsize=(8,8))
     ax = fig.add_subplot(111, projection='3d')    
@@ -89,14 +86,19 @@ def plot_3d(file_name,X,Y,Z,limit=1, eps=0.001, minZ=-3.9, maxZ=-2.84,heading=''
     fig.savefig(file_name)
 
 def main():
+    '''Calculate and
+    Plot Potential surfaces for the Jacobi Integral
+    '''
     args = parse_args()
     rcParams['text.usetex'] = True
     start = time()
     
-    X,Y,Z = create(limit=args.limit,eps=args.eps,maxZ=args.maxZ,minZ=args.minZ,steps=args.steps)
+    X,Y,Z = create(limit=args.limit,maxZ=args.maxZ,minZ=args.minZ,steps=args.steps)
     plot_3d(f'{Path(args.figs) / Path(__file__).stem}',X,Y,Z,
-            limit=args.limit,eps=args.eps,maxZ=args.maxZ,minZ=args.minZ,
-            heading=f'{ Path(__file__).stem}: limit={args.limit}, eps={args.eps}, maxZ={args.maxZ}, minZ={args.minZ}')
+            limit=args.limit,
+            maxZ=args.maxZ,
+            minZ=args.minZ,
+            heading=f'{ Path(__file__).stem}: limit={args.limit}, maxZ={args.maxZ}, minZ={args.minZ}')
     
     elapsed = time() - start
     minutes = int(elapsed / 60)
