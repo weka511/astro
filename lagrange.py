@@ -100,10 +100,8 @@ class L1(LagrangianPoint):
         Parameters:
             r2  Distance of smallest mass from mu2
         '''
-        return (3*r2**3*
-                (1 - r2 + r2**2/3) / 
-                ((1 + r2 + r2**2) * (1 - r2)**3) 
-                - self.mu2/self.mu1)
+        return (3*r2**3* (1 - r2 + r2**2/3) 
+                - (self.mu2/self.mu1)*((1 + r2 + r2**2) * (1 - r2)**3) )
     
 class L2(LagrangianPoint):
     '''
@@ -120,10 +118,8 @@ class L2(LagrangianPoint):
         Parameters:
             r2    Distance of smallest mass from mu2
         '''
-        return (3*r2**3*
-                (1 + r2 + r2**2/3) / 
-                ((1 + r2)**2 * (1 - r2**3)) 
-                - self.mu2/self.mu1)    
+        return (3*r2**3*(1 + r2 + r2**2/3)  
+                - (self.mu2/self.mu1) * ((1 + r2)**2 * (1 - r2**3)))
         
 class L3(LagrangianPoint):
     '''
@@ -140,9 +136,8 @@ class L3(LagrangianPoint):
         Parameters:
             r1   Distance of smallest mass from mu1
         '''
-        return ((1 - r1**3)*(1 + r1)**2/
-                (r1**3*(r1**2 + 3*r1 + 3))
-                - self.mu2/self.mu1)
+        return ((1 - r1**3)*(1 + r1)**2
+                - (self.mu2/self.mu1)*(r1**3*(r1**2 + 3*r1 + 3)))
 
     
 def parse_args():
@@ -185,7 +180,7 @@ def main():
     beta = (-(7/12)*solver3.mu2/solver3.mu1 
             + (7/12)*(solver3.mu2/solver3.mu1)**2 
             - (13223/20736)*(solver3.mu2/solver3.mu1)**3)
-    r1_3,err3 = solver3.solve(beta + 1,bound=0.01)       
+    r1_3,err3 = solver3.solve(beta + 1,bound=0.001)       
     jacobi3 = 2*solver3.get_u(r1_3,1-r1_3)
     
     xs = [solver1.mu1-r2_1,r2_2+solver2.mu1,-r1_3-solver3.mu2]
@@ -202,7 +197,7 @@ def main():
     CS2 = ax.contour(X, Y, Z, levels=[jacobi1], colors='xkcd:red', linewidths=(1,))
     CS3 = ax.contour(X, Y, Z, levels=[jacobi2], colors='xkcd:cyan', linewidths=(1,))
     CS4 = ax.contour(X, Y, Z, levels=[jacobi3], colors='xkcd:bright green', linewidths=(1,))
-    cbar = fig.colorbar(C1, orientation='vertical')
+    cbar = fig.colorbar(C1, location='bottom',label='Jacobi Constant')
 
     cbar.add_lines(CS2)
     cbar.add_lines(CS3)
