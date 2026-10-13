@@ -25,9 +25,9 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
-from rki import ImplicitRungeKutta4
+from rki import ImplicitRungeKutta4,ImplicitRungeKutta2
 
-__version__ = '1.0'
+__version__ = '1.1'
 __author__ = 'Simon Crase'
 
 def parse_args():
@@ -38,7 +38,7 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
-    parser.add_argument('--mu2', default=0.02, type=float,help='Smaller of the two main masses')
+    parser.add_argument('--mu2', default=0.01, type=float,help='Smaller of the two main masses')
     parser.add_argument('-N','--NIterations',type=int,default=1000)
     parser.add_argument('--step',type=float,default=0.01)
     return parser.parse_args()
@@ -88,6 +88,13 @@ class F:
                  -(self.mu1/r1**3 + self.mu2/r2**3))
         return dx
 
+class Euler:
+    def __init__(self,dy):
+        self.dy = dy
+        
+    def step(self, h, y):
+        return y + h*self.dy(y)
+    
 def main():
     '''
     Integrate equations (3.16) & (3.17) for a particle near a Lagrange Point
@@ -98,11 +105,14 @@ def main():
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     
     f = F(args.mu2)
-    integrator = ImplicitRungeKutta4(f,atol=1e-8)
+    #integrator = ImplicitRungeKutta2(f,atol=1e-8)
+    integrator = Euler(f)
+    
     X = np.zeros((args.NIterations+1,4))
     X[0,0] = f.mu1 - 1/2
     X[0,1] = np.sqrt(3)/2
     for i in range(args.NIterations):
+        #X[i+1,:] = X[i,:] + args.step * f(X[i,:]) #Euler
         X[i+1,:] = integrator.step(args.step,X[i,:])
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
