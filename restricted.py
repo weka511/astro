@@ -27,7 +27,7 @@ from matplotlib import rcParams
 import numpy as np
 from rki import ImplicitRungeKutta4,ImplicitRungeKutta2
 
-__version__ = '1.1'
+__version__ = '1.0'
 __author__ = 'Simon Crase'
 
 def parse_args():
