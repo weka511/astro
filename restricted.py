@@ -49,6 +49,8 @@ def parse_args():
                             ],
                         default='euler')
     parser.add_argument('-n','--n',type=int,default=1)
+    parser.add_argument('--dx',type=float,default=[0,0],nargs=2)
+    parser.add_argument('--dv',type=float,default=[0,0],nargs=2)
     return parser.parse_args()
 
 
@@ -89,7 +91,7 @@ class F:
         dx = np.zeros_like(x)
         r1 = np.sqrt((x[0]+self.mu2)**2 + x[1]**2)         # (3.8)
         r2 = np.sqrt((x[0]-self.mu1)**2 + x[1]**2)         # (3.9)
-        dx[0] = x[2] +0.00001
+        dx[0] = x[2]
         dx[1] = x[3]
  
         dx[2] = (2*self.n*x[3] + self.n**2*x[0] 
@@ -140,6 +142,8 @@ def main():
     X = np.zeros((args.NIterations+1,4))
     X[0,0] = f.mu1 - 1/2
     X[0,1] = np.sqrt(3)/2
+    X[0,0:2] += args.dx
+    X[0,2:] += args.dv    
     for i in range(args.NIterations):
         X[i+1,:] = integrator.step(args.step,X[i,:])
     fig = figure(figsize=(12,12))
