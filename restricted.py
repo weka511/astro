@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Integrate equations (3.23) & (3.24) for a particle near a Lagrange Point '''
+'''Integrate equations (3.16) & (3.17) for a particle near a Lagrange Point '''
 
 from argparse import ArgumentParser
 from csv import reader
@@ -25,6 +25,7 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
+from rki import ImplicitRungeKutta4
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -37,6 +38,9 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+    parser.add_argument('--mu2', default=0.02, type=float,help='Smaller of the two main masses')
+    parser.add_argument('-N','--NIterations',type=int,default=1000)
+    parser.add_argument('--step',type=float,default=0.01)
     return parser.parse_args()
 
 
@@ -63,31 +67,10 @@ class Logger:
         add_handler(FileHandler(path_name),Logger.instance,level=DEBUG)
         add_handler(StreamHandler(),Logger.instance)   
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
-
-class Verlet:
-    '''
-    Velocity Verlet, based on Peter Young, The leapfrog method and other
-    synplectic algorithms for integrating Newton's laws of motion
-    '''
-    def __init__(self,h,F):
-        self.h = h
-        self.F = F
-        self.first_step = True
-        
-    def step(self,x,v):
-        if self.first_step:
-            v_half = v + (self.h/2)*self.F(x,v)
-            self.first_step = False
-        else:
-            v_half = v + (self.h/2)*self.F_saved
-        x_next = x + self.h*v_half
-        self.F_saved = self.F(v_half)
-        v_next = v_half + (self.h/2)*v_next
-        return x_next,v_next
  
 class F:
-    def __init__(self,mu1,mu2):
-        self.mu1 = mu1
+    def __init__(self,mu2):
+        self.mu1 = 1 - mu2
         self.mu2 = mu2
         self.n = 1
         
@@ -97,24 +80,40 @@ class F:
         r2 = np.sqrt((x[0]-self.mu1)**2 + x[1]**2)         # (3.9)
         dx[0] = x[2]
         dx[1] = x[3]
-        dx[2] = (2*self.n*x[3] + self.n**2 * x[0] 
-                 - (self.mu1*(x[0]+self.mu2)/r1**3 + self.mu2*(x-self.mu1)/r2**3))   # (3.16)
+ 
+        dx[2] = (2*self.n*x[3] + self.n**2*x[0] 
+                 - (self.mu1*(x[0]+self.mu2)/r1**3 + self.mu2*(x[0]-self.mu1)/r2**3))   # (3.16)
+        
         dx[3] = (- 2*self.n*x[2] + self.n**2 * x[1]                                  # (3.17)
                  -(self.mu1/r1**3 + self.mu2/r2**3))
         return dx
 
 def main():
     '''
-    Integrate equations (3.23) & (3.24) for a particle near a Lagrange Point
+    Integrate equations (3.16) & (3.17) for a particle near a Lagrange Point
     '''
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
+    
+    f = F(args.mu2)
+    integrator = ImplicitRungeKutta4(f,atol=1e-8)
+    X = np.zeros((args.NIterations+1,4))
+    X[0,0] = f.mu1 - 1/2
+    X[0,1] = np.sqrt(3)/2
+    for i in range(args.NIterations):
+        X[i+1,:] = integrator.step(args.step,X[i,:])
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
-    ax1 = fig.add_subplot(1,1,1)
-    ...
+    
+    ax1 = fig.add_subplot(1,2,1,adjustable='box',aspect='equal')
+    ax1.scatter(X[:,0],X[:,1],s=1,c='xkcd:blue')
+    ax1.scatter(X[0,0],X[0,1],marker='x',c='xkcd:blue')
+    
+    ax2 = fig.add_subplot(1,2,2,adjustable='box',aspect='equal')
+    ax2.scatter(X[:,2],X[:,3],s=1,c='xkcd:blue')
+  
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
