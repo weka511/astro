@@ -192,7 +192,7 @@ class ImplicitRungeKutta2(ImplicitRungeKutta):
     '''
     4th order Gauss-Legendre
     '''
-    def __init__(self, dy, max_iterations, atol):
+    def __init__(self, dy, max_iterations=200, atol=1.0e-18):
         '''
         Parameters:
            dy              Function f for ODE = dy/dx=f(y)
