@@ -23,7 +23,8 @@ Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolu
 2.4|2.2|ex_2_2.py|Determine average times or orbital conjunction between Earth & Mars. how that the minimum distance varies by factor of almost 2. Determine orbital motions over the period 1982-2002. 
 -||orbital.py|Orbital calculations to support Exercise 2.2
 3|||The Restricted Three Body Problem
-3.3|jacobi.py|Zero velocity Surfaces for the Jacobi Integral
+3.2||restricted.py|Integrate equations (3.23) & (3.24) for particle near a Lagrange Point
+3.3||jacobi.py|Zero velocity Surfaces for the Jacobi Integral
 -||jacobi3d.py|Potential surfaces for the Jacobi Integral
 3.6||lagrange.py|Calculate Equilibrium points L1, L2, and L3, plus Jacobi constants, for Lagrange configuration of the 3 body problem
 3.7||radial.py|Figure 3-10 Plot the radial distances of the five Lagrangian points from the centre of mass as a function of log mu2
