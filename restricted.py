@@ -41,6 +41,14 @@ def parse_args():
     parser.add_argument('--mu2', default=0.01, type=float,help='Smaller of the two main masses')
     parser.add_argument('-N','--NIterations',type=int,default=1000)
     parser.add_argument('--step',type=float,default=0.01)
+    parser.add_argument('--integrator',
+                        choices=[
+                            'euler',
+                            'rki2',
+                            'rki4'
+                            ],
+                        default='euler')
+    parser.add_argument('-n','--n',type=int,default=1)
     return parser.parse_args()
 
 
@@ -69,6 +77,9 @@ class Logger:
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
  
 class F:
+    '''
+    Used in equations of motion: dx/dt = F(x)
+    '''
     def __init__(self,mu2):
         self.mu1 = 1 - mu2
         self.mu2 = mu2
@@ -78,22 +89,35 @@ class F:
         dx = np.zeros_like(x)
         r1 = np.sqrt((x[0]+self.mu2)**2 + x[1]**2)         # (3.8)
         r2 = np.sqrt((x[0]-self.mu1)**2 + x[1]**2)         # (3.9)
-        dx[0] = x[2]
+        dx[0] = x[2] +0.00001
         dx[1] = x[3]
  
         dx[2] = (2*self.n*x[3] + self.n**2*x[0] 
                  - (self.mu1*(x[0]+self.mu2)/r1**3 + self.mu2*(x[0]-self.mu1)/r2**3))   # (3.16)
         
         dx[3] = (- 2*self.n*x[2] + self.n**2 * x[1]                                  # (3.17)
-                 -(self.mu1/r1**3 + self.mu2/r2**3))
+                 -(self.mu1/r1**3 + self.mu2/r2**3)*x[1])
         return dx
 
 class Euler:
-    def __init__(self,dy):
+    '''
+    Euler method of integration
+    '''
+    def __init__(self,dy,n=1):
         self.dy = dy
+        self.n = n
+        
+    def __str__(self):
+        if self.n == 1:
+            return 'Euler'
+        else:
+            return f'Implicit Euler, n={self.n}'
         
     def step(self, h, y):
-        return y + h*self.dy(y)
+        y1 = y.copy()
+        for _ in range(self.n):
+            y1 = y + h*self.dy(y1)
+        return y1
     
 def main():
     '''
@@ -105,27 +129,38 @@ def main():
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     
     f = F(args.mu2)
-    #integrator = ImplicitRungeKutta2(f,atol=1e-8)
-    integrator = Euler(f)
+    match args.integrator:
+        case 'euler':
+            integrator = Euler(f,args.n)
+        case 'rki2':
+            integrator = ImplicitRungeKutta2(f,atol=1e-8)
+        case 'rki4':
+            integrator = ImplicitRungeKutta4(f,atol=1e-8)
     
     X = np.zeros((args.NIterations+1,4))
     X[0,0] = f.mu1 - 1/2
     X[0,1] = np.sqrt(3)/2
     for i in range(args.NIterations):
-        #X[i+1,:] = X[i,:] + args.step * f(X[i,:]) #Euler
         X[i+1,:] = integrator.step(args.step,X[i,:])
     fig = figure(figsize=(12,12))
-    fig.suptitle(Path(__file__).stem)
+    fig.suptitle(f'{Path(__file__).stem} {integrator}')
     
     ax1 = fig.add_subplot(1,2,1,adjustable='box',aspect='equal')
     ax1.scatter(X[:,0],X[:,1],s=1,c='xkcd:blue')
     ax1.scatter(X[0,0],X[0,1],marker='x',c='xkcd:blue')
+    ax1.set_title('Position')
+    ax1.set_xlabel('x')
+    ax1.set_ylabel('y')
     
     ax2 = fig.add_subplot(1,2,2,adjustable='box',aspect='equal')
     ax2.scatter(X[:,2],X[:,3],s=1,c='xkcd:blue')
+    ax2.set_title('Velocity')
+    ax2.set_xlabel('x')
+    ax2.set_ylabel('y')    
   
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
+    
     elapsed = time() - start
     minutes = int(elapsed/60)
     seconds = elapsed - 60*minutes
