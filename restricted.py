@@ -168,7 +168,7 @@ def main():
         X[i+1,:] = integrator.step(args.step,X[i,:])
         
     fig = figure(figsize=(12,4))
-    fig.suptitle(rf'{Path(__file__).stem} {integrator} $\mu_2=${args.mu2}')
+    fig.suptitle(rf'{Path(__file__).stem}: {integrator}, $\mu_2=${args.mu2}, N={args.NIterations:,}')
     
     ax1 = fig.add_subplot(1,2,1,adjustable='box',aspect='equal')
     ax1.scatter(X[:,0],X[:,1],s=1,c='xkcd:blue')
