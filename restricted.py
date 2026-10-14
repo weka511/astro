@@ -43,10 +43,12 @@ def parse_args():
     parser.add_argument('--step',type=float,default=0.01)
     parser.add_argument('--integrator',
                         choices=IntegratorFactory.get_choices(),
-                        default=IntegratorFactory.get_choices()[0])
+                        default=IntegratorFactory.get_choices()[2])
     parser.add_argument('-n','--n',type=int,default=1)
     parser.add_argument('--dx',type=float,default=[0,0],nargs=2)
     parser.add_argument('--dv',type=float,default=[0,0],nargs=2)
+    parser.add_argument('--atol',type=float,default=1.0e-12)
+    parser.add_argument('-m','--max_iterations',type=int,default=250)
     return parser.parse_args()
 
 
@@ -143,9 +145,13 @@ class IntegratorFactory:
             case 'euler':
                 return Euler(f,args.n)
             case 'rki2':
-                return ImplicitRungeKutta2(f,atol=1e-8)
+                return ImplicitRungeKutta2(f,
+                                           atol=args.atol,
+                                           max_iterations=args.max_iterations)
             case 'rki4':
-                return ImplicitRungeKutta4(f,atol=1e-8)
+                return ImplicitRungeKutta4(f,
+                                           atol=args.atol,
+                                           max_iterations=args.max_iterations)
      
 def main():
     '''
@@ -168,7 +174,7 @@ def main():
         X[i+1,:] = integrator.step(args.step,X[i,:])
         
     fig = figure(figsize=(12,4))
-    fig.suptitle(rf'{Path(__file__).stem}: {integrator}, $\mu_2=${args.mu2}, N={args.NIterations:,}')
+    fig.suptitle(rf'{Path(__file__).stem}: ({integrator}), $\mu_2=${args.mu2}, N={args.NIterations:,}, step={args.step}')
     
     ax1 = fig.add_subplot(1,2,1,adjustable='box',aspect='equal')
     ax1.scatter(X[:,0],X[:,1],s=1,c='xkcd:blue')
