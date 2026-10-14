@@ -1,14 +1,5 @@
 # Astronomical Calculations
 
-## Orbital calculations: 
-
- File | Purpose |
---------------------------|---------------------------------------------------------------------
-rki.py|Implicit Runge Ketta (symplectic) integrators
-template.py|Template for python script
-Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor
-
-
 ## Examples from [Murray and Dermott, Solar System Dynamics](https://www.cambridge.org/core/books/solar-system-dynamics/108745217E4A18190CBA340ED5E477A2)
 
 #|Ex|File| Description 
@@ -30,6 +21,13 @@ Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolu
 3.7||radial.py|Figure 3-10 Plot the radial distances of the five Lagrangian points from the centre of mass as a function of log mu2
 A||md_data.py|Accessor function for data from Appendix A, plus code to validate data
 
+## Orbital calculations: 
+
+ File | Purpose |
+--------------------------|---------------------------------------------------------------------
+rki.py|Implicit Runge Ketta (symplectic) integrators
+template.py|Template for python script
+Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor
 
 ## Docs directory
 
