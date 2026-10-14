@@ -22,7 +22,7 @@ from csv import reader
 from logging import basicConfig,getLogger,INFO,FileHandler,StreamHandler,Formatter,DEBUG
 from pathlib import Path
 from time import strftime,time
-from matplotlib.pyplot import figure, show
+from matplotlib.pyplot import figure, show, colorbar
 from matplotlib import rcParams
 import numpy as np
 from rki import ImplicitRungeKutta4,ImplicitRungeKutta2
@@ -39,16 +39,18 @@ def parse_args():
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('--mu2', default=0.01, type=float,help='Smaller of the two main masses')
-    parser.add_argument('-N','--NIterations',type=int,default=1000)
-    parser.add_argument('--step',type=float,default=0.01)
+    parser.add_argument('-N','--NIterations',type=int,default=1000,help='Number of iterations for integrator')
+    parser.add_argument('--step',type=float,default=0.01,help='Stepsize for integrator')
     parser.add_argument('--integrator',
                         choices=IntegratorFactory.get_choices(),
-                        default=IntegratorFactory.get_choices()[2])
-    parser.add_argument('-n','--n',type=int,default=1)
-    parser.add_argument('--dx',type=float,default=[0,0],nargs=2)
-    parser.add_argument('--dv',type=float,default=[0,0],nargs=2)
-    parser.add_argument('--atol',type=float,default=1.0e-12)
-    parser.add_argument('-m','--max_iterations',type=int,default=250)
+                        default=IntegratorFactory.get_default(),
+                        help='Choice of integrator')
+    parser.add_argument('-n','--n',type=int,default=1,help='Number of iterations for Implicit Euler')
+    parser.add_argument('--dx',type=float,default=[0,0],nargs=2,help='Initial perturbation (position)')
+    parser.add_argument('--dv',type=float,default=[0,0],nargs=2,help='Initial perturbation (velocity)')
+    parser.add_argument('--atol',type=float,default=1.0e-12,help='Tolerance for solving equation in implicit Runge Kutta')
+    parser.add_argument('-m','--max_iterations',type=int,default=250,
+                        help='Number of iterations for solving equation in implicit Runge Kutta')
     return parser.parse_args()
 
 
@@ -152,6 +154,10 @@ class IntegratorFactory:
                 return ImplicitRungeKutta4(f,
                                            atol=args.atol,
                                            max_iterations=args.max_iterations)
+            
+    @staticmethod
+    def get_default():
+        return 'rki4'
      
 def main():
     '''
@@ -172,12 +178,19 @@ def main():
     X[0,2:] += args.dv    
     for i in range(args.NIterations):
         X[i+1,:] = integrator.step(args.step,X[i,:])
-        
+    Z = np.zeros((args.NIterations+1))
+    for i in range(args.NIterations+1):
+        Z[i] = np.sqrt(X[i,2]**2 + X[i,3]**2)
     fig = figure(figsize=(12,4))
     fig.suptitle(rf'{Path(__file__).stem}: ({integrator}), $\mu_2=${args.mu2}, N={args.NIterations:,}, step={args.step}')
     
     ax1 = fig.add_subplot(1,2,1,adjustable='box',aspect='equal')
-    ax1.scatter(X[:,0],X[:,1],s=1,c='xkcd:blue')
+    colorbar(ax1.scatter(X[:,0],X[:,1],
+                         s=1,c=Z,cmap='viridis'),
+             label='Speed',
+             location='bottom',
+             shrink=0.5)
+    
     ax1.scatter(X[0,0],X[0,1],marker='x',c='xkcd:blue')
     ax1.set_title('Position')
     ax1.set_xlabel('x')
@@ -186,8 +199,8 @@ def main():
     ax2 = fig.add_subplot(1,2,2,adjustable='box',aspect='equal')
     ax2.scatter(X[:,2],X[:,3],s=1,c='xkcd:blue')
     ax2.set_title('Velocity')
-    ax2.set_xlabel('x')
-    ax2.set_ylabel('y')    
+    ax2.set_xlabel('u')
+    ax2.set_ylabel('v')    
   
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
