@@ -42,12 +42,8 @@ def parse_args():
     parser.add_argument('-N','--NIterations',type=int,default=1000)
     parser.add_argument('--step',type=float,default=0.01)
     parser.add_argument('--integrator',
-                        choices=[
-                            'euler',
-                            'rki2',
-                            'rki4'
-                            ],
-                        default='euler')
+                        choices=IntegratorFactory.get_choices(),
+                        default=IntegratorFactory.get_choices()[0])
     parser.add_argument('-n','--n',type=int,default=1)
     parser.add_argument('--dx',type=float,default=[0,0],nargs=2)
     parser.add_argument('--dv',type=float,default=[0,0],nargs=2)
@@ -104,6 +100,8 @@ class F:
 class Euler:
     '''
     Euler method of integration
+    
+    A simple work-horse integrator
     '''
     def __init__(self,dy,n=1):
         self.dy = dy
@@ -117,10 +115,38 @@ class Euler:
         
     def step(self, h, y):
         y1 = y.copy()
-        for _ in range(self.n):
+        for i in range(self.n):
             y1 = y + h*self.dy(y1)
         return y1
+
+class IntegratorFactory: 
+    '''
+    This class sets up an Integrator.
+    '''
+    @staticmethod
+    def get_choices():
+        '''
+        This method sets the options for the command line
+        '''
+        return [
+            'euler',
+            'rki2',
+            'rki4'
+        ]
     
+    @staticmethod
+    def create(f,args):
+        '''
+        Create an inegrator
+        '''
+        match args.integrator:
+            case 'euler':
+                return Euler(f,args.n)
+            case 'rki2':
+                return ImplicitRungeKutta2(f,atol=1e-8)
+            case 'rki4':
+                return ImplicitRungeKutta4(f,atol=1e-8)
+     
 def main():
     '''
     Integrate equations (3.16) & (3.17) for a particle near a Lagrange Point
@@ -131,13 +157,7 @@ def main():
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     
     f = F(args.mu2)
-    match args.integrator:
-        case 'euler':
-            integrator = Euler(f,args.n)
-        case 'rki2':
-            integrator = ImplicitRungeKutta2(f,atol=1e-8)
-        case 'rki4':
-            integrator = ImplicitRungeKutta4(f,atol=1e-8)
+    integrator = IntegratorFactory.create(f,args)
     
     X = np.zeros((args.NIterations+1,4))
     X[0,0] = f.mu1 - 1/2
@@ -146,8 +166,9 @@ def main():
     X[0,2:] += args.dv    
     for i in range(args.NIterations):
         X[i+1,:] = integrator.step(args.step,X[i,:])
-    fig = figure(figsize=(12,12))
-    fig.suptitle(f'{Path(__file__).stem} {integrator}')
+        
+    fig = figure(figsize=(12,4))
+    fig.suptitle(rf'{Path(__file__).stem} {integrator} $\mu_2=${args.mu2}')
     
     ax1 = fig.add_subplot(1,2,1,adjustable='box',aspect='equal')
     ax1.scatter(X[:,0],X[:,1],s=1,c='xkcd:blue')
