@@ -51,6 +51,7 @@ def parse_args():
     parser.add_argument('--atol',type=float,default=1.0e-12,help='Tolerance for solving equation in implicit Runge Kutta')
     parser.add_argument('-m','--max_iterations',type=int,default=250,
                         help='Number of iterations for solving equation in implicit Runge Kutta')
+    parser.add_argument('--freq',type=int,default=100,help='Used to record progress')
     return parser.parse_args()
 
 
@@ -181,6 +182,8 @@ def main():
     Z = np.zeros((args.NIterations+1))
     for i in range(args.NIterations+1):
         Z[i] = np.sqrt(X[i,2]**2 + X[i,3]**2)
+        if i > 0 and i%args.freq == 0:
+            Logger.instance.info(f'Step {i} of {args.NIterations}')
     fig = figure(figsize=(12,4))
     fig.suptitle(rf'{Path(__file__).stem}: ({integrator}), $\mu_2=${args.mu2}, N={args.NIterations:,}, step={args.step}')
     
@@ -213,4 +216,7 @@ def main():
         show()
     
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except:
+        Logger.instance.exception('Terminated by error')
