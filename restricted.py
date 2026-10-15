@@ -52,6 +52,7 @@ def parse_args():
     parser.add_argument('-m','--max_iterations',type=int,default=250,
                         help='Number of iterations for solving equation in implicit Runge Kutta')
     parser.add_argument('--freq',type=int,default=1000,help='Used to record progress')
+    parser.add_argument('--stride',type=int,default=1,help='Used to skip over some points while plotting')
     return parser.parse_args()
 
 
@@ -180,20 +181,20 @@ def main():
     for i in range(args.NIterations):
         X[i+1,:] = integrator.step(args.step,X[i,:])
         if i > 0 and i%args.freq == 0:
-            Logger.instance.info(f'Step {i:,} of {args.NIterations:,}')        
-    Z = np.zeros((args.NIterations+1))
-    for i in range(args.NIterations+1):
-        Z[i] = np.sqrt(X[i,2]**2 + X[i,3]**2)
-  
+            Logger.instance.info(f'Step {i:,} of {args.NIterations:,}')
+   
     fig = figure(figsize=(12,4))
     fig.suptitle(rf'{Path(__file__).stem}: ({integrator}), $\mu_2=${args.mu2}, N={args.NIterations:,}, step={args.step}')
     
     ax1 = fig.add_subplot(1,2,1,adjustable='box',aspect='equal')
-    colorbar(ax1.scatter(X[:,0],X[:,1],
-                         s=1,c=Z,cmap='viridis'),
-             label='Speed',
-             location='bottom',
-             shrink=0.5)
+    colorbar(
+        ax1.scatter(X[::args.stride,0],X[::args.stride,1],
+                    s=1,
+                    c=np.sqrt(np.sqrt(X[::args.stride,2]**2 + X[::args.stride,3]**2)),
+                    cmap='viridis'),
+        label='Speed',
+        location='bottom',
+        shrink=0.5)
     
     ax1.scatter(X[0,0],X[0,1],marker='x',c='xkcd:blue')
     ax1.set_title('Position')
@@ -201,7 +202,7 @@ def main():
     ax1.set_ylabel('y')
     
     ax2 = fig.add_subplot(1,2,2,adjustable='box',aspect='equal')
-    ax2.scatter(X[:,2],X[:,3],s=1,c='xkcd:blue')
+    ax2.scatter(X[::args.stride,2],X[::args.stride,3],s=1,c='xkcd:blue')
     ax2.set_title('Velocity')
     ax2.set_xlabel('u')
     ax2.set_ylabel('v')    
