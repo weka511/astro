@@ -26,6 +26,7 @@ from matplotlib.pyplot import figure, show, colorbar
 from matplotlib import rcParams
 import numpy as np
 from rki import ImplicitRungeKutta4,ImplicitRungeKutta2
+from euler import Euler
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -90,40 +91,23 @@ class F:
         self.n = 1
         
     def __call__(self,x):
+        '''
+        Evaluate F
+        
+        Parameters:
+            x         Vector (x,y,u,v)
+        '''
         dx = np.zeros_like(x)
         r1 = np.sqrt((x[0]+self.mu2)**2 + x[1]**2)         # (3.8)
         r2 = np.sqrt((x[0]-self.mu1)**2 + x[1]**2)         # (3.9)
-        dx[0] = x[2]
-        dx[1] = x[3]
- 
+        dx[0] = x[2]                                       # dx/dt = u
+        dx[1] = x[3]                                       # dy/dt = v                                                              
         dx[2] = (2*self.n*x[3] + self.n**2*x[0] 
-                 - (self.mu1*(x[0]+self.mu2)/r1**3 + self.mu2*(x[0]-self.mu1)/r2**3))   # (3.16)
-        
-        dx[3] = (- 2*self.n*x[2] + self.n**2 * x[1]                                  # (3.17)
-                 -(self.mu1/r1**3 + self.mu2/r2**3)*x[1])
+                 - (self.mu1*(x[0]+self.mu2)/r1**3 + self.mu2*(x[0]-self.mu1)/r2**3))   # (3.16) 
+        dx[3] = - 2*self.n*x[2] + self.n**2*x[1] - (self.mu1/r1**3 + self.mu2/r2**3)*x[1]   # (3.17)
+                 
         return dx
 
-class Euler:
-    '''
-    Euler method of integration
-    
-    A simple work-horse integrator
-    '''
-    def __init__(self,dy,n=1):
-        self.dy = dy
-        self.n = n
-        
-    def __str__(self):
-        if self.n == 1:
-            return 'Euler'
-        else:
-            return f'Implicit Euler, n={self.n}'
-        
-    def step(self, h, y):
-        y1 = y.copy()
-        for i in range(self.n):
-            y1 = y + h*self.dy(y1)
-        return y1
 
 class IntegratorFactory: 
     '''
@@ -141,24 +125,26 @@ class IntegratorFactory:
         ]
     
     @staticmethod
-    def create(f,args):
+    def create(f,integrator,atol,max_iterations):
         '''
-        Create an inegrator
+        Create an integrator
         '''
-        match args.integrator:
+        match integrator:
             case 'euler':
-                return Euler(f,args.n)
+                return Euler(f,n=max_iterations,atol=atol)
             case 'rki2':
                 return ImplicitRungeKutta2(f,
-                                           atol=args.atol,
-                                           max_iterations=args.max_iterations)
+                                           atol=atol,
+                                           max_iterations=max_iterations)
             case 'rki4':
                 return ImplicitRungeKutta4(f,
-                                           atol=args.atol,
-                                           max_iterations=args.max_iterations)
-            
+                                           atol=atol,
+                                           max_iterations=max_iterations)        
     @staticmethod
     def get_default():
+        '''
+        Default if no integrator has been specified
+        '''
         return 'rki4'
      
 def main():
@@ -171,7 +157,7 @@ def main():
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     
     f = F(args.mu2)
-    integrator = IntegratorFactory.create(f,args)
+    integrator = IntegratorFactory.create(f,args.integrator,args.atol,args.max_iterations)
     
     X = np.zeros((args.NIterations+1,4))
     X[0,0] = f.mu1 - 1/2

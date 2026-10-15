@@ -25,6 +25,7 @@ A||md_data.py|Accessor function for data from Appendix A, plus code to validate 
 
  File | Purpose |
 --------------------------|---------------------------------------------------------------------
+euler.py|Simple Euler method for integrations ODE
 rki.py|Implicit Runge Ketta (symplectic) integrators
 template.py|Template for python script
 Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor
