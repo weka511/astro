@@ -89,4 +89,4 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        Logger.instance.exception(e)
+        Logger.instance.exception(e,stack_info=True)
