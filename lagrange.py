@@ -26,10 +26,8 @@ from pathlib import Path
 from time import strftime,time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
-from matplotlib.pyplot import cm
 import numpy as np
 from scipy.optimize import newton
-
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -45,12 +43,8 @@ class LagrangianPoint:
         
     def get_alpha(self):
         '''
-        This function is used to inintialize r:
+        This function is used to initialize r:
         Murray & Dermott, (3.75)
-        
-        Parameters:
-            mu2   Smaller of the two main masses
-            r2    Distance of smallest mass from mu2
         '''
         return (self.mu2/(3*self.mu1))**(1/3)    
         
@@ -87,7 +81,7 @@ class LagrangianPoint:
         
 class L1(LagrangianPoint):
     '''
-    This class performs the calculations needed to locate one 
+    This class performs the calculations needed to locate  
     the first colinear Lagrangian point
     '''    
     def __init__(self,mu2):
@@ -105,7 +99,7 @@ class L1(LagrangianPoint):
     
 class L2(LagrangianPoint):
     '''
-    This class performs the calculations needed to locate one 
+    This class performs the calculations needed to locate  
     the second colinear Lagrangian point
     '''       
     def __init__(self,mu2):
@@ -123,7 +117,7 @@ class L2(LagrangianPoint):
         
 class L3(LagrangianPoint):
     '''
-    This class performs the calculations needed to locate one 
+    This class performs the calculations needed to locate 
     the third colinear Lagrangian point
     '''       
     def __init__(self,mu2):
@@ -193,7 +187,7 @@ def main():
     fig.suptitle(Path(__file__).stem)
     
     ax = fig.add_subplot(1,1,1)    
-    C1 = ax.contourf(X, Y, Z,cmap='seismic')
+    C1 = ax.contourf(X, Y, Z,cmap='coolwarm')
     CS2 = ax.contour(X, Y, Z, levels=[jacobi1], colors='xkcd:red', linewidths=(1,))
     CS3 = ax.contour(X, Y, Z, levels=[jacobi2], colors='xkcd:cyan', linewidths=(1,))
     CS4 = ax.contour(X, Y, Z, levels=[jacobi3], colors='xkcd:bright green', linewidths=(1,))
