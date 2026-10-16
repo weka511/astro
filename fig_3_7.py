@@ -15,7 +15,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Plot zero-velocity curves'''
+'''
+Plot the zero-velocity curves for the three critical values of the Jacobi 
+Constant that pass through the points L1, L2, and L3
+'''
 
 from argparse import ArgumentParser
 from csv import reader
@@ -39,8 +42,9 @@ def parse_args():
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('--mu2', default=0.2, type=float,help='Smaller of the two main masses')
-    parser.add_argument('--limit',default=1.0,type=float)
-    parser.add_argument('--step',default=0.0625,type=int)       
+    parser.add_argument('--limit',default=2.0,type=float)
+    parser.add_argument('--step',default=1.0/64,type=float) 
+    parser.add_argument('Critical',nargs='+',type=float)
     return parser.parse_args()
 
 
@@ -67,28 +71,41 @@ class Logger:
         add_handler(FileHandler(path_name),Logger.instance,level=DEBUG)
         add_handler(StreamHandler(),Logger.instance)   
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
+
+
     
 def main():
     '''
-    Do whatever...
+    Compute U and plot the zero-velocity curves for the three critical values 
+    of the Jacobi Constant that pass through the points L1, L2, and L3
     '''
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
-    C = 3.805
     jacobi = np.vectorize(lambda x,y:get_U(x,y,mu2=args.mu2))
     
     X = np.arange(-args.limit,args.limit,args.step)
     Y = np.arange(-args.limit,args.limit,args.step)
     X1,Y1 = np.meshgrid(X,Y)
     Z = jacobi(X1,Y1)
-    m,n = Z.shape
-    zero_velocity = np.argwhere(abs(Z-C)<0.01)
+
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
-    ax1 = fig.add_subplot(1,1,1)
-    ax1.scatter(zero_velocity[:,0],zero_velocity[:,1])
+    
+    m = int(np.sqrt(len(args.Critical)+1))
+    n = m
+    while n*m < len(args.Critical):
+        n += 1
+        
+    i = 1
+    for C in args.Critical:
+        plus = np.argwhere(Z > C)
+        ax1 = fig.add_subplot(m,n,i)
+        ax1.scatter(plus[:,1],plus[:,0])
+        ax1.set_title(f'C={C}')
+        i += 1
+            
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
