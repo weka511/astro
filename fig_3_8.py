@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Template for python script'''
+'''Plot U'''
 
 from argparse import ArgumentParser
 from csv import reader
@@ -76,7 +76,7 @@ def get_U(x,y,mu2=0.2):
 
 def main():
     '''
-    Do whatever...
+    Compute U and plot it
     '''
     rcParams['text.usetex'] = True
     start  = time()
