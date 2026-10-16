@@ -18,6 +18,7 @@
 3.3||jacobi.py|Zero velocity Surfaces for the Jacobi Integral
 -||jacobi3d.py|Potential surfaces for the Jacobi Integral
 3.6||lagrange.py|Calculate Equilibrium points L1, L2, and L3, plus Jacobi constants, for Lagrange configuration of the 3 body problem
+-||fig_3_7.py|Plot zero-velocity curve (Work in Progress)
 -||fig_3_8.py|Plot U (Work in Progress)
 3.7||radial.py|Figure 3-10 Plot the radial distances of the five Lagrangian points from the centre of mass as a function of log mu2
 A||md_data.py|Accessor function for data from Appendix A, plus code to validate data

@@ -72,7 +72,8 @@ def get_U(x,y,mu2=0.2):
     mu1 = 1 - mu2
     r1 = np.sqrt((x+mu2)**2 + y**2)                                       # (3.8)
     r2 = np.sqrt((x-mu1)**2 + y**2)                                       # (3.9)
-    return 2*(mu1*(1/r1 + r1**2/2) + mu2*(1/r2 + r2**2/2) - mu1*mu2/2)    # (3.64)
+    U = 2*(mu1*(1/r1 + r1**2/2) + mu2*(1/r2 + r2**2/2) - mu1*mu2/2)    # (3.64)
+    return U
 
 def main():
     '''
@@ -91,6 +92,7 @@ def main():
     
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
+    
     ax1 = fig.add_subplot(1,1,1,projection='3d')
     ax1.plot_surface(X,Y,Z,cmap='coolwarm',linewidth=0,antialiased=False)
     ax1.set_xlabel('x')
