@@ -25,7 +25,7 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show, colorbar
 from matplotlib import rcParams
 import numpy as np
-from rki import ImplicitRungeKutta4,ImplicitRungeKutta2
+from rki import ImplicitRungeKutta,ImplicitRungeKutta4,ImplicitRungeKutta2
 from euler import Euler
 
 __version__ = '1.0'
@@ -49,7 +49,7 @@ def parse_args():
     parser.add_argument('-n','--n',type=int,default=1,help='Number of iterations for Implicit Euler')
     parser.add_argument('--dx',type=float,default=[0,0],nargs=2,help='Initial perturbation (position)')
     parser.add_argument('--dv',type=float,default=[0,0],nargs=2,help='Initial perturbation (velocity)')
-    parser.add_argument('--atol',type=float,default=1.0e-12,help='Tolerance for solving equation in implicit Runge Kutta')
+    parser.add_argument('--atol',type=float,default=1.0e-8,help='Tolerance for solving equation in implicit Runge Kutta')
     parser.add_argument('-m','--max_iterations',type=int,default=250,
                         help='Number of iterations for solving equation in implicit Runge Kutta')
     parser.add_argument('--freq',type=int,default=1000,help='Used to record progress')
@@ -168,12 +168,16 @@ def main():
     X[0,0] = f.mu1 - 1/2
     X[0,1] = np.sqrt(3)/2
     X[0,0:2] += args.dx
-    X[0,2:] += args.dv    
-    for i in range(args.NIterations):
-        X[i+1,:] = integrator.step(args.step,X[i,:])
-        if i > 0 and i%args.freq == 0:
-            Logger.instance.info(f'Step {i:,} of {args.NIterations:,}')
-   
+    X[0,2:] += args.dv
+    try:
+        for i in range(args.NIterations):
+            X[i+1,:] = integrator.step(args.step,X[i,:])
+            if i > 0 and i%args.freq == 0:
+                Logger.instance.info(f'Step {i:,} of {args.NIterations:,}')
+    except ImplicitRungeKutta.Failed as e:
+        Logger.instance.exception(e,stack_info=True)  
+        Logger.instance.error('Terminating')
+
     fig = figure(figsize=(12,4))    
     fig.suptitle(get_suptitle(args,integrator))
     
