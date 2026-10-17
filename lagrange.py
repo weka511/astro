@@ -152,6 +152,25 @@ def jacobi(x,y,point=None):
     r2 = np.sqrt((x-point.mu1)**2 + y**2)
     return 2*point.get_u(r1,r2)
 
+def create_lagrangian_points(mu2,dim=2):
+    product = np.zeros((3,dim))       
+    solver1 = L1(mu2)
+    alpha = solver1.get_alpha()
+    r2_1,err1 = solver1.solve(alpha) 
+    product[0,0] = 1-mu2-r2_1
+    
+    solver2 = L2(mu2)
+    r2_2,err2 = solver2.solve(alpha)
+    product[1,0] = r2_2 + 1-mu2
+    
+    solver3 = L3(mu2)
+    beta = (-(7/12)*solver3.mu2/solver3.mu1 
+            + (7/12)*(solver3.mu2/solver3.mu1)**2 
+            - (13223/20736)*(solver3.mu2/solver3.mu1)**3)
+    r1_3,err3 = solver3.solve(beta + 1,bound=0.001)  
+    product[2,0] = - r1_3 - mu2
+    return product
+
 def main():
     '''
     Calculate Equilibrium points L1, L2, and L3, plus Jacobi constants, 

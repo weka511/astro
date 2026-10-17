@@ -29,7 +29,7 @@ from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
 from fig_3_8 import get_U
-from lagrange import L1,L2,L3
+from lagrange import create_lagrangian_points
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -73,24 +73,7 @@ class Logger:
         add_handler(StreamHandler(),Logger.instance)   
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
 
-def create_lagrangian_points(mu2):
-    product = np.zeros((3,2))       
-    solver1 = L1(mu2)
-    alpha = solver1.get_alpha()
-    r2_1,err1 = solver1.solve(alpha) 
-    product[0,0] = 1-mu2-r2_1
-    
-    solver2 = L2(mu2)
-    r2_2,err2 = solver2.solve(alpha)
-    product[1,0] = r2_2 + 1-mu2
-    
-    solver3 = L3(mu2)
-    beta = (-(7/12)*solver3.mu2/solver3.mu1 
-            + (7/12)*(solver3.mu2/solver3.mu1)**2 
-            - (13223/20736)*(solver3.mu2/solver3.mu1)**3)
-    r1_3,err3 = solver3.solve(beta + 1,bound=0.001)  
-    product[2,0] = - r1_3 - mu2
-    return product
+
 
     
 def main():
