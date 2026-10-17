@@ -169,7 +169,15 @@ def create_lagrangian_points(mu2,dim=2):
             - (13223/20736)*(solver3.mu2/solver3.mu1)**3)
     r1_3,err3 = solver3.solve(beta + 1,bound=0.001)  
     product[2,0] = - r1_3 - mu2
+    
     return product
+
+def get_U(x,y,mu2=0.2,cutoff=np.inf):
+    mu1 = 1 - mu2
+    r1 = np.sqrt((x+mu2)**2 + y**2)                                       # (3.8)
+    r2 = np.sqrt((x-mu1)**2 + y**2)                                       # (3.9)
+    U = 2*(mu1*(1/r1 + r1**2/2) + mu2*(1/r2 + r2**2/2) - mu1*mu2/2)    # (3.64)
+    return min(U,cutoff)
 
 def main():
     '''

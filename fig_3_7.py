@@ -28,8 +28,7 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
-from fig_3_8 import get_U
-from lagrange import create_lagrangian_points
+from lagrange import create_lagrangian_points,get_U
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
