@@ -15,7 +15,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Plot U'''
+'''
+Plot the three-dimensional surface defined by Cj=2U and the Lagrangian equilibrium points.
+'''
 
 from argparse import ArgumentParser
 from csv import reader
@@ -25,7 +27,7 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
-from lagrange import create_lagrangian_points
+from lagrange import create_lagrangian_points,get_U
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -68,36 +70,31 @@ class Logger:
         add_handler(StreamHandler(),Logger.instance)   
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
 
-def get_U(x,y,mu2=0.2):
-    mu1 = 1 - mu2
-    r1 = np.sqrt((x+mu2)**2 + y**2)                                       # (3.8)
-    r2 = np.sqrt((x-mu1)**2 + y**2)                                       # (3.9)
-    U = 2*(mu1*(1/r1 + r1**2/2) + mu2*(1/r2 + r2**2/2) - mu1*mu2/2)    # (3.64)
-    return U
-
 def main():
     '''
-    Compute U and plot it
+    Calculate  the three-dimensional surface defined by Cj=2U and the Lagrangian equilibrium points,
+    and plot them.
     '''
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
-    jacobi = np.vectorize(lambda x,y:get_U(x,y,mu2=args.mu2))
+    jacobi = np.vectorize(lambda x,y:get_U(x,y,mu2=args.mu2,cutoff=12))
     
     X = np.arange(-args.limit,args.limit,args.step)
     Y = np.arange(-args.limit,args.limit,args.step)
     X,Y = np.meshgrid(X,Y)
-    Z = np.log(jacobi(X,Y))
+    Z = - jacobi(X,Y)
+
     lagrangian_points = create_lagrangian_points(args.mu2,dim=3)
-    
+    lagrangian_points[:,2] = np.array([3.805, 3.552, 3.197])
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     
     ax1 = fig.add_subplot(1,1,1,projection='3d')
-    ax1.plot_surface(X,Y,Z,cmap='coolwarm',linewidth=0,antialiased=False)
+    ax1.plot_surface(X,Y,Z,cmap='coolwarm',linewidth=0)#,antialiased=False)
     ax1.scatter(lagrangian_points[:,0],lagrangian_points[:,1],lagrangian_points[:,2],
-                c='r',marker='+',s=250)
+                c='g',marker='o',s=250)
     ax1.set_xlabel('x')
     ax1.set_ylabel('y')
     ax1.set_zlabel('-2U')
