@@ -54,6 +54,7 @@ def parse_args():
                         help='Number of iterations for solving equation in implicit Runge Kutta')
     parser.add_argument('--freq',type=int,default=1000,help='Used to record progress')
     parser.add_argument('--stride',type=int,default=1,help='Used to skip over some points while plotting')
+    parser.add_argument('--name',default=Path(__file__).stem,help='File name for plot')
     return parser.parse_args()
 
 
@@ -146,7 +147,11 @@ class IntegratorFactory:
         Default if no integrator has been specified
         '''
         return 'rki4'
-     
+ 
+def get_suptitle(args,integrator):
+    return (rf'{Path(__file__).stem}: ({integrator}), $\mu_2=${args.mu2}, N={args.NIterations:,}, step={args.step}, '
+            rf'$\delta x=${args.dx}, $\delta v=${args.dv}')
+        
 def main():
     '''
     Integrate equations (3.16) & (3.17) for a particle near a Lagrange Point
@@ -169,8 +174,8 @@ def main():
         if i > 0 and i%args.freq == 0:
             Logger.instance.info(f'Step {i:,} of {args.NIterations:,}')
    
-    fig = figure(figsize=(12,4))
-    fig.suptitle(rf'{Path(__file__).stem}: ({integrator}), $\mu_2=${args.mu2}, N={args.NIterations:,}, step={args.step}')
+    fig = figure(figsize=(12,4))    
+    fig.suptitle(get_suptitle(args,integrator))
     
     ax1 = fig.add_subplot(1,2,1,adjustable='box',aspect='equal')
     colorbar(
@@ -194,7 +199,7 @@ def main():
     ax2.set_ylabel('v')    
   
     fig.tight_layout(h_pad=2)
-    fig.savefig(Path(args.figs)/Path(__file__).stem)    
+    fig.savefig(Path(args.figs)/args.name)    
     
     elapsed = time() - start
     minutes = int(elapsed/60)
