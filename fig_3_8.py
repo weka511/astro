@@ -25,7 +25,7 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
-
+from lagrange import create_lagrangian_points
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -39,7 +39,7 @@ def parse_args():
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('--mu2', default=0.2, type=float,help='Smaller of the two main masses')
-    parser.add_argument('--limit',default=1.0,type=float)
+    parser.add_argument('--limit',default=2.0,type=float)
     parser.add_argument('--step',default=0.0625,type=int)    
     return parser.parse_args()
 
@@ -89,12 +89,15 @@ def main():
     Y = np.arange(-args.limit,args.limit,args.step)
     X,Y = np.meshgrid(X,Y)
     Z = np.log(jacobi(X,Y))
+    lagrangian_points = create_lagrangian_points(args.mu2,dim=3)
     
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     
     ax1 = fig.add_subplot(1,1,1,projection='3d')
     ax1.plot_surface(X,Y,Z,cmap='coolwarm',linewidth=0,antialiased=False)
+    ax1.scatter(lagrangian_points[:,0],lagrangian_points[:,1],lagrangian_points[:,2],
+                c='r',marker='+',s=250)
     ax1.set_xlabel('x')
     ax1.set_ylabel('y')
     ax1.set_zlabel('-2U')
