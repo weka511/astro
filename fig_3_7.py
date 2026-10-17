@@ -29,6 +29,7 @@ from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
 from fig_3_8 import get_U
+from lagrange import L1,L2,L3
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -72,6 +73,24 @@ class Logger:
         add_handler(StreamHandler(),Logger.instance)   
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
 
+def create_lagrangian_points(mu2):
+    product = np.zeros((3,2))       
+    solver1 = L1(mu2)
+    alpha = solver1.get_alpha()
+    r2_1,err1 = solver1.solve(alpha) 
+    product[0,0] = 1-mu2-r2_1
+    
+    solver2 = L2(mu2)
+    r2_2,err2 = solver2.solve(alpha)
+    product[1,0] = r2_2 + 1-mu2
+    
+    solver3 = L3(mu2)
+    beta = (-(7/12)*solver3.mu2/solver3.mu1 
+            + (7/12)*(solver3.mu2/solver3.mu1)**2 
+            - (13223/20736)*(solver3.mu2/solver3.mu1)**3)
+    r1_3,err3 = solver3.solve(beta + 1,bound=0.001)  
+    product[2,0] = - r1_3 - mu2
+    return product
 
     
 def main():
@@ -89,25 +108,30 @@ def main():
     Y = np.arange(-args.limit,args.limit,args.step)
     X1,Y1 = np.meshgrid(X,Y)
     Z = jacobi(X1,Y1)
-
+    lagrangian_points = create_lagrangian_points(args.mu2)
+    
     fig = figure(figsize=(12,12))
-    fig.suptitle(Path(__file__).stem)
+    fig.suptitle('Figure 3.7: zero velocity curves for $L_1$, $L_2$, and $L_3$')
     
     m = int(np.sqrt(len(args.Critical)+1))
     n = m
     while n*m < len(args.Critical):
         n += 1
-        
+
     i = 1
     for C in args.Critical:
-        plus = np.argwhere(Z > C)
+        z = -args.limit + args.step*np.argwhere(Z < C)
         ax1 = fig.add_subplot(m,n,i)
-        ax1.scatter(plus[:,1],plus[:,0])
+        ax1.scatter(z[:,1],z[:,0],c='b')
+        ax1.scatter(lagrangian_points[:,0],lagrangian_points[:,1],c='k',marker='+',s=100)
+        ax1.scatter(lagrangian_points[i-1,0],lagrangian_points[i-1,1],c='r',marker='+',s=100)
         ax1.set_title(f'C={C}')
+        ax1.set_aspect('equal', adjustable='box') 
         i += 1
             
     fig.tight_layout(h_pad=2)
-    fig.savefig(Path(args.figs)/Path(__file__).stem)    
+    fig.savefig(Path(args.figs)/Path(__file__).stem) 
+    
     elapsed = time() - start
     minutes = int(elapsed/60)
     seconds = elapsed - 60*minutes
