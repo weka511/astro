@@ -87,7 +87,7 @@ def main():
     Z = - jacobi(X,Y)
 
     lagrangian_points = create_lagrangian_points(args.mu2,dim=3)
-    lagrangian_points[:,2] = np.array([3.805, 3.552, 3.197])
+    lagrangian_points[:,2] = - 0.03125 * np.array([3.805, 3.552, 3.197])
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     
