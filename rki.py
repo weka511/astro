@@ -21,6 +21,7 @@ Implicit Runge Ketta (symplectic) integrators
 
 from abc import ABC
 from argparse import ArgumentParser
+from warnings import deprecated
 from pathlib import Path
 from time import time
 from matplotlib.pyplot import figure, show
@@ -30,6 +31,7 @@ import numpy as np
 __version__ = '1.1'
 __author__ = 'Simon Crase'
 
+@deprecated("See Issue #99")
 class Driver:
     '''
     Use an integrator to solve an ODE to within a specified error 
