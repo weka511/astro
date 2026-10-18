@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-# This tests the ImplicitRungeKutts Inntegrator by calculating the
-# evolution of the Lorentz Attractor
+'''
+Test the ImplicitRungeKutts Inntegrator by calculating the
+evolution of the Lorentz Attractor
+'''
 
 from argparse import ArgumentParser
 from pathlib import Path
@@ -25,7 +27,7 @@ from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
-import rki
+from rki import ImplicitRungeKutta4
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -58,12 +60,15 @@ def parse_args():
     return parser.parse_args()
       
 def main():
+    '''
+    Calculate the solution to the Lorentz equations and plot it
+    '''
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
      
     lorentz = Lorentz(10,28,8.0/3.0)
-    rk = rki.ImplicitRungeKutta4(lambda x: lorentz.dx(x),10,0.0000001)
+    rk = ImplicitRungeKutta4(lambda x: lorentz.dx(x),10,0.0000001)
     XYZ = np.zeros((args.n+1,3))
     XYZ[0,:] = np.array([1,0,1])
     for i in range(args.n):
