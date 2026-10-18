@@ -93,7 +93,7 @@ class F:
         
     def __call__(self,x):
         '''
-        Evaluate F
+        Evaluate F and calculate the Jacobi constant
         
         Parameters:
             x         Vector (x,y,u,v)
@@ -101,11 +101,13 @@ class F:
         dx = np.zeros_like(x)
         r1 = np.sqrt((x[0]+self.mu2)**2 + x[1]**2)         # (3.8)
         r2 = np.sqrt((x[0]-self.mu1)**2 + x[1]**2)         # (3.9)
-        dx[0] = x[2]                                       # dx/dt = u
-        dx[1] = x[3]                                       # dy/dt = v                                                              
+        dx[0] = x[2]                                       # dx/dt
+        dx[1] = x[3]                                       # dy/dt                                                              
         dx[2] = (2*self.n*x[3] + self.n**2*x[0] 
                  - (self.mu1*(x[0]+self.mu2)/r1**3 + self.mu2*(x[0]-self.mu1)/r2**3))   # (3.16) 
         dx[3] = - 2*self.n*x[2] + self.n**2*x[1] - (self.mu1/r1**3 + self.mu2/r2**3)*x[1]   # (3.17)
+     
+        self.U = self.n**2 * (x[0]**2 + x[1]**2) + 2*(self.mu1/r1 + self.mu2/r2) - x[2]**2 - x[3]**2
                  
         return dx
 
@@ -182,6 +184,7 @@ def main():
     integrator = IntegratorFactory.create(f,args.integrator,args.atol,args.max_iterations)
     
     X = np.zeros((args.NIterations+1,4))
+    U = np.zeros((args.NIterations+1))
     X[0,0] = f.mu1 - 1/2
     X[0,1] = np.sqrt(3)/2
     X[0,0:2] += args.dx
@@ -189,6 +192,7 @@ def main():
     try:
         for i in range(args.NIterations):
             X[i+1,:] = integrator.step(args.step,X[i,:])
+            U[i+1] = f.U
             if i > 0 and i%args.freq == 0:
                 Logger.instance.info(f'Step {i:,} of {args.NIterations:,}')
     except ImplicitRungeKutta.Failed as e:
@@ -213,11 +217,11 @@ def main():
     ax1.set_xlabel('x')
     ax1.set_ylabel('y')
     
-    ax2 = fig.add_subplot(1,2,2,adjustable='box',aspect='equal')
-    ax2.scatter(X[::args.stride,2],X[::args.stride,3],s=1,c='xkcd:blue')
-    ax2.set_title('Velocity')
-    ax2.set_xlabel('u')
-    ax2.set_ylabel('v')    
+    ax2 = fig.add_subplot(1,2,2)
+    ax2.plot(U[1:])
+    ax2.set_title('Jacobi Constant')
+    ax2.set_xlabel('Iteration')
+    ax2.set_ylabel('U')    
   
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/args.name)    
