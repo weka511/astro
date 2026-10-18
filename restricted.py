@@ -220,6 +220,7 @@ def main():
     ax2 = fig.add_subplot(1,2,2)
     ax2.plot(U[1:])
     ax2.set_title('Jacobi Constant')
+    ax2.set_ylim((U[1:].min(),U[1:].max()))
     ax2.set_xlabel('Iteration')
     ax2.set_ylabel('U')    
   
