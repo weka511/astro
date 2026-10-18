@@ -118,6 +118,9 @@ class IntegratorFactory:
     def get_choices():
         '''
         This method sets the options for the command line
+        
+        Returns:
+           List of integrators that are available
         '''
         return [
             'euler',
@@ -126,21 +129,35 @@ class IntegratorFactory:
         ]
     
     @staticmethod
-    def create(f,integrator,atol,max_iterations):
+    def create(dy,integrator,atol,max_iterations):
         '''
         Create an integrator
+        
+        Parameters:
+           dy              Function f for ODE = dy/dx=f(y)
+           integrator      A key used to specify the inegrator that will be created
+           max_iterations  Maximum number of iterations for solving implicit equations
+           atol            Maximum error we can tolerate when solving implicit equations
+           
+        Returns:
+           Newly created integrator
         '''
         match integrator:
             case 'euler':
-                return Euler(f,n=max_iterations,atol=atol)
+                return Euler(dy,n=max_iterations,atol=atol)
+            
             case 'rki2':
-                return ImplicitRungeKutta2(f,
+                return ImplicitRungeKutta2(dy,
                                            atol=atol,
                                            max_iterations=max_iterations)
+            
             case 'rki4':
-                return ImplicitRungeKutta4(f,
+                return ImplicitRungeKutta4(dy,
                                            atol=atol,
-                                           max_iterations=max_iterations)        
+                                           max_iterations=max_iterations)  
+            case _:
+                raise ValueError(f'Integrator {integrator} not found.')
+            
     @staticmethod
     def get_default():
         '''
