@@ -189,10 +189,12 @@ def main():
     X[0,1] = np.sqrt(3)/2
     X[0,0:2] += args.dx
     X[0,2:] += args.dv
+    NU = 1
     try:
         for i in range(args.NIterations):
             X[i+1,:] = integrator.step(args.step,X[i,:])
             U[i+1] = f.U
+            NU += 1
             if i > 0 and i%args.freq == 0:
                 Logger.instance.info(f'Step {i:,} of {args.NIterations:,}')
     except ImplicitRungeKutta.Failed as e:
@@ -218,9 +220,10 @@ def main():
     ax1.set_ylabel('y')
     
     ax2 = fig.add_subplot(1,2,2)
-    ax2.plot(U[1:])
+    U = U[1:NU]
+    ax2.plot(U)
     ax2.set_title('Jacobi Constant')
-    ax2.set_ylim((U[1:].min(),U[1:].max()))
+    ax2.set_ylim((U.min(),U.max()))
     ax2.set_xlabel('Iteration')
     ax2.set_ylabel('U')    
   
