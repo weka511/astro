@@ -19,7 +19,7 @@
 Implicit Runge Ketta (symplectic) integrators
 '''
 
-from abc import ABC
+from abc import ABC,abstractmethod
 from argparse import ArgumentParser
 from warnings import deprecated
 from pathlib import Path
@@ -110,6 +110,50 @@ class Driver:
         if self.h > self.h_maximum:
             self.h = self.h_maximum    
 
+class Solver(ABC):
+    '''
+    This class is used to solve the implicit equations
+    '''
+    def __init__(self,rki,atol=1e-8,max_iterations=200):
+        self.rki = rki
+        self.atol = atol
+        self.max_iterations = max_iterations
+   
+    @abstractmethod
+    def get_k(self,h,k):
+        ...
+
+class NaiveSolver(Solver):
+    def __init__(self,rki,atol=1e-8,max_iterations=200):
+        super().__init__(rki,atol=atol,max_iterations=max_iterations)
+        
+    def get_k(self,h,y):
+        diff = 0.0
+        k = np.zeros((len(self.rki.b),len(y)))
+        for _ in range(self.max_iterations):
+            k_new = self.iterate(h, y, k)
+            diff = np.linalg.norm(k - k_new)
+            if diff < self.atol:
+                return y + h*np.inner(self.rki.b,k_new.T)
+            else:
+                k = k_new
+                
+        raise ImplicitRungeKutta.Failed(
+            f'Failed to converge within {self.atol} after {self.max_iterations} iterations: error={diff}')
+    
+    def iterate(self, h, y, k):
+        '''Iterate One step in solution of iterative equations for k
+        
+        Parameters:
+            h       Step size
+            y       Current value of solution
+            k       The k term in Runge Kutta
+        '''
+        k_new = np.zeros_like(k)
+        for i in range(self.rki.s):
+            k_new[i,:] = self.rki.dy(y + h*np.inner(self.rki.a[i,:],k.T))
+        return k_new    
+    
 class ImplicitRungeKutta(ABC):
     '''
     Parent class for Implicit Runge-Kutta integrators
@@ -139,7 +183,8 @@ class ImplicitRungeKutta(ABC):
            order           Order of solver
            a               The matrix from the Butcher tableau https://mathworld.wolfram.com/ButcherTableau.html
            b               The b vector from the Butcher tableau
-           c               The c vector from the Butcher tableau
+           c               The c vector from the Butcher tableau. This is included for completeness,
+                           but it is not used, as dy is independent of time.
         '''
         self.dy = dy
         self.max_iterations = max_iterations
@@ -149,6 +194,7 @@ class ImplicitRungeKutta(ABC):
         self.b = b
         self.c = c
         self.s = len(b)
+        self.solver = NaiveSolver(self,atol=atol,max_iterations=max_iterations)
         
     def __str__(self):
         '''
@@ -164,31 +210,8 @@ class ImplicitRungeKutta(ABC):
            h    Step size
            y    Current value of y
         '''
-        diff = 0.0
-        k = np.zeros((len(self.b),len(y)))
-        for _ in range(self.max_iterations):
-            k_new = self.iterate(h, y, k)
-            diff = np.linalg.norm(k - k_new)
-            if diff < self.atol:
-                return y + h*np.inner(self.b,k_new.T)
-            else:
-                k = k_new
-                
-        raise ImplicitRungeKutta.Failed(
-            f'Failed to converge within {self.atol} after {self.max_iterations} iterations: error={diff}')
-
-    def iterate(self, h, y, k):
-        '''Iterate One step in solution of iterative equations for k
-        
-        Parameters:
-            h       Step size
-            y       Current value of solution
-            k       The k term in Runge Kutta
-        '''
-        k_new = np.zeros((self.s,len(y)))
-        for i in range(self.s):
-            k_new[i,:] = self.dy(y + h*np.inner(self.a[i,:],k.T))
-        return k_new
+        return self.solver.get_k(h,y)       
+  
 
 class ImplicitRungeKutta2(ImplicitRungeKutta):
     '''
