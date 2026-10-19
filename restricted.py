@@ -110,6 +110,22 @@ class F:
         self.U = self.n**2 * (x[0]**2 + x[1]**2) + 2*(self.mu1/r1 + self.mu2/r2) - x[2]**2 - x[3]**2
                  
         return dx
+    
+    def get_Jacobian(self,x):
+        n = 1
+        r1 = np.sqrt((x[0]+self.mu2)**2 + x[1]**2)         # (3.8)
+        r2 = np.sqrt((x[0]-self.mu1)**2 + x[1]**2)         # (3.9)        
+        J = np.zeros((len(x),len(x)))
+        J[0,2] = 1
+        J[1,3] = 1
+        J[2,0] = n**2 - (self.mu1/r1**2 + self.mu2/r2**2) + 3*(self.mu1*(x[0]+self.mu2)**2/r1**5 + 
+                                                               self.mu2*(x[0]-self.mu2)**2/r2**5)
+        J[2,1] = 3*(self.mu1*(x[0]+self.mu2)/r1**2 + self.mu2*(x[0]-self.mu1)/r2**2)
+        J[2,3] = 2*n
+        J[3,0] = J[2,1]
+        J[3,1] = n**2 + 3*(self.mu1/r1**5 + self.mu2/r2**2)*x[0]**2 - (self.mu1/r1**3+self.mu2/r2**3)
+        J[3,2] = -2*n
+        return J
 
 
 class IntegratorFactory: 
