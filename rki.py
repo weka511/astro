@@ -183,12 +183,12 @@ class ImplicitRungeKutta(ABC):
         Parameters:
             h       Step size
             y       Current value of solution
-            k       The k term in Eunge Kutta
+            k       The k term in Runge Kutta
         '''
-        result = np.zeros((self.s,len(y)))
+        k_new = np.zeros((self.s,len(y)))
         for i in range(self.s):
-            result[i,:] = self.dy(y + h*np.inner(self.a[i,:],k.T))
-        return result
+            k_new[i,:] = self.dy(y + h*np.inner(self.a[i,:],k.T))
+        return k_new
 
 class ImplicitRungeKutta2(ImplicitRungeKutta):
     '''
