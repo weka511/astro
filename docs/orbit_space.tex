@@ -138,6 +138,75 @@ Substituting in (\ref{eq:Pj})
 =& -0.426885803
 \end{align*}
 
+\section{The Restricted 3 Body Problem}
+The equations of motion are:
+\begin{align*}
+	\dot{x_0} =& x_2\\
+	\dot{x_1} =& x_3\\
+	\dot{x_2}=& 2nx_3 + n^2x_0-\big[\mu_1\frac{x_0+\mu_2}{r_1^3} + \mu_2\frac{x_0-\mu_1}{r_2^3}\big]\\
+	\dot{x_3}=& -2nx_2 + n^2x_1 - \big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}]x_1\text{, where}\\
+	r_1^2 =& (x_0+\mu_2)^2 + x_1^2 \numberthis \label{eq:def:r1}\\
+	r_2^2 =& (x_0-\mu_1)^2 + x_1^2 \text{, or:} \numberthis \label{eq:def:r2}\\
+		\dot{\vec x} =& f(\vec{x})\text{. I want to calculate the Jacobian:}\\
+	J =& \begin{bmatrix}
+		\frac{\partial f_0}{\partial x_0}&\frac{\partial f_0}{\partial x_1}&\frac{\partial f_0}{\partial x_2}&\frac{\partial f_0}{\partial x_3}\\
+		\frac{\partial f_1}{\partial x_1}&\frac{\partial f_1}{\partial x_1}&\frac{\partial f_1}{\partial x_2}&\frac{\partial f_1}{\partial x_3}\\
+		\frac{\partial f_2}{\partial x_0}&\frac{\partial f_2}{\partial x_1}&\frac{\partial f_2}{\partial x_2}&\frac{\partial f_2}{\partial x_3}\\
+		\frac{\partial f_3}{\partial x_0}&\frac{\partial f_3}{\partial x_1}&\frac{\partial f_3}{\partial x_2}&\frac{\partial f_3}{\partial x_3}
+	\end{bmatrix}
+\end{align*}
+
+Differentiating \eqref{eq:def:r1} and \eqref{eq:def:r2}:  
+\begin{align*}
+	\cancel{2}r_1\frac{\partial r_1}{\partial x_0} =& \cancel{2}(x_0+\mu_2) \numberthis \label{eq:dr1:dx0}\\
+	\cancel{2}r_1\frac{\partial r_1}{\partial x_1} =& \cancel{2} x_1 \numberthis \label{eq:dr1:dx1}\\
+	\cancel{2}r_2\frac{\partial r_2}{\partial x_0} =& \cancel{2}(x_0-\mu_1) \numberthis \label{eq:dr2:dx0}\\
+	\cancel{2}r_2\frac{\partial r_2}{\partial x_1} =& \cancel{2} x_1\numberthis \label{eq:dr2:dx1}
+\end{align*}
+
+The terms in the first two rows are all zero, except for:
+\begin{align*}
+	\frac{\partial f_0}{\partial x_2} =& 1 \numberthis \label{eq:J02}\\
+	\frac{\partial f_1}{\partial x_3} =& 1 \numberthis \label{eq:J13}
+\end{align*}
+
+\begin{align*}
+	\frac{\partial f_2}{\partial x_0} =& n^2 - \partial_0\big[\mu_1\frac{x_0+\mu_2}{r_1^3} + \mu_2\frac{x_0-\mu_1}{r_2^3}\big]\\
+	=& n^2 -\big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}\big] + 3\big[\mu_1\frac{x_0+\mu_2}{r_1^4}\frac{\partial r_1}{\partial x_0} + \mu_2\frac{x_0-\mu_1}{r_2^4}\frac{\partial r_2}{\partial x_0}\big]\\
+	=& n^2 -\big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}\big] + 3\big[\mu_1\frac{(x_0+\mu_2)^2}{r_1^4} + \mu_2\frac{(x_0-\mu_1)^2}{r_2^4}\big]\numberthis \label{eq:J20}\\
+	\frac{\partial f_2}{\partial x_1} =& - \partial_1\big[\mu_1\frac{x_0+\mu_2}{r_1^3} + \mu_2\frac{x_0-\mu_1}{r_2^3}\big]\\
+	=& 3 \big[\mu_1\frac{x_0+\mu_2}{r_1^4}\frac{\partial r_1}{\partial x_1} + \mu_2\frac{x_0-\mu_1}{r_2^4}\frac{\partial r_2}{\partial x_1}\big]\\
+	=& 3 \big[\mu_1\frac{x_0+\mu_2}{r_1^4} + \mu_2\frac{x_0-\mu_1}{r_2^4}\big]x_1\numberthis \label{eq:J21}\\
+	\frac{\partial f_2}{\partial x_2} =& - \partial_2\big[\mu_1\frac{x_0+\mu_2}{r_1^3} + \mu_2\frac{x_0-\mu_1}{r_2^3}\big]\\
+	=& 0\numberthis \label{eq:J22}\\
+	\frac{\partial f_2}{\partial x_3} =& 2n - \partial_2\big[\mu_1\frac{x_0+\mu_2}{r_1^3} + \mu_2\frac{x_0-\mu_1}{r_2^3}\big]\\
+	=& 2n\numberthis \label{eq:J23}\\
+	\frac{\partial f_3}{\partial x_0} =& \partial_0\big[\big(\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3})x_1\big]\\
+	=& 3\big[\big(\frac{\mu_1}{r_1^4}\frac{\partial r_1}{\partial x_0} + \frac{\mu_2}{r_2^4}\frac{\partial r_2}{\partial x_0})x_1\big]\\
+	=& 3\big[\big(\frac{\mu_1}{r_1^4}(x_0+\mu_2) + \frac{\mu_2}{r_2^4}(x_0-\mu_1))x_1\big] \numberthis \label{eq:J30}\\
+		\frac{\partial f_3}{\partial x_1} =& n^2- \partial_1\big[\big(\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3})x_1\big]\\
+	=& n^2 - \big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}\big] + 3 \big[\big(\frac{\mu_1}{r_1^4}\frac{\partial r_1}{\partial x_1} + \frac{\mu_2}{r_2^4}\frac{\partial r_2}{\partial x_1})x_1\big]\\
+	=& n^2 - \big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}\big] + 3 \big(\frac{\mu_1}{r_1^4} + \frac{\mu_2}{r_2^4})x_1^2 \numberthis \label{eq:J31}\\
+	\frac{\partial f_3}{\partial x_2} =& -2n - \partial_2\big[\big(\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3})x_1\big]\\
+	=& -2n \numberthis \label{eq:J32}\\
+	\frac{\partial f_3}{\partial x_3} =& - \partial_3\big[\big(\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3})x_1\big]\\
+	=& 0 \numberthis \label{eq:J33}
+\end{align*}
+
+\begin{align*}
+		J =& \begin{bmatrix}
+		0&0&1&0\\
+		0&0&0&1\\
+		\frac{\partial f_2}{\partial x_0}&\frac{\partial f_2}{\partial x_1}&0&\frac{\partial f_2}{\partial x_3}\\
+		\frac{\partial f_3}{\partial x_0}&\frac{\partial f_3}{\partial x_1}&\frac{\partial f_3}{\partial x_2}&0
+	\end{bmatrix}\\
+	\vert J \vert =& \begin{vmatrix} 
+		\frac{\partial f_2}{\partial x_0}&\frac{\partial f_2}{\partial x_1} \\ 
+		\frac{\partial f_3}{\partial x_0}&\frac{\partial f_3}{\partial x_1}.
+	\end{vmatrix}\\
+	=& \bigg[n^2 -\big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}\big] + 3\big[\mu_1\frac{(x_0+\mu_2)^2}{r_1^4} + \mu_2\frac{(x_0-\mu_1)^2}{r_2^4}\big]\bigg]\bigg[n^2 - \big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}\big] + 3 \big(\frac{\mu_1}{r_1^4} + \frac{\mu_2}{r_2^4})x_1^2\bigg] \\
+	-& \bigg[ 3 \big[\mu_1\frac{x_0+\mu_2}{r_1^4} + \mu_2\frac{x_0-\mu_1}{r_2^4}\big]x_1\bigg]\bigg[ n^2 - \big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}\big] + 3 \big(\frac{\mu_1}{r_1^4} + \frac{\mu_2}{r_2^4})x_1^2\bigg]
+\end{align*}
 \section {The Three Body Problem}
 
 From \cite[(24)]{kotovych2002exactly}
