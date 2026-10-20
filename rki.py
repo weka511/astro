@@ -217,7 +217,7 @@ class ImplicitRungeKutta2(ImplicitRungeKutta):
     '''
     4th order Gauss-Legendre
     '''
-    def __init__(self, dy, max_iterations=200, atol=1.0e-18):
+    def __init__(self, dy, max_iterations=200, atol=1.0e-12):
         '''
         Parameters:
            dy              Function f for ODE = dy/dx=f(y)
@@ -276,16 +276,18 @@ def parse_args():
     return parser.parse_args()
 
 def run_once(ax,rk,nn = 100):
-    driver = Driver(rk, 0.000000001, 0.5, 1.0, 0.000000001)
+    #driver = Driver(rk, 0.000000001, 0.5, 1.0, 0.000000001)
     try:
-        y = np.array([1, 0])
-        xs = []
-        ys = []
+        h = 0.5
+        y = np.zeros((nn+1,2))#np.array([1, 0])
+        y[0,0] = 1
+        #xs = []
+        #ys = []
         for i in range(nn):
-            y = driver.step(y)
-            xs.append(y[0])
-            ys.append(y[1])           
-        ax.plot(xs, ys)
+            y[i+1,:] = rk.step(h,y[i,:])
+            #xs.append(y[0])
+            #ys.append(y[1])           
+        ax.plot(y[:,0], y[:,1])
         ax.set_title(f'{type(rk).__name__}: nn={nn}')
     except ImplicitRungeKutta.Failed as e:
         print(f'Exception {e}')
@@ -297,10 +299,10 @@ def main():
     fig = figure(figsize=(12, 12))
     fig.suptitle(Path(__file__).stem)
     run_once(ax=fig.add_subplot(1,2,1,adjustable='box',aspect=1.0),
-             rk=ImplicitRungeKutta2(lambda y: [y[1], -y[0]], 10, 0.000000001),
+             rk=ImplicitRungeKutta2(lambda y: [y[1], -y[0]]),
              nn=150)
     run_once(ax=fig.add_subplot(1,2,2,adjustable='box',aspect=1.0),
-             rk=ImplicitRungeKutta4(lambda y: [y[1], -y[0]], 10, 0.000000001),
+             rk=ImplicitRungeKutta4(lambda y: [y[1], -y[0]]),
              nn=50)    
     
     fig.tight_layout(h_pad=2)
