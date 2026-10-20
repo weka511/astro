@@ -139,6 +139,8 @@ Substituting in (\ref{eq:Pj})
 \end{align*}
 
 \section{The Restricted 3 Body Problem}
+
+
 The equations of motion are given in \cite[(3.16-17)]{ssd}:
 \begin{align*}
 	\dot{x_0} =& x_2\\
@@ -148,9 +150,17 @@ The equations of motion are given in \cite[(3.16-17)]{ssd}:
 	r_1^2 =& (x_0+\mu_2)^2 + x_1^2 \numberthis \label{eq:def:r1}\\
 	r_2^2 =& (x_0-\mu_1)^2 + x_1^2  \numberthis \label{eq:def:r2}
 \end{align*}
-I will write this in vector form in order to calculate the Jacobian:
+The differential equations can be summarized:
 \begin{align*}
-	\dot{\vec x} =& f(\vec{x})\\
+	\dot{\vec{x}} =& f(\vec{x})
+\end{align*}
+I wish to solve these using the Gauss-Legendre method \cite{enwiki:1380988460}, which requires me to solve the following equation\cite{gear1971numerical} using Newton's method\cite{enwiki:1380778120}:
+\begin{align*}
+	\vec{k} =& hf(\vec{y_n} + \boldmath{B} \vec{k})\\
+	J_F(\vec{k_n})(\vec{k_{n+1}}-\vec{k_n}) =& -F(\vec{k_n}) \text{, where}\\
+	F(\vec{k}) =& hf(\vec{y_n} + \boldmath{B} \vec{k}) -	\vec{k}
+\end{align*}
+\begin{align*}
 	J =& \begin{bmatrix}
 		\frac{\partial f_0}{\partial x_0}&\frac{\partial f_0}{\partial x_1}&\frac{\partial f_0}{\partial x_2}&\frac{\partial f_0}{\partial x_3}\\
 		\frac{\partial f_1}{\partial x_1}&\frac{\partial f_1}{\partial x_1}&\frac{\partial f_1}{\partial x_2}&\frac{\partial f_1}{\partial x_3}\\
