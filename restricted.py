@@ -25,7 +25,7 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show, colorbar
 from matplotlib import rcParams
 import numpy as np
-from rki import ImplicitRungeKutta,ImplicitRungeKutta4,ImplicitRungeKutta2
+from rki import ImplicitRungeKutta,ImplicitRungeKutta4,ImplicitRungeKutta2,NaiveSolver
 from euler import Euler
 
 __version__ = '1.0'
@@ -160,19 +160,22 @@ class IntegratorFactory:
         Returns:
            Newly created integrator
         '''
+        solver = NaiveSolver(atol=atol,
+                             max_iterations=max_iterations) 
         match integrator:
             case 'euler':
-                return Euler(dy,n=max_iterations,atol=atol)
+                return  Euler(dy,n=max_iterations,atol=atol)
             
             case 'rki2':
-                return ImplicitRungeKutta2(dy,
-                                           atol=atol,
-                                           max_iterations=max_iterations)
-            
+                rki = ImplicitRungeKutta2(dy)
+                rki.solver = solver
+                solver.rki = rki
+                return rki
             case 'rki4':
-                return ImplicitRungeKutta4(dy,
-                                           atol=atol,
-                                           max_iterations=max_iterations)  
+                rki = ImplicitRungeKutta4(dy) 
+                rki.solver = solver
+                solver.rki = rki
+                return rki                
             case _:
                 raise ValueError(f'Integrator {integrator} not found.')
             

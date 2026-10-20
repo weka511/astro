@@ -34,8 +34,13 @@ class Solver(ABC):
     '''
     This class is used to solve the implicit equations
     '''
-    def __init__(self,rki,atol=1e-8,max_iterations=200):
-        self.rki = rki
+    def __init__(self,atol=1e-8,max_iterations=200):
+        '''
+        Parameters:
+            max_iterations  Maximum number of iterations for solving implicit equations
+            atol            Maximum error we can tolerate when solving implicit equations
+        '''
+        self.rki = None
         self.atol = atol
         self.max_iterations = max_iterations
    
@@ -44,8 +49,13 @@ class Solver(ABC):
         ...
 
 class NaiveSolver(Solver):
-    def __init__(self,rki,atol=1e-8,max_iterations=200):
-        super().__init__(rki,atol=atol,max_iterations=max_iterations)
+    def __init__(self,atol=1e-8,max_iterations=200):
+        '''
+        Parameters:
+            max_iterations  Maximum number of iterations for solving implicit equations
+            atol            Maximum error we can tolerate when solving implicit equations
+        '''
+        super().__init__(atol=atol,max_iterations=max_iterations)
         
     def get_k(self,h,y):
         diff = 0.0
@@ -92,14 +102,12 @@ class ImplicitRungeKutta(ABC):
         def __str__(self):
             return repr(self.value)
 
-    def __init__(self, dy, max_iterations, atol, order, a,b,c):
+    def __init__(self, dy, order, a,b,c,solver=None):
         '''
         Initialize
         
         Parameters:
            dy              Function f for ODE = dy/dx=f(y)
-           max_iterations  Maximum number of iterations for solving implicit equations
-           atol            Maximum error we can tolerate when solving implicit equations
            order           Order of solver
            a               The matrix from the Butcher tableau https://mathworld.wolfram.com/ButcherTableau.html
            b               The b vector from the Butcher tableau
@@ -107,20 +115,18 @@ class ImplicitRungeKutta(ABC):
                            but it is not used, as dy is independent of time.
         '''
         self.dy = dy
-        self.max_iterations = max_iterations
-        self.atol = atol
         self.order = order
         self.a = a
         self.b = b
         self.c = c
         self.s = len(b)
-        self.solver = NaiveSolver(self,atol=atol,max_iterations=max_iterations)
+        self.solver = solver
         
     def __str__(self):
         '''
         Used to display details of integrator
         '''
-        return f'{type(self).__name__}: order={self.order},max_iterations={self.max_iterations},atol={self.atol}'
+        return f'{type(self).__name__}: order={self.order}'
 
     def step(self, h, y):
         '''
@@ -137,14 +143,14 @@ class ImplicitRungeKutta2(ImplicitRungeKutta):
     '''
     4th order Gauss-Legendre
     '''
-    def __init__(self, dy, max_iterations=200, atol=1.0e-12):
+    def __init__(self, dy, solver=None):
         '''
         Parameters:
            dy              Function f for ODE = dy/dx=f(y)
            max_iterations  Maximum number of iterations for solving implicit equations
            atol            Maximum error we can tolerate when solving implicit equations
         '''
-        super().__init__(dy, max_iterations, atol, 4,
+        super().__init__(dy, 4,
                 np.array([
                     [0.25, 0.25 - np.sqrt(3.0)/6.0],
                     [0.25 + np.sqrt(3.0)/6.0, 0.25],
@@ -155,21 +161,22 @@ class ImplicitRungeKutta2(ImplicitRungeKutta):
                 np.array([
                     0.5 - np.sqrt(3.0)/6,
                     0.5 + np.sqrt(3.0)/6
-                ]))
+                ]),
+                solver=solver)
    
 class ImplicitRungeKutta4(ImplicitRungeKutta):
     '''
     6th order Gauss-Legendre
     '''
 
-    def __init__(self, dy, max_iterations=200, atol=1.0e-8):
+    def __init__(self, dy, solver=None):
         '''
         Parameters:
            dy              Function f for ODE = dy/dx=f(y)
            max_iterations  Maximum number of iterations for solving implicit equations
            atol            Maximum error we can tolerate when solving implicit equations
         '''
-        super().__init__(dy, max_iterations, atol, 6,
+        super().__init__(dy,  6,
                          np.array([
                                 [5.0/36.0, 2.0/9.0 -np.sqrt(15.0)/15.0, 5.0/36.0 - np.sqrt(15.0)/30.0],
                                 [5.0/36.0 + np.sqrt(15.0)/24.0, 2.0/9.0, 5.0/36.0 - np.sqrt(15.0)/24.0],
@@ -184,7 +191,8 @@ class ImplicitRungeKutta4(ImplicitRungeKutta):
                                 0.5 - np.sqrt(15.0)/10.0,
                                 0.5,
                                 0.5 + np.sqrt(15.0)/10.0
-                            ]))
+                            ]),
+                         solver=solver)
 
 def parse_args():
     '''
@@ -196,6 +204,9 @@ def parse_args():
     return parser.parse_args()
 
 def run_once(ax,rk,nn = 100):
+    solver = NaiveSolver()
+    rk.solver = solver
+    solver.rki = rk
     try:
         h = 0.15
         y = np.zeros((nn+1,2))#np.array([1, 0])
