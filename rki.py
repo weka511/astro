@@ -21,7 +21,6 @@ Implicit Runge Ketta (symplectic) integrators
 
 from abc import ABC,abstractmethod
 from argparse import ArgumentParser
-from warnings import deprecated
 from pathlib import Path
 from time import time
 from matplotlib.pyplot import figure, show
@@ -30,85 +29,6 @@ import numpy as np
 
 __version__ = '1.1'
 __author__ = 'Simon Crase'
-
-@deprecated("See Issue #99")
-class Driver:
-    '''
-    Use an integrator to solve an ODE to within a specified error 
-    
-    Attributes:
-        integrator    Used for integrating ODE
-        h_minimum     Step size cannot be increased beyond this value
-        h             Initial step size (variable)
-        h_maximum     Step size cannot be increased beyond this value
-        atol          Maximum tolerable error
-        mult          Used to set a lower bound for error (fraction of epsilon)
-    '''
-    def __init__(self, integrator, 
-                 h_minimum=1.0e-9, h=0.5, h_maximum=1.0, atol=1.0e-9, mult=0.01, 
-                 get_distance=lambda k, k_new: max([abs(a - b) for (a, b) in zip(k, k_new)])):
-        '''
-        Initialize Driver
-        
-        Parameters:
-            integrator    Used for integrating ODE
-            h_minimum     Step size cannot be increased beyond this value
-            h             Initial step size (variable)
-            h_maximum     Step size cannot be increased beyond this value
-            atol          Maximum tolerable error
-            mult          Used to set a lower bound for error (fraction of epsilon)     
-        '''
-        self.integrator = integrator
-        self.h_minimum = h_minimum
-        self.h_maximum = h_maximum
-        self.epsilon = atol
-        self.h = h
-        self.min_epsilon = mult * atol
- 
-    def step(self, y):
-        '''
-        Solve for one step, varying step size to keep truncation error within bounds
-        
-        Parameters:
-           y        Current value of dependent variable
-           
-        Returns:
-            Value of dependent variable at the end of the step
-        '''
-        try:
-            y1 = self.integrator.step(self.h, y)  # one step estimate of next value
-            
-            y11 = self.integrator.step(0.5 * self.h,
-                                       self.integrator.step(0.5 * self.h, y)) # Two half steps
-            
-            error = np.linalg.norm(y1- y11) # Estimate error by comparing the two estimates for next y
-
-            if error > self.epsilon:  # too large - reduce step size
-                self.h *= (self.epsilon/error)**(1.0/self.integrator.order)
-                return self.step(y)
-            
-            self.adjust_stepsize(error)
-            if self.h < self.h_minimum:
-                self.h = self.h_minimum                
-                    
-            return y11
-        except ImplicitRungeKutta.Failed:
-            self.h *= 0.5
-            return self.step(y)
-
-    def adjust_stepsize(self,error):
-        '''
-        Verify that our stepsize isn't too small or too large
-        
-        Parameters:
-            error
-        '''
-        if error > self.min_epsilon: return
-        
-        self.h *= ((self.min_epsilon/error)**(1.0/self.integrator.order) if error > 0 else 2.0)
-
-        if self.h > self.h_maximum:
-            self.h = self.h_maximum    
 
 class Solver(ABC):
     '''
@@ -276,17 +196,12 @@ def parse_args():
     return parser.parse_args()
 
 def run_once(ax,rk,nn = 100):
-    #driver = Driver(rk, 0.000000001, 0.5, 1.0, 0.000000001)
     try:
-        h = 0.5
+        h = 0.15
         y = np.zeros((nn+1,2))#np.array([1, 0])
         y[0,0] = 1
-        #xs = []
-        #ys = []
         for i in range(nn):
-            y[i+1,:] = rk.step(h,y[i,:])
-            #xs.append(y[0])
-            #ys.append(y[1])           
+            y[i+1,:] = rk.step(h,y[i,:])      
         ax.plot(y[:,0], y[:,1])
         ax.set_title(f'{type(rk).__name__}: nn={nn}')
     except ImplicitRungeKutta.Failed as e:
