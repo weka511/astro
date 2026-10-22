@@ -78,10 +78,13 @@ class NaiveSolver(K_Solver):
                 return k_next
             else:
                 k = k_next
-                
+        a_max = np.abs(self.rki.a).sum(axis=1).max()  
+        L = np.abs(self.rki.dy.get_Jacobian(y)).max()
         raise ImplicitRungeKutta.Failed(
             f'Failed to converge within {self.atol} after {self.max_iterations} iterations: error={diff}\n'
-            f'k={k}'
+            f'a_max={a_max}\n'
+            f'L={L}\n'
+            f'1/aL={1/(a_max*L)}'
         )
     
     def iterate(self, h, y, k):

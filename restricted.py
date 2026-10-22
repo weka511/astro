@@ -152,7 +152,7 @@ class IntegratorFactory:
         Create an integrator
         
         Parameters:
-           dy              Function f for ODE = dy/dx=f(y)
+           dy              Function f for ODE: dy/dt=f(y)
            integrator      A key used to specify the inegrator that will be created
            max_iterations  Maximum number of iterations for solving implicit equations
            atol            Maximum error we can tolerate when solving implicit equations
