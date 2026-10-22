@@ -160,24 +160,23 @@ class IntegratorFactory:
         Returns:
            Newly created integrator
         '''
-        solver = NaiveSolver(atol=atol,
-                             max_iterations=max_iterations) 
+  
         match integrator:
             case 'euler':
                 return  Euler(dy,n=max_iterations,atol=atol)
             
             case 'rki2':
-                rki = ImplicitRungeKutta2(dy)
-                rki.solver = solver
-                solver.rki = rki
-                return rki
+                product = ImplicitRungeKutta2(dy)
+ 
             case 'rki4':
-                rki = ImplicitRungeKutta4(dy) 
-                rki.solver = solver
-                solver.rki = rki
-                return rki                
+                product = ImplicitRungeKutta4(dy) 
+             
             case _:
                 raise ValueError(f'Integrator {integrator} not found.')
+   
+        product.attach(NaiveSolver(atol=atol, max_iterations=max_iterations))           
+  
+        return product        
             
     @staticmethod
     def get_default():

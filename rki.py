@@ -17,6 +17,11 @@
 
 '''
 Implicit Runge Ketta (symplectic) integrators
+of 4th order and 5th order
+References:
+  [1] Numerical initial value problems in ordinary differential equationsby C. William Gear 
+  [2] https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Gauss.E2.80.93Legendre_methods
+  [3] https://mathworld.wolfram.com/ButcherTableau.html
 '''
 
 from abc import ABC,abstractmethod
@@ -30,9 +35,9 @@ import numpy as np
 __version__ = '1.1'
 __author__ = 'Simon Crase'
 
-class Solver(ABC):
+class K_Solver(ABC):
     '''
-    This class is used to solve the implicit equations
+    This class is used to solve the implicit equations for k
     '''
     def __init__(self,atol=1e-8,max_iterations=200):
         '''
@@ -46,9 +51,11 @@ class Solver(ABC):
    
     @abstractmethod
     def get_k(self,h,k):
-        ...
+        '''
+        Estimate the weights, k
+        '''
 
-class NaiveSolver(Solver):
+class NaiveSolver(K_Solver):
     def __init__(self,atol=1e-8,max_iterations=200):
         '''
         Parameters:
@@ -58,31 +65,50 @@ class NaiveSolver(Solver):
         super().__init__(atol=atol,max_iterations=max_iterations)
         
     def get_k(self,h,y):
+        '''
+        Estimate the weights, k, using the iterative method
+        described in Section 2.5.1 of Gear
+        '''        
         diff = 0.0
         k = np.zeros((len(self.rki.b),len(y)))
         for _ in range(self.max_iterations):
-            k_new = self.iterate(h, y, k)
-            diff = np.linalg.norm(k - k_new)
+            k_next = self.iterate(h, y, k)
+            diff = np.linalg.norm(k - k_next)
             if diff < self.atol:
-                return y + h*np.inner(self.rki.b,k_new.T)
+                return k_next
             else:
-                k = k_new
+                k = k_next
                 
         raise ImplicitRungeKutta.Failed(
-            f'Failed to converge within {self.atol} after {self.max_iterations} iterations: error={diff}')
+            f'Failed to converge within {self.atol} after {self.max_iterations} iterations: error={diff}\n'
+            f'k={k}'
+        )
     
     def iterate(self, h, y, k):
-        '''Iterate One step in solution of iterative equations for k
+        '''
+        Iterate One step in solution of iterative equations for k
         
         Parameters:
             h       Step size
             y       Current value of solution
             k       The k term in Runge Kutta
         '''
-        k_new = np.zeros_like(k)
+        k_next= np.zeros_like(k)
         for i in range(self.rki.s):
-            k_new[i,:] = self.rki.dy(y + h*np.inner(self.rki.a[i,:],k.T))
-        return k_new    
+            k_next[i,:] = self.rki.dy(y + h*np.inner(self.rki.a[i,:],k.T))
+        return k_next   
+
+class NewtonSolver(K_Solver):
+    def __init__(self,atol=1e-8,max_iterations=200):
+        '''
+        Parameters:
+            max_iterations  Maximum number of iterations for solving implicit equations
+            atol            Maximum error we can tolerate when solving implicit equations
+        '''
+        super().__init__(atol=atol,max_iterations=max_iterations)
+        
+    def get_k(self,h,y):
+        k = np.zeros((len(self.rki.b),len(y))) 
     
 class ImplicitRungeKutta(ABC):
     '''
@@ -128,6 +154,13 @@ class ImplicitRungeKutta(ABC):
         '''
         return f'{type(self).__name__}: order={self.order}'
 
+    def attach(self,solver):
+        '''
+        Attach a solver to integrator
+        '''
+        self.solver = solver
+        solver.rki = self
+        
     def step(self, h, y):
         '''
         Compute y after next step
@@ -136,7 +169,7 @@ class ImplicitRungeKutta(ABC):
            h    Step size
            y    Current value of y
         '''
-        return self.solver.get_k(h,y)       
+        return y + h*np.inner(self.b,self.solver.get_k(h,y).T)       
   
 
 class ImplicitRungeKutta2(ImplicitRungeKutta):
@@ -204,12 +237,10 @@ def parse_args():
     return parser.parse_args()
 
 def run_once(ax,rk,nn = 100):
-    solver = NaiveSolver()
-    rk.solver = solver
-    solver.rki = rk
+    rk.attach(NaiveSolver())
     try:
         h = 0.15
-        y = np.zeros((nn+1,2))#np.array([1, 0])
+        y = np.zeros((nn+1,2))
         y[0,0] = 1
         for i in range(nn):
             y[i+1,:] = rk.step(h,y[i,:])      

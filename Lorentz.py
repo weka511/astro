@@ -27,7 +27,7 @@ from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
-from rki import ImplicitRungeKutta4
+from rki import ImplicitRungeKutta4,NaiveSolver
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -68,7 +68,10 @@ def main():
     args = parse_args()
      
     lorentz = Lorentz(10,28,8.0/3.0)
-    rk = ImplicitRungeKutta4(lambda x: lorentz.dx(x),10,0.0000001)
+    rk = ImplicitRungeKutta4(lambda x: lorentz.dx(x))
+    solver = NaiveSolver()
+    rk.solver = solver
+    solver.rki = rk    
     XYZ = np.zeros((args.n+1,3))
     XYZ[0,:] = np.array([1,0,1])
     for i in range(args.n):
