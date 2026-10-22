@@ -145,20 +145,36 @@ The equations of motion are given in \cite[(3.16-17)]{ssd}:
 \begin{align*}
 	\dot{x_0} =& x_2\\
 	\dot{x_1} =& x_3\\
-	\dot{x_2}=& 2nx_3 + n^2x_0-\big[\mu_1\frac{x_0+\mu_2}{r_1^3} + \mu_2\frac{x_0-\mu_1}{r_2^3}\big]\\
-	\dot{x_3}=& -2nx_2 + n^2x_1 - \big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}]x_1\text{, where}\\
+	\dot{x_2} =& 2nx_3 + n^2x_0-\big[\mu_1\frac{x_0+\mu_2}{r_1^3} + \mu_2\frac{x_0-\mu_1}{r_2^3}\big]\\
+	\dot{x_3} =& -2nx_2 + n^2x_1 - \big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}]x_1\text{, where}\\
 	r_1^2 =& (x_0+\mu_2)^2 + x_1^2 \numberthis \label{eq:def:r1}\\
 	r_2^2 =& (x_0-\mu_1)^2 + x_1^2  \numberthis \label{eq:def:r2}
 \end{align*}
 The differential equations can be summarized:
 \begin{align*}
-	\dot{\vec{x}} =& f(\vec{x})
+	\dot{\vec{x}} =& \vec{f}(\vec{x}) \text{, where}\\
+	f_0(\vec{x}) =& x_2\\
+	f_1(\vec{x}) =& x_3\\
+	f_2(\vec{x}) =& 2nx_3 + n^2x_0-\big[\mu_1\frac{x_0+\mu_2}{r_1^3} + \mu_2\frac{x_0-\mu_1}{r_2^3}\big]\\
+	f_3(\vec{x}) =& -2nx_2 + n^2x_1 - \big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}]x_1
 \end{align*}
-I wish to solve these using the Gauss-Legendre method \cite{enwiki:1380988460}, which requires me to solve the following equation\cite{gear1971numerical} using Newton's method\cite{enwiki:1380778120}:
+The solution $\vec{x}$ will be approximated using Gauss-Legendre method\cite{enwiki:1380988460}:
 \begin{align*}
-	\vec{k} =& hf(\vec{y_n} + \boldmath{B} \vec{k})\\
-	J_F(\vec{k_n})(\vec{k_{n+1}}-\vec{k_n}) =& -F(\vec{k_n}) \text{, where}\\
-	F(\vec{k}) =& hf(\vec{y_n} + \boldmath{B} \vec{k}) -	\vec{k}
+		\vec{x(t+h)} =& \vec{x(t)} + \vec{\gamma} \cdot \vec{k} \text{, where $\vec{k}$ satisfies}\\
+		\vec{k} =& h \vec{f} (\vec{x(t)} + \mathbf{B} \vec{k}) \text{, as described in \cite{gear1971numerical}, and}\\
+		 \mathbf{B}=&\big[\beta_{ij}\big] \text{ and $\vec{\gamma}$ are specified in \cite{enwiki:1380988460}}
+\end{align*}
+Using Newton's method\cite{enwiki:1380778120} to determine $\vec{k}$: 
+\begin{align*}
+	\mathbf{J_F}(\vec{k_n})(\vec{k_{n+1}}-\vec{k_n}) =& -\vec{F}(\vec{k_n}) \text{, where}\\
+	\vec{F}(\vec{k}) =& hf(\vec{y_n} + \boldmath{B} \vec{k}) -	\vec{k}
+\end{align*}
+and $\mathbf{J_F}$ is the Jacobian.
+\begin{align*}
+	\frac{\partial F_i}{\partial k_j} =& \frac{\partial}{\partial k_j}hf_i(\vec{x(t)} + \boldmath{B} \vec{k}) -\delta_{ij}\\
+	=& h \frac{\partial}{\partial k_j} f_i(\vec{x(t)} + \sum_{\ell} \beta_{.\ell} k_{\ell}) -\delta_{ij}\\
+	=& h \frac{\partial f_i}{\partial k_j}\bigg|_{\vec{x(t)} + \sum_{\ell} \beta_{.\ell} k_{\ell}}\beta_{.j} - \delta_{ij}\\
+	=& h J_f(\vec{x(t)} + \beta_{.\ell} k_{\ell})\beta_{.j} - \delta_{ij}
 \end{align*}
 \begin{align*}
 	J =& \begin{bmatrix}
