@@ -82,19 +82,7 @@ class NaiveSolver(K_Solver):
             else:
                 k = k_next
                 
-        self.fail(y,diff)
-        
-    def fail(self,y,diff): 
-        '''
-        Iteration has failed to converge
-        '''
-        a_max_row_sum = np.abs(self.rki.a).sum(axis=1).max()  
-        L = np.abs(self.rki.dy.get_Jacobian(y)).max()
-        e = ImplicitRungeKutta.Failed(f'error={diff} after {self.max_iterations} iterations')
-        e.details.append(f'a_max={a_max_row_sum}')
-        e.details.append(f'L={L}')
-        e.details.append(f'1/aL={1/(a_max_row_sum*L)}')
-        raise e
+        raise self.create_exception(y,diff)
     
     def iterate(self, h, y, k):
         '''
@@ -108,7 +96,19 @@ class NaiveSolver(K_Solver):
         k_next= np.zeros_like(k)
         for i in range(self.rki.s):
             k_next[i,:] = self.rki.dy(y + h*np.inner(self.rki.a[i,:],k.T))
-        return k_next   
+        return k_next 
+    
+    def create_exception(self,y,diff): 
+        '''
+        Iteration has failed to converge
+        '''
+        a_max_row_sum = np.abs(self.rki.a).sum(axis=1).max()  
+        L = np.abs(self.rki.dy.get_Jacobian(y)).max()
+        product = ImplicitRungeKutta.Failed(f'error={diff} after {self.max_iterations} iterations')
+        product.details.append(f'a_max={a_max_row_sum}')
+        product.details.append(f'L={L}')
+        product.details.append(f'Epsilon needs to be < {1/(a_max_row_sum*L)}')
+        return product    
  
 class ImplicitRungeKutta(ABC):
     '''
