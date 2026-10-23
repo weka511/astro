@@ -33,6 +33,7 @@ euler.py|Simple Euler method for integrations ODE
 rki.py|Implicit Runge Ketta (symplectic) integrators
 template.py|Template for python script
 Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor
+verlet.py|Integrator using Velocity Verlet algorithm
 
 ## Docs directory
 
@@ -64,6 +65,5 @@ chenciner.py|Choreography using symplectic integrator, following [Alain Chencine
 kepler.py|Hamiltonian for integrating Kepler problem
 integrators.py|Simple integrator after [Kotovich & Bowman: an Exactly Conservative Integrator for the n-body Problem](http://arxiv.org/pdf/physics/0112084)
 threebody.py|Hamiltonian for 2 Dimensional, but otherwise general,  3 body problem
-verlet.py|Inegrator using Verlet algorithm
 restricted.py|Restricted 3 body problem
 restricted2.py|Restricted 3 body problem after Kotovych and Bowman
