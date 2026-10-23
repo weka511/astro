@@ -16,7 +16,9 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 '''
-Verlet integrator
+Velocity Verlet integrator, based on: The leapfrog method and other "symplectic" 
+algorithms for integrating Newton's laws of motion, Peter Young, April 14 2009,
+https://courses.physics.ucsd.edu/2010/Winter/physics141/Assignments/leapfrog_py.pdf
 '''
 
 from argparse import ArgumentParser
@@ -31,7 +33,20 @@ __version__ = '1.0'
 __author__ = 'Simon Crase'
 
 class VelocityVerlet:
+    '''
+    Velocity for of Verlet Integrator, as dsecribed in Young, Section III
+    
+    Attributes:
+        hamiltonian 
+        F_half
+        first_step
+        n
+    '''
     def __init__(self,hamiltonian):
+        '''
+        Parameters:
+            hamiltonian
+        '''
         self.hamiltonian = hamiltonian
         self.F_half = None
         self.first_step = True
