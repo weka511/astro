@@ -100,19 +100,7 @@ class NaiveSolver(K_Solver):
         for i in range(self.rki.s):
             k_next[i,:] = self.rki.dy(y + h*np.inner(self.rki.a[i,:],k.T))
         return k_next   
-
-class NewtonSolver(K_Solver):
-    def __init__(self,atol=1e-8,max_iterations=200):
-        '''
-        Parameters:
-            max_iterations  Maximum number of iterations for solving implicit equations
-            atol            Maximum error we can tolerate when solving implicit equations
-        '''
-        super().__init__(atol=atol,max_iterations=max_iterations)
-        
-    def get_k(self,h,y):
-        k = np.zeros((len(self.rki.b),len(y))) 
-    
+ 
 class ImplicitRungeKutta(ABC):
     '''
     Parent class for Implicit Runge-Kutta integrators
