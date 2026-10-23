@@ -37,7 +37,7 @@ __author__ = 'Simon Crase'
 
 class K_Solver(ABC):
     '''
-    This class is used to solve the implicit equations for k
+    `Descendents of this class are used to solve the implicit equations for k
     '''
     def __init__(self,atol=1e-8,max_iterations=200):
         '''
@@ -56,6 +56,9 @@ class K_Solver(ABC):
         '''
 
 class NaiveSolver(K_Solver):
+    '''
+    Establish k by following the procedure in Gear, SEction 2.5.1
+    '''
     def __init__(self,atol=1e-8,max_iterations=200):
         '''
         Parameters:
@@ -78,13 +81,13 @@ class NaiveSolver(K_Solver):
                 return k_next
             else:
                 k = k_next
+                
+        # If you are here, convergence has failed already.
+        
         a_max = np.abs(self.rki.a).sum(axis=1).max()  
         L = np.abs(self.rki.dy.get_Jacobian(y)).max()
         raise ImplicitRungeKutta.Failed(
-            f'Failed to converge within {self.atol} after {self.max_iterations} iterations: error={diff}\n'
-            f'a_max={a_max}\n'
-            f'L={L}\n'
-            f'1/aL={1/(a_max*L)}'
+            f'error={diff} after {self.max_iterations} iterations, a_max={a_max}, L={L},1/aL={1/(a_max*L)}'
         )
     
     def iterate(self, h, y, k):
