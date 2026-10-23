@@ -82,13 +82,19 @@ class NaiveSolver(K_Solver):
             else:
                 k = k_next
                 
-        # If you are here, convergence has failed already.
+        self.fail(y,diff)
         
-        a_max = np.abs(self.rki.a).sum(axis=1).max()  
+    def fail(self,y,diff): 
+        '''
+        Iteration has failed to converge
+        '''
+        a_max_row_sum = np.abs(self.rki.a).sum(axis=1).max()  
         L = np.abs(self.rki.dy.get_Jacobian(y)).max()
-        raise ImplicitRungeKutta.Failed(
-            f'error={diff} after {self.max_iterations} iterations, a_max={a_max}, L={L},1/aL={1/(a_max*L)}'
-        )
+        e = ImplicitRungeKutta.Failed(f'error={diff} after {self.max_iterations} iterations')
+        e.details.append(f'a_max={a_max_row_sum}')
+        e.details.append(f'L={L}')
+        e.details.append(f'1/aL={1/(a_max_row_sum*L)}')
+        raise e
     
     def iterate(self, h, y, k):
         '''
@@ -117,7 +123,8 @@ class ImplicitRungeKutta(ABC):
         Exception thrown when we can't solve implicit equations
         '''
         def __init__(self, value):
-                self.value = value
+            self.value = value
+            self.details = []
 
         def __str__(self):
             return repr(self.value)
