@@ -220,6 +220,8 @@ def main():
                 Logger.instance.info(f'Step {i:,} of {args.NIterations:,}')
     except ImplicitRungeKutta.Failed as e:
         Logger.instance.exception(e,stack_info=True)  
+        for message in e.details:
+            Logger.instance.info(message)
         Logger.instance.error('Terminating')
 
     fig = figure(figsize=(12,4))    
