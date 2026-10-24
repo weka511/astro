@@ -34,7 +34,7 @@ __author__ = 'Simon Crase'
 
 class VelocityVerlet:
     '''
-    Velocity for of Verlet Integrator, as dsecribed in Young, Section III
+    Velocity Verlet Integrator, as described in Young, Section III
     
     Attributes:
         hamiltonian 
@@ -86,7 +86,27 @@ class VelocityVerlet:
         p_full = p_half - 0.5*h*self.dHdq
   
         return np.hstack([q_full,p_full])
-        
+ 
+class Adapter:
+    '''
+    This class bridges the gap between F, as used by to other integrators,
+    and the Hamiltonian that Verlet expects.
+    '''
+    def __init__(self,F,d=2):
+        self.F = F
+        self.d = d
+ 
+    def __len__(self):
+        return self.d   
+    
+    def dHdp(self,y):
+        return self.F(y)[0:self.d]
+    
+    def dHdq(self,y):
+        return - self.F(y)[self.d:]
+    
+ 
+    
 class SHM:
     '''
     Test using simple harmonc motion
