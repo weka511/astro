@@ -29,7 +29,7 @@ from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
 
-__version__ = '1.0'
+__version__ = '1.1'
 __author__ = 'Simon Crase'
 
 class VelocityVerlet:
@@ -37,20 +37,19 @@ class VelocityVerlet:
     Velocity Verlet Integrator, as described in Young, Section III
     
     Attributes:
-        hamiltonian 
-        F_half
-        first_step
+        F 
+        F_saved
+        is_first_step
         n
     '''
-    def __init__(self,hamiltonian):
+    def __init__(self,F):
         '''
         Parameters:
-            hamiltonian
+            F
         '''
-        self.hamiltonian = hamiltonian
+        self.F = F
         self.F_half = None
-        self.first_step = True
-        self.n = len(hamiltonian)
+        self.is_first_step = True
         
     def __str__(self):
         '''
@@ -58,53 +57,31 @@ class VelocityVerlet:
         '''
         return f'{type(self).__name__}'    
         
-    def step(self, h, y):
+    def step(self, h, x):
         '''
-        Compute y after next step
+        Compute x after next step
         
         Parameters:
            h    Step size
-           y    Current value of y
+           x    Current value of x
         '''
-        # Calculate p at the mid point of the step
-        q = y[0:self.n]
-        p = y[self.n:]
-        if self.first_step == True:
-            self.dHdq = self.hamiltonian.dHdq(y)
-            self.first_step = False
-        p_half = p - 0.5*h*self.dHdq
+        n = len(x)//2
+        # Calculate v at the mid point of the step
+        if self.is_first_step:
+            self.F_saved = self.F(x)
+            self.is_first_step = False
+            
+        v_mid_point = x[n:] + 0.5*h*self.F_saved[n:]
  
-        # Calculate q at the end of the step       
-        y_half = y.copy()
-        y_half[self.n:] = p_half
-        q_full = q + h*self.hamiltonian.dHdp(y_half)
+        # Calculate x at the end of the step       
+        x_end = x.copy()
+        x_end[0:n] +=  h*v_mid_point
         
-        # Calculate p at the end of the step 
-        y_next = y_half.copy()
-        y_next[0:self.n] = q_full
-        self.dHdq = self.hamiltonian.dHdq(y_next)
-        p_full = p_half - 0.5*h*self.dHdq
-  
-        return np.hstack([q_full,p_full])
- 
-class Adapter:
-    '''
-    This class bridges the gap between F, as used by to other integrators,
-    and the Hamiltonian that Verlet expects.
-    '''
-    def __init__(self,F,d=2):
-        self.F = F
-        self.d = d
- 
-    def __len__(self):
-        return self.d   
-    
-    def dHdp(self,y):
-        return self.F(y)[0:self.d]
-    
-    def dHdq(self,y):
-        return - self.F(y)[self.d:]
-    
+        # Calculate x at the end of the step 
+        for _ in range(2):
+            self.F_saved = self.F(x_end)
+            x_end[n:] = v_mid_point + 0.5*h*self.F_saved[n:]
+        return x_end
  
     
 class SHM:
@@ -117,19 +94,16 @@ class SHM:
         
     def __len__(self):
         return 1
-        
-    def get_total_energy(self,p,q):
-        return 0.5 * (p**2/self.m + self.k * self.m*q**2)
     
-    def dHdp(self,y):
-        q = y[0:len(self)]
-        p = y[len(self):]
-        return p/self.m
+    def __call__(self,x):
+        dx = np.zeros_like(x)
+        dx[0] = x[1]
+        dx[1] = - self.k*x[0]/self.m
+        return dx
     
-    def dHdq(self,y):
-        q = y[0:len(self)]
-        p = y[len(self):]
-        return self.k * self.m *q
+    def get_total_energy(self,y):
+        return 0.5 * (self.m*y[1]**2 + self.k * self.m*y[0]**2)
+    
     
 def parse_args():
     '''
@@ -154,11 +128,11 @@ def main():
     E = np.zeros((args.N+1))
     y = np.array([1,0],dtype=float)
     X[0,:] = y
-    E[0] = shm.get_total_energy(y[0],y[1])
+    E[0] = shm.get_total_energy(y)
     for i in range(args.N):
         y = integrator.step(0.1,y)
         X[i+1,:] = y
-        E[i+1] = shm.get_total_energy(y[0],y[1])
+        E[i+1] = shm.get_total_energy(y)
     
     fig = figure(figsize=(12,6))
     fig.suptitle(Path(__file__).stem)
