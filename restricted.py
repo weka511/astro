@@ -27,6 +27,7 @@ from matplotlib import rcParams
 import numpy as np
 from rki import ImplicitRungeKutta,ImplicitRungeKutta4,ImplicitRungeKutta2,NaiveSolver
 from euler import Euler
+from verlet import VelocityVerlet,Adapter
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -146,7 +147,8 @@ class IntegratorFactory:
         return [
             'euler',
             'rki2',
-            'rki4'
+            'rki4',
+            'verlet'
         ]
     
     @staticmethod
@@ -173,6 +175,9 @@ class IntegratorFactory:
  
             case 'rki4':
                 product = ImplicitRungeKutta4(dy) 
+                
+            case 'verlet':
+                return VelocityVerlet(Adapter(dy))
              
             case _:
                 raise ValueError(f'Integrator {integrator} not found.')
@@ -189,6 +194,9 @@ class IntegratorFactory:
         return 'rki4'
  
 def get_suptitle(args,integrator):
+    '''
+    Used to display details of integration
+    '''
     return (rf'{Path(__file__).stem}: ({integrator}), $\mu_2=${args.mu2}, N={args.NIterations:,}, step={args.step}, '
             rf'$\delta x=${args.dx}, $\delta v=${args.dv}')
         
