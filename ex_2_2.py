@@ -28,14 +28,13 @@ Murray and Dermott, Exercise 2.2
 
 from argparse import ArgumentParser
 from pathlib import Path
-from math import floor
 import numpy as np
 import pandas as pd
 from matplotlib.pyplot import figure, show
 from mpl_toolkits.mplot3d import Axes3D
 from orbital import get_mean_longitude,Calendar,create_orbit,is_minimum,get_distance
 
-__version__ = '1.0'
+__version__ = '1.1'
 __author__ = 'Simon Crase'
 
 class Conjunctions:
@@ -57,13 +56,14 @@ class Conjunctions:
           self.conjunctions = [(i,self.ts[i],self.distances[i]) for i in range(1,len(self.distances)-1)
                           if is_minimum(self.distances[i-1],self.distances[i],self.distances[i+1])]
           
-     def get_min_max(self):
+     def get_min_max(self,fn=np.argmin):
+          '''
+          Extract minimum or maximum distance
+          '''
           distances = [d for _,_,d in self.conjunctions]
-          i0 = np.argmin(distances)
-          _,t0,_ = self.conjunctions[i0]
-          i1 = np.argmax(distances)
-          _,t1,_ = self.conjunctions[i1]      
-          return i0,t0,distances[i0],i1,t1,distances[i1]
+          i0 = fn(distances)
+          _,t0,_ = self.conjunctions[i0] 
+          return i0,t0,distances[i0]
           
 
 def parse_args():
@@ -83,7 +83,10 @@ def get_date(string):
      Parse date from string
      
      Parameters:
-         string
+         string   Date, format yyyy-[m]m-[d]d
+         
+     Returns:
+        Date formateed as a triple of integer: y,m,d
      '''
      parts = string.split('-')
      return (int(parts[0]), int(parts[1]), int(parts[2]))
@@ -100,18 +103,19 @@ def main():
                          Incr=args.incr,
                          is2D=args.is2D)
          
-     i0,t0,distances0,i1,t1,distances1  = conjunctions.get_min_max()
+     i0,t0,distances0 = conjunctions.get_min_max()
      Y0,M0,D0 = Calendar.get_calendar_date(t0)
+     i1,t1,distances1  = conjunctions.get_min_max(fn=np.argmax)
      Y1,M1,D1 = Calendar.get_calendar_date(t1)
 
      # Plot conjunctions
      ax5 = fig.add_subplot(111) 
      ax5.plot(conjunctions.ts,conjunctions.distances,'g',label='Distance between planets')
      ax5.scatter([t for _,t,_ in conjunctions.conjunctions],[d for _,_,d in conjunctions.conjunctions],c='m',label='Conjunction')
-     ax5.scatter(t0,distances0,marker=11,s=144,c='b',label=f'Closest at {Y0}/{M0:02}/{int(D0):02}, {distances0:.4} AU')
+     ax5.scatter(t0,distances0,marker=11,s=144,c='b',label=f'Closest at {Y0}-{M0:02}-{int(D0):02}, {distances0:.4} AU')
      ax5.axvline(x=t0, color='m', linestyle='-.')
      ax5.axhline(y=distances0, color='g', linestyle='-.')
-     ax5.scatter(t1,distances1,marker=10,s=144,c='r',label=f'Furthest at {Y1}/{M1:02}/{int(D1):02}, {distances1:.4} AU')
+     ax5.scatter(t1,distances1,marker=10,s=144,c='r',label=f'Furthest at {Y1}-{M1:02}-{int(D1):02}, {distances1:.4} AU')
      ax5.axvline(x=t1, color='m', linestyle=':')
      ax5.axhline(y=distances1, color='g', linestyle=':')
      ax5.set_xticklabels([])
@@ -128,4 +132,3 @@ def main():
      
 if __name__=='__main__':
      main()
-     

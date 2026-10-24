@@ -16,8 +16,8 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
 '''
-Orbital calculations to support earth_mars.py, based on
-Murray and Dermott, Solar System Dynamics
+Orbital calculations to support ex_2_2.py, based on
+Murray and Dermott, Solar System Dynamics, Exercise 2.2
 '''
 from unittest import TestCase,main
 import numpy as np
@@ -86,8 +86,8 @@ class Calendar:
         e = np.floor(365.25*d)                        # A.9
         f = np.floor((c-e)/30.6001)                   # A.10
         D = c - e - np.floor(30.6001*f) + frac_JD     # A.11
-        M = f - 1 - 12*np.floor(f/14)                 # A.12
-        Y = d - 4715 - np.floor((7+M)/10)             # A.13
+        M = int(f - 1 - 12*np.floor(f/14))            # A.12
+        Y = int(d - 4715 - np.floor((7+M)/10))        # A.13
         
         return (Y,M,D)
     
