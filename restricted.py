@@ -25,9 +25,7 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show, colorbar
 from matplotlib import rcParams
 import numpy as np
-from rki import ImplicitRungeKutta,ImplicitRungeKutta4,ImplicitRungeKutta2,NaiveSolver
-from euler import Euler
-from verlet import VelocityVerlet
+from integrators import IntegratorFactory
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -132,66 +130,7 @@ class F:
         return J
 
 
-class IntegratorFactory: 
-    '''
-    This class sets up an Integrator.
-    '''
-    @staticmethod
-    def get_choices():
-        '''
-        This method sets the options for the command line
-        
-        Returns:
-           List of integrators that are available
-        '''
-        return [
-            'euler',
-            'rki2',
-            'rki4',
-            'verlet'
-        ]
-    
-    @staticmethod
-    def create(dy,integrator,atol,max_iterations):
-        '''
-        Create an integrator
-        
-        Parameters:
-           dy              Function f for ODE: dy/dt=f(y)
-           integrator      A key used to specify the inegrator that will be created
-           max_iterations  Maximum number of iterations for solving implicit equations
-           atol            Maximum error we can tolerate when solving implicit equations
-           
-        Returns:
-           Newly created integrator
-        '''
-  
-        match integrator:
-            case 'euler':
-                return  Euler(dy,n=max_iterations,atol=atol)
-            
-            case 'rki2':
-                product = ImplicitRungeKutta2(dy)
- 
-            case 'rki4':
-                product = ImplicitRungeKutta4(dy) 
-                
-            case 'verlet':
-                return VelocityVerlet(dy)
-             
-            case _:
-                raise ValueError(f'Integrator {integrator} not found.')
-   
-        product.attach(NaiveSolver(atol=atol, max_iterations=max_iterations))           
-  
-        return product        
-            
-    @staticmethod
-    def get_default():
-        '''
-        Default if no integrator has been specified
-        '''
-        return 'rki4'
+
  
 def get_suptitle(args,integrator):
     '''
