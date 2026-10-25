@@ -26,6 +26,7 @@ from matplotlib.pyplot import figure, show, colorbar
 from matplotlib import rcParams
 import numpy as np
 from integrators import IntegratorFactory
+from rki import ImplicitRungeKutta
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -146,52 +147,55 @@ def main():
     
     f = Synodic(args.mu2)
     integrator = IntegratorFactory.create(f,args.integrator,args.atol,args.max_iterations)
-    
-    X = np.zeros((args.NIterations+1,4))
-    U = np.zeros((args.NIterations+1))
-    X[0,0] = f.mu1 - 1/2
-    X[0,1] = np.sqrt(3)/2
-    X[0,0:2] += args.dx
-    X[0,2:] += args.dv
-    NU = 1
-    try:
-        for i in range(args.NIterations):
-            X[i+1,:] = integrator.step(args.step,X[i,:])
-            U[i+1] = f.U
-            NU += 1
-            if i > 0 and i%args.freq == 0:
-                Logger.instance.info(f'Step {i:,} of {args.NIterations:,}')
-    except ImplicitRungeKutta.Failed as e:
-        Logger.instance.exception(e,stack_info=True)  
-        for message in e.details:
-            Logger.instance.info(message)
-        Logger.instance.error('Terminating')
-
-    fig = figure(figsize=(12,4))    
+    fig = figure(figsize=(12,10))    
     fig.suptitle(get_suptitle(args,integrator))
+    for j in range(2):
+        n = (j+1)*args.NIterations
+        step_size = args.step/(j+1)
+        X = np.zeros((n+1,4))
+        U = np.zeros((n+1))
+        X[0,0] = f.mu1 - 1/2
+        X[0,1] = np.sqrt(3)/2
+        X[0,0:2] += args.dx
+        X[0,2:] += args.dv
+        NU = 1
+        try:
+            for i in range(n):
+                X[i+1,:] = integrator.step(step_size,X[i,:])
+                U[i+1] = f.U
+                NU += 1
+                if i > 0 and i%args.freq == 0:
+                    Logger.instance.info(f'Step {i:,} of {n:,}')
+        except ImplicitRungeKutta.Failed as e:
+            Logger.instance.exception(e,stack_info=True)  
+            for message in e.details:
+                Logger.instance.info(message)
+            Logger.instance.error('Terminating')
     
-    ax1 = fig.add_subplot(1,2,1,adjustable='box',aspect='equal')
-    colorbar(
-        ax1.scatter(X[::args.stride,0],X[::args.stride,1],
-                    s=1,
-                    c=np.sqrt(np.sqrt(X[::args.stride,2]**2 + X[::args.stride,3]**2)),
-                    cmap='viridis'),
-        label='Speed',
-        location='bottom',
-        shrink=0.5)
     
-    ax1.scatter(X[0,0],X[0,1],marker='x',c='xkcd:blue')
-    ax1.set_title('Position')
-    ax1.set_xlabel('x')
-    ax1.set_ylabel('y')
-    
-    ax2 = fig.add_subplot(1,2,2)
-    U = U[1:NU]
-    ax2.plot(U)
-    ax2.set_title('Jacobi Constant')
-    ax2.set_ylim((U.min(),U.max()))
-    ax2.set_xlabel('Iteration')
-    ax2.set_ylabel('U')    
+        
+        ax1 = fig.add_subplot(2,2,2*j+1,adjustable='box',aspect='equal')
+        colorbar(
+            ax1.scatter(X[::args.stride,0],X[::args.stride,1],
+                        s=1,
+                        c=np.sqrt(np.sqrt(X[::args.stride,2]**2 + X[::args.stride,3]**2)),
+                        cmap='viridis'),
+            label='Speed',
+            location='bottom',
+            shrink=0.5)
+        
+        ax1.scatter(X[0,0],X[0,1],marker='x',c='xkcd:blue')
+        ax1.set_title('Position')
+        ax1.set_xlabel('x')
+        ax1.set_ylabel('y')
+        
+        ax2 = fig.add_subplot(2,2,2*j+2)
+        U = U[1:NU]
+        ax2.plot(U)
+        ax2.set_title('Jacobi Constant')
+        ax2.set_ylim((U.min(),U.max()))
+        ax2.set_xlabel('Iteration')
+        ax2.set_ylabel('U')    
   
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/args.name)    
