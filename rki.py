@@ -22,6 +22,7 @@ References:
   [1] Numerical initial value problems in ordinary differential equationsby C. William Gear 
   [2] https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Gauss.E2.80.93Legendre_methods
   [3] https://mathworld.wolfram.com/ButcherTableau.html
+  [4] https://en.wikipedia.org/wiki/Gauss%E2%80%93Legendre_method
 '''
 
 from abc import ABC,abstractmethod
@@ -35,6 +36,113 @@ from rk import RungeKutta
 
 __version__ = '1.1'
 __author__ = 'Simon Crase'
+
+
+class ImplicitRungeKutta(RungeKutta):
+    '''
+    Parent class for Implicit Runge-Kutta integrators
+    
+    see https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Gauss.E2.80.93Legendre_methods
+    
+    The Butcher tableau is stored in three members: a, b, and c.
+    '''
+    class Failed(Exception):
+        ''' 
+        Exception thrown when we can't solve implicit equations
+        '''
+        def __init__(self, value):
+            self.value = value
+            self.details = []
+
+        def __str__(self):
+            return repr(self.value)
+
+    def __init__(self, dx, order, a,b,c,solver=None):
+        '''
+        Initialize
+        
+        Parameters:
+           dx              Function f for ODE = dx/dt=f(y)
+           order           Order of solver
+           a               The matrix from the Butcher tableau https://mathworld.wolfram.com/ButcherTableau.html
+           b               The b vector from the Butcher tableau
+           c               The c vector from the Butcher tableau. This is included for completeness,
+                           but it is not used, as dx is independent of time.
+        '''
+        super().__init__(dx, order, a,b,c)
+        self.s = len(b)
+        self.solver = solver
+        
+    def __str__(self):
+        '''
+        Used to display details of integrator
+        '''
+        return f'{type(self).__name__}: order={self.order}'
+
+    def attach(self,solver):
+        '''
+        Attach a solver to integrator
+        '''
+        self.solver = solver
+        solver.rki = self
+        
+    def step(self, h, x):
+        '''
+        Compute y after next step
+        
+        Parameters:
+           h    Step size
+           x    Current value of dependent variable
+        '''
+        return self.get_next(x,h,self.solver.get_k(h,x))   
+  
+
+class ImplicitRungeKutta2(ImplicitRungeKutta):
+    '''
+    4th order Gauss-Legendre. See also https://en.wikipedia.org/wiki/Gauss%E2%80%93Legendre_method
+    '''
+    def __init__(self, dx, solver=None):
+        '''
+        Parameters:
+           dx              Function f for ODE = dx/dx=f(y)
+           max_iterations  Maximum number of iterations for solving implicit equations
+           atol            Maximum error we can tolerate when solving implicit equations
+        '''
+        super().__init__(dx, 4,
+                np.array([
+                    [1/4,                1/4 - np.sqrt(3)/6],
+                    [1/4 + np.sqrt(3)/6, 1/4],
+                ]),
+                np.array([
+                    1/2, 1/2
+                ]),
+                np.array([
+                    1/2 - np.sqrt(3)/6,
+                    1/2 + np.sqrt(3)/6
+                ]),
+                solver=solver)
+   
+class ImplicitRungeKutta4(ImplicitRungeKutta):
+    '''
+    6th order Gauss-Legendre
+    '''
+
+    def __init__(self, dx, solver=None):
+        '''
+        Parameters:
+           dx              Function f for ODE = dx/dx=f(y)
+           max_iterations  Maximum number of iterations for solving implicit equations
+           atol            Maximum error we can tolerate when solving implicit equations
+        '''
+        super().__init__(dx,  6,
+                         np.array([
+                                [5/36,                  2/9 -np.sqrt(15)/15,  5/36 - np.sqrt(15)/30],
+                                [5/36 + np.sqrt(15)/24, 2/9,                  5/36 - np.sqrt(15)/24],
+                                [5/36 + np.sqrt(15)/30, 2/9 + np.sqrt(15)/15, 5/36]
+                            ]),
+                         np.array([5/18, 4/9, 5/18 ]),
+                         np.array([1/2 - np.sqrt(15)/10, 1/2, 1/2 + np.sqrt(15)/10]),
+                         solver=solver)
 
 class K_Solver(ABC):
     '''
@@ -110,120 +218,6 @@ class NaiveSolver(K_Solver):
         product.details.append(f'L={L}')
         product.details.append(f'Epsilon needs to be < {1/(a_max_row_sum*L)}')
         return product    
- 
-class ImplicitRungeKutta(RungeKutta):
-    '''
-    Parent class for Implicit Runge-Kutta integrators
-    
-    see https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Gauss.E2.80.93Legendre_methods
-    
-    The Butcher tableau is stored in three members: a, b, and c.
-    '''
-    class Failed(Exception):
-        ''' 
-        Exception thrown when we can't solve implicit equations
-        '''
-        def __init__(self, value):
-            self.value = value
-            self.details = []
-
-        def __str__(self):
-            return repr(self.value)
-
-    def __init__(self, dx, order, a,b,c,solver=None):
-        '''
-        Initialize
-        
-        Parameters:
-           dx              Function f for ODE = dx/dt=f(y)
-           order           Order of solver
-           a               The matrix from the Butcher tableau https://mathworld.wolfram.com/ButcherTableau.html
-           b               The b vector from the Butcher tableau
-           c               The c vector from the Butcher tableau. This is included for completeness,
-                           but it is not used, as dx is independent of time.
-        '''
-        super().__init__(dx, order, a,b,c)
-        self.s = len(b)
-        self.solver = solver
-        
-    def __str__(self):
-        '''
-        Used to display details of integrator
-        '''
-        return f'{type(self).__name__}: order={self.order}'
-
-    def attach(self,solver):
-        '''
-        Attach a solver to integrator
-        '''
-        self.solver = solver
-        solver.rki = self
-        
-    def step(self, h, x):
-        '''
-        Compute y after next step
-        
-        Parameters:
-           h    Step size
-           x    Current value of dependent variable
-        '''
-        return self.get_next(x,h,self.solver.get_k(h,x))   
-  
-
-class ImplicitRungeKutta2(ImplicitRungeKutta):
-    '''
-    4th order Gauss-Legendre
-    '''
-    def __init__(self, dx, solver=None):
-        '''
-        Parameters:
-           dx              Function f for ODE = dx/dx=f(y)
-           max_iterations  Maximum number of iterations for solving implicit equations
-           atol            Maximum error we can tolerate when solving implicit equations
-        '''
-        super().__init__(dx, 4,
-                np.array([
-                    [0.25, 0.25 - np.sqrt(3.0)/6.0],
-                    [0.25 + np.sqrt(3.0)/6.0, 0.25],
-                ]),
-                np.array([
-                    0.5, 0.5
-                ]),
-                np.array([
-                    0.5 - np.sqrt(3.0)/6,
-                    0.5 + np.sqrt(3.0)/6
-                ]),
-                solver=solver)
-   
-class ImplicitRungeKutta4(ImplicitRungeKutta):
-    '''
-    6th order Gauss-Legendre
-    '''
-
-    def __init__(self, dx, solver=None):
-        '''
-        Parameters:
-           dx              Function f for ODE = dx/dx=f(y)
-           max_iterations  Maximum number of iterations for solving implicit equations
-           atol            Maximum error we can tolerate when solving implicit equations
-        '''
-        super().__init__(dx,  6,
-                         np.array([
-                                [5.0/36.0, 2.0/9.0 -np.sqrt(15.0)/15.0, 5.0/36.0 - np.sqrt(15.0)/30.0],
-                                [5.0/36.0 + np.sqrt(15.0)/24.0, 2.0/9.0, 5.0/36.0 - np.sqrt(15.0)/24.0],
-                                [5.0/36.0 + np.sqrt(15.0)/30.0, 2.0/9.0 + np.sqrt(15.0)/15.0, 5.0/36.0]
-                            ]),
-                         np.array([
-                                5.0/18.0,
-                                4.0/9.0,
-                                5.0/18.0
-                            ]),
-                         np.array([
-                                0.5 - np.sqrt(15.0)/10.0,
-                                0.5,
-                                0.5 + np.sqrt(15.0)/10.0
-                            ]),
-                         solver=solver)
 
 def parse_args():
     '''
