@@ -31,7 +31,8 @@ A||md_data.py|Accessor function for data from Appendix A, plus code to validate 
 --------------------------|---------------------------------------------------------------------
 euler.py|Simple Euler method for integrations ODE
 integrators.py|Used to set up an integrator
-rki.py|Implicit Runge Ketta (symplectic) integrators
+rk4|Explicit Runge Kutta integrators
+rki.py|Implicit Runge Kutta (symplectic) integrators
 template.py|Template for python script
 Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor
 verlet.py|Integrator using Velocity Verlet algorithm

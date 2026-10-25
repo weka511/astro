@@ -19,8 +19,6 @@
 
 from abc import ABC,abstractmethod
 from argparse import ArgumentParser
-from csv import reader
-from logging import basicConfig,getLogger,INFO,FileHandler,StreamHandler,Formatter,DEBUG
 from pathlib import Path
 from time import strftime,time
 from matplotlib.pyplot import figure, show
@@ -54,7 +52,6 @@ class RungeKutta(ABC):
         self.a = a
         self.b = b
         self.c = c
-        self.s = len(b)
         
     def __str__(self):
         '''
@@ -111,30 +108,6 @@ def parse_args():
     return parser.parse_args()
 
 
-class Logger: 
-    '''
-    Singleton Logger
-    '''
-    instance = None
-    
-    @staticmethod
-    def create(path_name:str):
-        '''
-        Set up console logger and file logger
-        
-        Parameters:
-            path_name    Path name for log file
-        '''
-        def add_handler(handler,logger,formatter=Formatter('%(message)s'),level:int=INFO):
-            handler.setLevel(level)
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)    
-        Logger.instance = getLogger(__name__)
-        Logger.instance.setLevel(DEBUG)
-        add_handler(FileHandler(path_name),Logger.instance,level=DEBUG)
-        add_handler(StreamHandler(),Logger.instance)   
-        np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
-    
 def main():
     '''
     Do whatever...
@@ -142,7 +115,7 @@ def main():
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
-    Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
+  
     rk4 = Rk4(lambda y: [y[1], -y[0]])
     h = 0.01
     nn = 1000
@@ -164,7 +137,5 @@ def main():
         show()
     
 if __name__ == '__main__':
-    try:
-        main()
-    except Exception as e:
-        Logger.instance.exception(e,stack_info=True)
+    main()
+

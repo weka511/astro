@@ -30,33 +30,6 @@ from integrators import IntegratorFactory
 __version__ = '1.0'
 __author__ = 'Simon Crase'
 
-def parse_args():
-    '''
-    Parse command line arguments
-    '''
-    parser = ArgumentParser(description=__doc__)
-    parser.add_argument('--figs', default='./figs', help=f'Path to plots')
-    parser.add_argument('--logs',default='./logs', help=f'Path to log files')
-    parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
-    parser.add_argument('--mu2', default=0.01, type=float,help='Smaller of the two main masses')
-    parser.add_argument('-N','--NIterations',type=int,default=1000,help='Number of iterations for integrator')
-    parser.add_argument('--step',type=float,default=0.01,help='Stepsize for integrator')
-    parser.add_argument('--integrator',
-                        choices=IntegratorFactory.get_choices(),
-                        default=IntegratorFactory.get_default(),
-                        help='Choice of integrator')
-    parser.add_argument('-n','--n',type=int,default=1,help='Number of iterations for Implicit Euler')
-    parser.add_argument('--dx',type=float,default=[0,0],nargs=2,help='Initial perturbation (position)')
-    parser.add_argument('--dv',type=float,default=[0,0],nargs=2,help='Initial perturbation (velocity)')
-    parser.add_argument('--atol',type=float,default=1.0e-8,help='Tolerance for solving equation in implicit Runge Kutta')
-    parser.add_argument('-m','--max_iterations',type=int,default=250,
-                        help='Number of iterations for solving equation in implicit Runge Kutta')
-    parser.add_argument('--freq',type=int,default=1000,help='Used to record progress')
-    parser.add_argument('--stride',type=int,default=1,help='Used to skip over some points while plotting')
-    parser.add_argument('--name',default=Path(__file__).stem,help='File name for plot')
-    return parser.parse_args()
-
-
 class Logger: 
     '''
     Singleton Logger
@@ -81,9 +54,9 @@ class Logger:
         add_handler(StreamHandler(),Logger.instance)   
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
  
-class F:
+class Synodic:
     '''
-    Used in equations of motion: dx/dt = F(x)
+    Used to calcuulate RHS of equations of motion in synodic system: dx/dt = F(x)
     '''
     def __init__(self,mu2):
         self.mu1 = 1 - mu2
@@ -129,8 +102,31 @@ class F:
         Logger.instance.info(f'{J}')
         return J
 
-
-
+def parse_args():
+    '''
+    Parse command line arguments
+    '''
+    parser = ArgumentParser(description=__doc__)
+    parser.add_argument('--figs', default='./figs', help=f'Path to plots')
+    parser.add_argument('--logs',default='./logs', help=f'Path to log files')
+    parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+    parser.add_argument('--mu2', default=0.01, type=float,help='Smaller of the two main masses')
+    parser.add_argument('-N','--NIterations',type=int,default=1000,help='Number of iterations for integrator')
+    parser.add_argument('--step',type=float,default=0.01,help='Stepsize for integrator')
+    parser.add_argument('--integrator',
+                        choices=IntegratorFactory.get_choices(),
+                        default=IntegratorFactory.get_default(),
+                        help='Choice of integrator')
+    parser.add_argument('-n','--n',type=int,default=1,help='Number of iterations for Implicit Euler')
+    parser.add_argument('--dx',type=float,default=[0,0],nargs=2,help='Initial perturbation (position)')
+    parser.add_argument('--dv',type=float,default=[0,0],nargs=2,help='Initial perturbation (velocity)')
+    parser.add_argument('--atol',type=float,default=1.0e-8,help='Tolerance for solving equation in implicit Runge Kutta')
+    parser.add_argument('-m','--max_iterations',type=int,default=250,
+                        help='Number of iterations for solving equation in implicit Runge Kutta')
+    parser.add_argument('--freq',type=int,default=1000,help='Used to record progress')
+    parser.add_argument('--stride',type=int,default=1,help='Used to skip over some points while plotting')
+    parser.add_argument('--name',default=Path(__file__).stem,help='File name for plot')
+    return parser.parse_args()
  
 def get_suptitle(args,integrator):
     '''
@@ -148,7 +144,7 @@ def main():
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     
-    f = F(args.mu2)
+    f = Synodic(args.mu2)
     integrator = IntegratorFactory.create(f,args.integrator,args.atol,args.max_iterations)
     
     X = np.zeros((args.NIterations+1,4))
