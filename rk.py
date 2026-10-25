@@ -47,6 +47,7 @@ class RungeKutta(ABC):
            c               The c vector from the Butcher tableau. This is included for completeness,
                            but it is not used, as dy is independent of time.
         '''
+        np.testing.assert_array_almost_equal(c,np.sum(a,axis=1),decimal=16)
         self.dx = dx
         self.order = order
         self.a = a
@@ -96,7 +97,34 @@ class Rk4(RungeKutta):
                     0, 1/2, 1/2, 1
                 ]))    
 
-
+class Nystrom(RungeKutta):
+    '''
+    Nyström's fifth order method
+    https://en.wikipedia.org/wiki/List_of_Runge%E2%80%93Kutta_methods#Nystr%C3%B6m's_fifth-order_method
+    '''
+    def __init__(self, dx):
+        '''
+        Parameters:
+           dy              Function f for ODE = dy/dx=f(y)
+           max_iterations  Maximum number of iterations for solving implicit equations
+           atol            Maximum error we can tolerate when solving implicit equations
+        '''
+        super().__init__(dx, 5,
+                np.array([
+                    [0,    0,    0,      0,    0, 0],
+                    [1/3,  0,    0,      0,    0, 0],
+                    [4/25, 6/25, 0,      0,    0, 0],
+                    [1/4,  -3,   15/4,  0,    0, 0],
+                    [2/27, 10/9, -50/81, 8/81, 0, 0],
+                    [2/25, 12/25, 2/15,  8/75, 0, 0],
+                ]),
+                np.array([
+                    23/192, 0, 125/192, 0, -27/64, 125/192
+                ]),
+                np.array([
+                    0, 1/3, 2/5, 1, 2/3, 4/5
+                ]))    
+        
 def parse_args():
     '''
     Parse command line arguments
@@ -110,13 +138,13 @@ def parse_args():
 
 def main():
     '''
-    Do whatever...
+    Solve equation for simple harmonic motion, and plot
     '''
     rcParams['text.usetex'] = True
     start  = time()
     args = parse_args()
   
-    rk4 = Rk4(lambda y: [y[1], -y[0]])
+    rk4 = Nystrom(lambda y: [y[1], -y[0]])
     h = 0.01
     nn = 1000
     y = np.zeros((nn+1,2))

@@ -20,7 +20,7 @@ This module is responsible for setting up an integrator
 '''
 
 from rki import ImplicitRungeKutta,ImplicitRungeKutta4,ImplicitRungeKutta2,NaiveSolver
-from rk import Rk4
+from rk import Rk4, Nystrom
 from euler import Euler
 from verlet import VelocityVerlet
 
@@ -44,7 +44,8 @@ class IntegratorFactory:
             'rki2',
             'rki4',
             'verlet',
-            'rk4'
+            'rk4',
+            'nystrom'
         ]
     
     @staticmethod
@@ -76,7 +77,10 @@ class IntegratorFactory:
                 return VelocityVerlet(dy)
             
             case 'rk4':
-                return Rk4(dy)            
+                return Rk4(dy)
+            
+            case 'nystrom':
+                return Nystrom(dy)            
              
             case _:
                 raise ValueError(f'Integrator {integrator} not found.')
