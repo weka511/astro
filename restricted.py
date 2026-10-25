@@ -127,6 +127,7 @@ def parse_args():
     parser.add_argument('--freq',type=int,default=1000,help='Used to record progress')
     parser.add_argument('--stride',type=int,default=1,help='Used to skip over some points while plotting')
     parser.add_argument('--name',default=Path(__file__).stem,help='File name for plot')
+    parser.add_argument('--norepeat',default=False,action='store_true',help='Suppress 2nd run')
     return parser.parse_args()
  
 def get_suptitle(args,integrator):
@@ -147,9 +148,9 @@ def main():
     
     f = Synodic(args.mu2)
     integrator = IntegratorFactory.create(f,args.integrator,args.atol,args.max_iterations)
-    fig = figure(figsize=(12,10))    
+    fig = figure(figsize=(12,5 if args.norepeat else 10))    
     fig.suptitle(get_suptitle(args,integrator))
-    for j in range(2):
+    for j in range(1 if args.norepeat else 2):
         n = (j+1)*args.NIterations
         step_size = args.step/(j+1)
         X = np.zeros((n+1,4))
