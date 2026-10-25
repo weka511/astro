@@ -31,6 +31,7 @@ from time import time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
+from rk import RungeKutta
 
 __version__ = '1.1'
 __author__ = 'Simon Crase'
@@ -84,18 +85,18 @@ class NaiveSolver(K_Solver):
                 
         raise self.create_exception(y,diff)
     
-    def iterate(self, h, y, k):
+    def iterate(self, h, x, k):
         '''
         Iterate One step in solution of iterative equations for k
         
         Parameters:
             h       Step size
-            y       Current value of solution
+            x       Current value of solution
             k       The k term in Runge Kutta
         '''
         k_next= np.zeros_like(k)
         for i in range(self.rki.s):
-            k_next[i,:] = self.rki.dy(y + h*np.inner(self.rki.a[i,:],k.T))
+            k_next[i,:] = self.rki.dx(x + h*np.inner(self.rki.a[i,:],k.T))
         return k_next 
     
     def create_exception(self,y,diff): 
@@ -103,14 +104,14 @@ class NaiveSolver(K_Solver):
         Iteration has failed to converge
         '''
         a_max_row_sum = np.abs(self.rki.a).sum(axis=1).max()  
-        L = np.abs(self.rki.dy.get_Jacobian(y)).max()
+        L = np.abs(self.rki.dx.get_Jacobian(y)).max()
         product = ImplicitRungeKutta.Failed(f'error={diff} after {self.max_iterations} iterations')
         product.details.append(f'a_max={a_max_row_sum}')
         product.details.append(f'L={L}')
         product.details.append(f'Epsilon needs to be < {1/(a_max_row_sum*L)}')
         return product    
  
-class ImplicitRungeKutta(ABC):
+class ImplicitRungeKutta(RungeKutta):
     '''
     Parent class for Implicit Runge-Kutta integrators
     
@@ -129,23 +130,19 @@ class ImplicitRungeKutta(ABC):
         def __str__(self):
             return repr(self.value)
 
-    def __init__(self, dy, order, a,b,c,solver=None):
+    def __init__(self, dx, order, a,b,c,solver=None):
         '''
         Initialize
         
         Parameters:
-           dy              Function f for ODE = dy/dx=f(y)
+           dx              Function f for ODE = dx/dt=f(y)
            order           Order of solver
            a               The matrix from the Butcher tableau https://mathworld.wolfram.com/ButcherTableau.html
            b               The b vector from the Butcher tableau
            c               The c vector from the Butcher tableau. This is included for completeness,
-                           but it is not used, as dy is independent of time.
+                           but it is not used, as dx is independent of time.
         '''
-        self.dy = dy
-        self.order = order
-        self.a = a
-        self.b = b
-        self.c = c
+        super().__init__(dx, order, a,b,c)
         self.s = len(b)
         self.solver = solver
         
@@ -162,29 +159,29 @@ class ImplicitRungeKutta(ABC):
         self.solver = solver
         solver.rki = self
         
-    def step(self, h, y):
+    def step(self, h, x):
         '''
         Compute y after next step
         
         Parameters:
            h    Step size
-           y    Current value of y
+           x    Current value of dependent variable
         '''
-        return y + h*np.inner(self.b,self.solver.get_k(h,y).T)       
+        return self.get_next(x,h,self.solver.get_k(h,x))   
   
 
 class ImplicitRungeKutta2(ImplicitRungeKutta):
     '''
     4th order Gauss-Legendre
     '''
-    def __init__(self, dy, solver=None):
+    def __init__(self, dx, solver=None):
         '''
         Parameters:
-           dy              Function f for ODE = dy/dx=f(y)
+           dx              Function f for ODE = dx/dx=f(y)
            max_iterations  Maximum number of iterations for solving implicit equations
            atol            Maximum error we can tolerate when solving implicit equations
         '''
-        super().__init__(dy, 4,
+        super().__init__(dx, 4,
                 np.array([
                     [0.25, 0.25 - np.sqrt(3.0)/6.0],
                     [0.25 + np.sqrt(3.0)/6.0, 0.25],
@@ -203,14 +200,14 @@ class ImplicitRungeKutta4(ImplicitRungeKutta):
     6th order Gauss-Legendre
     '''
 
-    def __init__(self, dy, solver=None):
+    def __init__(self, dx, solver=None):
         '''
         Parameters:
-           dy              Function f for ODE = dy/dx=f(y)
+           dx              Function f for ODE = dx/dx=f(y)
            max_iterations  Maximum number of iterations for solving implicit equations
            atol            Maximum error we can tolerate when solving implicit equations
         '''
-        super().__init__(dy,  6,
+        super().__init__(dx,  6,
                          np.array([
                                 [5.0/36.0, 2.0/9.0 -np.sqrt(15.0)/15.0, 5.0/36.0 - np.sqrt(15.0)/30.0],
                                 [5.0/36.0 + np.sqrt(15.0)/24.0, 2.0/9.0, 5.0/36.0 - np.sqrt(15.0)/24.0],

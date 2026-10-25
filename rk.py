@@ -73,6 +73,9 @@ class RungeKutta(ABC):
         for i in range(1,len(self.b)):
             k[i,:] = self.dx(x + h*sum([self.a[i,j]*k[j,:] for j in range(i)]))
             
+        return self.get_next(x,h,k)
+    
+    def get_next(self,x,h,k):    
         return (x + h*np.inner(self.b,k.T)) 
 
 class Rk4(RungeKutta):
