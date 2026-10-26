@@ -76,10 +76,10 @@ def main():
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
 
-    xs = np.linspace(-2,-10,100)
+    xs = np.linspace(-1,-12,100)
     Ls = np.full((6,len(xs)),float('nan'))
     for i in range(len(xs)):
-        mu2 = np.exp(xs[i])
+        mu2 = 10**xs[i]#np.exp(xs[i])
         mu1 = 1 - mu2
         solver1 = L1(mu2)
         solver2 = L2(mu2)
@@ -87,14 +87,14 @@ def main():
         alpha = solver1.get_alpha()
         try:
             r2,_ = solver1.solve(alpha)
-            Ls[0,i] = r2 + mu1
+            Ls[0,i] = mu1 - r2
         except RuntimeError:
             pass
         
         try:
             r2,_ = solver2.solve(alpha)
             Ls[1,i] = r2 + mu1
-        except RuntimeError:
+        except RuntimeError as e:
             pass
         
         beta = (-(7/12)*solver3.mu2/solver3.mu1 
@@ -102,13 +102,13 @@ def main():
                 - (13223/20736)*(solver3.mu2/solver3.mu1)**3)              
         try:      
             r1,_ = solver3.solve(beta + 1,bound=0.01)
-            Ls[2,i] = r1 - mu2
+            Ls[2,i] = r1 + mu2
         except RuntimeError:
             pass   
         
-        Ls[4,i] = alpha + (1/3)*alpha**2 -(1/9) *alpha**3 -(31/81)*alpha**4 + mu1   # (3.83)
+        Ls[4,i] = alpha + (1/3)*alpha**2 -(1/9) *alpha**3 -(31/81)*alpha**4 + mu1   # (3.88)
         Ls[3,i] = np.sqrt(1+mu1**2-mu1)
-        Ls[5,i] = alpha - (1/3)*alpha**2-(1/9)*alpha**3-(23/81)*alpha**4 +mu1    #  (3.83)
+        Ls[5,i] = mu1 -(alpha - (1/3)*alpha**2-(1/9)*alpha**3-(23/81)*alpha**4)    #  (3.83)
         
     fig = figure(figsize=(8,8))
     fig.suptitle(Path(__file__).stem)
@@ -120,9 +120,13 @@ def main():
     ax1.plot(xs,Ls[4,:],label='L2 (3.88)',c='xkcd:brown',ls=':')
     ax1.plot(xs,Ls[5,:],label='L1 (3.83)',c='xkcd:red',ls=':')
     ax1.xaxis.set_inverted(True)
+    ax1.set_xticks(np.arange(-2,-12,-2))
     ax1.set_yticks(np.arange(0.9, 1.1, 0.05))
+    ax1.set_xlim((-1,-11))
+    ax1.set_ylim((0.9,1.1))
     ax1.set_xlabel(r'$\log{\mu_2}$')
     ax1.set_ylabel('Radial Distance')
+
     ax1.legend(title='Lagrangian Points',loc='upper right')
     
     fig.tight_layout(h_pad=2)
