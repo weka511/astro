@@ -153,6 +153,7 @@ def main():
     for j in range(1 if args.norepeat else 2):
         n = (j+1)*args.NIterations
         step_size = args.step/(j+1)
+        stride = args.stride*(j+1)
         X = np.zeros((n+1,4))
         U = np.zeros((n+1))
         X[0,0] = f.mu1 - 1/2
@@ -172,14 +173,12 @@ def main():
             for message in e.details:
                 Logger.instance.info(message)
             Logger.instance.error('Terminating')
-    
-    
-        
+       
         ax1 = fig.add_subplot(2,2,2*j+1,adjustable='box',aspect='equal')
         colorbar(
-            ax1.scatter(X[::args.stride,0],X[::args.stride,1],
+            ax1.scatter(X[::stride,0],X[::stride,1],
                         s=1,
-                        c=np.sqrt(np.sqrt(X[::args.stride,2]**2 + X[::args.stride,3]**2)),
+                        c=np.sqrt(np.sqrt(X[::stride,2]**2 + X[::stride,3]**2)),
                         cmap='viridis'),
             label='Speed',
             location='bottom',
@@ -191,7 +190,7 @@ def main():
         ax1.set_ylabel('y')
         
         ax2 = fig.add_subplot(2,2,2*j+2)
-        U = U[1:NU]
+        U = U[1:NU:stride]/U[1]
         ax2.plot(U)
         ax2.set_title('Jacobi Constant')
         ax2.set_ylim((U.min(),U.max()))

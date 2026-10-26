@@ -30,6 +30,7 @@ A||md_data.py|Accessor function for data from Appendix A, plus code to validate 
  File | Purpose |
 --------------------------|---------------------------------------------------------------------
 euler.py|Simple Euler method for integrations ODE
+fehlberg.py|Explore use of Fehlberg's method
 integrators.py|Used to set up an integrator
 rk4|Explicit Runge Kutta integrators
 rki.py|Implicit Runge Kutta (symplectic) integrators

@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 '''
-This module is responsible for setting up an integrator
+This module is responsible for instantiating an integrator
 '''
 
 from rki import ImplicitRungeKutta,ImplicitRungeKutta4,ImplicitRungeKutta2,NaiveSolver
@@ -29,7 +29,8 @@ __author__ = 'Simon Crase'
 
 class IntegratorFactory: 
     '''
-    This class sets up an Integrator.
+    This class is primaraily responsible for instantiating an Integrator. It also advertises
+    the available choices, so they can appear in help text, and establishes a default.
     '''
     @staticmethod
     def get_choices():
@@ -51,7 +52,7 @@ class IntegratorFactory:
     @staticmethod
     def create(dy,integrator,atol,max_iterations):
         '''
-        Create an integrator
+        Instantiate an integrator
         
         Parameters:
            dy              Function f for ODE: dy/dt=f(y)
