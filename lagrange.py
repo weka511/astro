@@ -142,7 +142,7 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--mu2', default=0.2, type=float,help='Smaller of the two main masses')
     parser.add_argument('--show',default=False,action='store_true')
-    parser.add_argument('--limit',default=0.5,type=float)
+    parser.add_argument('--limit',default=2.0,type=float)
     parser.add_argument('--step',default=100,type=int)
     return parser.parse_args()
 
@@ -204,37 +204,50 @@ def main():
     r1_3,err3 = solver3.solve(beta + 1,bound=0.001)       
     jacobi3 = 2*solver3.get_u(r1_3,1+r1_3)
     
-    xs = [solver1.mu1-r2_1,r2_2+solver2.mu1,-r1_3-solver3.mu2]
-    X, Y = np.meshgrid(np.linspace(min(xs)-1/args.step, max(xs) + 1/args.step, args.step), 
+    X, Y = np.meshgrid(np.linspace(-args.limit, args.limit + 1/args.step, args.step), 
                        np.linspace(-args.limit, args.limit + 1/args.step, args.step))
     Z = jacobi(X, Y, point=solver1)
     Z = np.clip(Z,a_min=Z.min(),a_max=Z.max())
     
     fig = figure(figsize=(12,12))
-    fig.suptitle(Path(__file__).stem)
+    fig.suptitle('Figure 3.7')
     
     ax = fig.add_subplot(1,1,1)    
-    C1 = ax.contourf(X, Y, Z,cmap='coolwarm')
+    C1 = ax.contourf(X, Y, np.log(Z),cmap='coolwarm')
     CS2 = ax.contour(X, Y, Z, levels=[jacobi1], colors='xkcd:red', linewidths=(1,))
     CS3 = ax.contour(X, Y, Z, levels=[jacobi2], colors='xkcd:cyan', linewidths=(1,))
     CS4 = ax.contour(X, Y, Z, levels=[jacobi3], colors='xkcd:bright green', linewidths=(1,))
-    cbar = fig.colorbar(C1, location='bottom',label='Jacobi Constant')
-
-    cbar.add_lines(CS2)
-    cbar.add_lines(CS3)
-    cbar.add_lines(CS4)
 
     # Plot L1, using (3.72)
     ax.scatter(solver1.mu1-r2_1,0,
                marker='+',
-               label=rf'L1: $r_2$={r2_1:3f},err={err1:.3g},Jacobi={jacobi1:3f}',
+               label=rf'$L_1$: $r_2$={r2_1:3f},err={err1:.3g},Jacobi={jacobi1:3f}',
                c='xkcd:red')
+    ax.annotate(
+        text='$L_1$',        
+        xy=(solver1.mu1-r2_1,0), 
+        xytext=(1, 1),  
+        textcoords='offset points',
+        ha='left', 
+        va='bottom',
+        c='xkcd:red'
+    )    
     
     # Plot L2, using (3.84)
     ax.scatter(r2_2+solver2.mu1,0,
                marker='+',
-               label=rf'L2: $r_2$={r2_2:3f},err={err2:.3g},Jacobi={jacobi2:3f}',
+               label=rf'$L_2$: $r_2$={r2_2:3f},err={err2:.3g},Jacobi={jacobi2:3f}',
                c='xkcd:cyan')
+    
+    ax.annotate(
+        text='$L_2$',        
+        xy=(r2_2+solver2.mu1,0), 
+        xytext=(1, 1),  
+        textcoords='offset points',
+        ha='left', 
+        va='bottom',
+        c='xkcd:cyan'
+    )        
     
     # Plot L3, using (3.89)
     ax.scatter(-r1_3-solver3.mu2,0,
@@ -242,20 +255,61 @@ def main():
                label=rf'L3: $r_1$={r1_3:3f},err={err3:.3g},Jacobi={jacobi3:3f}',
                c='xkcd:bright green')
     
+    ax.annotate(
+        text='$L_3$',        
+        xy=(-r1_3-solver3.mu2,0), 
+        xytext=(1, 1),  
+        textcoords='offset points',
+        ha='left', 
+        va='bottom',
+        c='xkcd:bright green'
+    )        
+    
     # The origin, and the two masses
     
-    ax.scatter(0,0,marker='o',label='Centre of Mass',color='xkcd:green')
-    ax.scatter(-solver1.mu2,0,marker='*',label=r'$\mu_1$',color='xkcd:white')
-    ax.scatter(solver1.mu1,0,marker='*',label=r'$\mu_2$',color='xkcd:yellow')
+    ax.scatter(0,0,marker='o',color='xkcd:yellow')
+    ax.annotate(
+        text='O',        
+        xy=(0,0), 
+        xytext=(1, 1),  
+        textcoords='offset points',
+        ha='left', 
+        va='bottom',
+        c='xkcd:yellow'
+    ) 
     
-    ax.legend(title='Lagrange points',loc='lower center')
+    ax.scatter(-solver1.mu2,0,marker='*',color='xkcd:black')
+    
+    ax.annotate(
+        text=r'$\mu_1$',        
+        xy=(-solver1.mu2,0), 
+        xytext=(1, 1),  
+        textcoords='offset points',
+        ha='left', 
+        va='bottom',
+        c='xkcd:black'
+    )    
+    
+    ax.scatter(solver1.mu1,0,marker='*',color='xkcd:black')
+    
+    ax.annotate(
+        text=r'$\mu_2$',        
+        xy=(solver1.mu1,0), 
+        xytext=(1, 1),  
+        textcoords='offset points',
+        ha='left', 
+        va='bottom',
+        c='xkcd:black'
+    )        
+    
+    ax.legend(title='Lagrange points',loc='upper left')
     ax.set_title(rf'$\mu2={args.mu2}$')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     ax.set_aspect('equal', adjustable='box') 
     
-    fig.tight_layout(h_pad=2)
-    fig.savefig(Path(args.figs)/Path(__file__).stem)    
+    fig.tight_layout(h_pad=2,pad=2)
+    fig.savefig(Path(args.figs)/'fig_3_7')    
     
     elapsed = time() - start
     minutes = int(elapsed/60)
