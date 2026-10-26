@@ -43,7 +43,6 @@ def parse_args():
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     return parser.parse_args()
 
-
 class Logger: 
     '''
     Singleton Logger
