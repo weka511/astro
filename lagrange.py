@@ -29,7 +29,7 @@ from matplotlib import rcParams
 import numpy as np
 from scipy.optimize import newton
 
-__version__ = '1.0'
+__version__ = '1.1'
 __author__ = 'Simon Crase'
 
 class LagrangianPoint:
@@ -195,14 +195,14 @@ def main():
     
     solver2 = L2(args.mu2)
     r2_2,err2 = solver2.solve(alpha)
-    jacobi2 = 2*solver2.get_u(1-r2_2,r2_2)  
+    jacobi2 = 2*solver2.get_u(1+r2_2,r2_2)  
     
     solver3 = L3(args.mu2)
     beta = (-(7/12)*solver3.mu2/solver3.mu1 
             + (7/12)*(solver3.mu2/solver3.mu1)**2 
             - (13223/20736)*(solver3.mu2/solver3.mu1)**3)
     r1_3,err3 = solver3.solve(beta + 1,bound=0.001)       
-    jacobi3 = 2*solver3.get_u(r1_3,1-r1_3)
+    jacobi3 = 2*solver3.get_u(r1_3,1+r1_3)
     
     xs = [solver1.mu1-r2_1,r2_2+solver2.mu1,-r1_3-solver3.mu2]
     X, Y = np.meshgrid(np.linspace(min(xs)-1/args.step, max(xs) + 1/args.step, args.step), 
@@ -267,4 +267,3 @@ def main():
   
 if __name__ == '__main__':
     main()
-
