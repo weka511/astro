@@ -25,7 +25,7 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
-from odespy import rkexplicit
+from odespy import rkexplicit,abm4
 from restricted import Synodic
 
 __version__ = '1.0'
@@ -39,7 +39,9 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+    parser.add_argument('--fn', choices=['abm','rk'],default='rk')
     parser.add_argument('--method',choices=['rk45','rk78','rkf45','rkf78','rkck','rkv'],default='rkf78')
+    parser.add_argument('--step',type=float,default=0.01,help='Stepsize for integrator')
     return parser.parse_args()
 
 
@@ -87,17 +89,27 @@ def main():
     yinit = [-1.02745, 0,0,0.04032]
     params = [1]
     
-    ts, ys, yhat, stats = rkexplicit(lambda t,y,p: synodic(y), trange, yinit, params, 
-                                     method=args.method, nord='inf',abstol=1e-12)
+    match args.fn:
+        case 'abm':
+            ts, ys, lte= abm4(lambda t,y,p: synodic(y), trange, yinit, params, args.step,
+                                            nord='inf')
+            Logger.instance.info(f'lte={lte}')
+        case rk:
+            ts, ys, yhat, stats = rkexplicit(lambda t,y,p: synodic(y), trange, yinit, params, 
+                                             method=args.method, nord='inf',abstol=1e-12)    
     
-    Logger.instance.info(stats)
+            Logger.instance.info(stats)
     
     n = ys.shape[1] 
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1)
     ax1.plot(ys[0,:],ys[1,:])
-    ax1.set_title(args.method)
+    match args.fn:
+        case 'abm':    
+            ax1.set_title(f'{args.fn}, step={args.step}')
+        case 'rk':    
+            ax1.set_title(f'{args.fn} {args.method}')        
     fig.tight_layout(h_pad=2,pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
