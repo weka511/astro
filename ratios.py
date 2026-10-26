@@ -132,8 +132,6 @@ class Resonance:
             return True
         return False
     
-
-
 def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=-1):
     '''
     Retrieve periods for acceptable planets and satellites. If the column for the period has no data,
@@ -172,19 +170,7 @@ def get_periods(path:Path,key:str='Planet',e_max:float=1.0,R_min:float=-1):
     except KeyError:
         periods = df_acceptable['a'].to_numpy()**(3/2)
         m = len(names)
-        
-        #try:
-            #for i in range(len(names)):
-                #Logger.instance.debug(f'{names[i]},{periods[i]/periods[2]}')
-        #except AttributeError:
-            #pass
         return names,periods
-
-
-
-
-
-
 
 class Ratios:
     def __init__(self):

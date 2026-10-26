@@ -34,6 +34,7 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Patch
 import numpy as np
 from ratios import Ratios,SimpleRatios,Resonance,get_periods
+from md_data import create_xkcd_colours
 
 class Logger: 
     instance = None
@@ -72,25 +73,19 @@ def parse_args():
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     return parser.parse_args()
 
-def create_xkcd_colours():
-    '''
-    48 colours from https://blog.xkcd.com/2010/05/03/color-survey-results/
-    '''
-    return [
-        'xkcd:purple','xkcd:green','xkcd:blue','xkcd:pink','xkcd:brown','xkcd:red',
-        'xkcd:light blue','xkcd:teal','xkcd:orange','xkcd:light green','xkcd:magenta','xkcd:yellow',
-        'xkcd:sky blue','xkcd:grey','xkcd:lime green','xkcd:light purple','xkcd:violet','xkcd:dark green',
-        'xkcd:turquoise','xkcd:lavender','xkcd:dark blue','xkcd:tan','xkcd:cyan','xkcd:aqua',
-        'xkcd:forest green','xkcd:mauve','xkcd:dark purple','xkcd:bright green','xkcd:maroon','xkcd:olive',
-        'xkcd:salmon','xkcd:beige','xkcd:royal blue','xkcd:navy','xkcd:lilac','xkcd:black',
-        'xkcd:hot pink','xkcd:light brown','xkcd:pale green','xkcd:peach','xkcd:olive green','xkcd:dark pink',
-        'xkcd:periwinkle','xkcd:sea green','xkcd:lime','xkcd:indigo','xkcd:mustard','xkcd:light pink'
-    ]  
 
-def frac(s):
-    ss = [int(x) for x in s.split(':')]
-    return 100*ss[1] + ss[0]
-
+def sort_ratios_by_denominator(key_list):
+    '''
+    This function is used to sort ratios by denominator,
+    then by numerator within denominator
+    '''
+    def frac(s,factor=1):
+        parts = [int(x) for x in s.split(':')]
+        return factor*parts[1] + parts[0]    
+ 
+    return  sorted(key_list,key=lambda s:frac (s,
+                                               factor=max([int(z.split(':')[1]) for z in key_list])))
+    
 def main():
     '''
     Use the data in Appendix A to find the periods of all possible pairs of
@@ -157,7 +152,9 @@ def main():
             labels[f'{r.i1}:{r.i2}'] = f'{r.i1}:{r.i2} {r.name1}-{r.name2}'
  
         Logger.instance.debug(f'{r.name1}-{r.name2} {r.i2}:{r.i1}')
-    keys =  sorted(list(counts.keys()),key=frac)  
+ 
+    keys =  sort_ratios_by_denominator(list(counts.keys()))
+    
     ax.bar(keys,[counts[key] for key in keys],
            width=0.5,
            color=colours,label=[labels[key] for key in keys])
