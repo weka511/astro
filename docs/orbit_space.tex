@@ -24,7 +24,7 @@
 \usepackage[nottoc]{tocbibind}
 \usepackage{cancel}
 %opening
-\title{Formula for calculating $(P_j)_{1,1}$}
+\title{Companion to Solar System Dynamics}
 \author{Simon Crase}
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 \newcommand{\bigO}[1]{\mathcal{O}\left(#1\right)}
@@ -35,6 +35,8 @@
 \begin{abstract}
 Check calculations from \cite{ssd}
 \end{abstract}
+
+\section{Structure of the Solar System}
 
 \section{The Two-body problem}
 
@@ -148,7 +150,8 @@ The equations of motion are given in \cite[(3.16-17)]{ssd}:
 	\dot{x_2} =& 2nx_3 + n^2x_0-\big[\mu_1\frac{x_0+\mu_2}{r_1^3} + \mu_2\frac{x_0-\mu_1}{r_2^3}\big]\\
 	\dot{x_3} =& -2nx_2 + n^2x_1 - \big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}]x_1\text{, where}\\
 	r_1^2 =& (x_0+\mu_2)^2 + x_1^2 \numberthis \label{eq:def:r1}\\
-	r_2^2 =& (x_0-\mu_1)^2 + x_1^2  \numberthis \label{eq:def:r2}
+	r_2^2 =& (x_0-\mu_1)^2 + x_1^2  \numberthis \label{eq:def:r2}\\
+	n =& 1 \numberthis \label{eq:def:n}\\
 \end{align*}
 The differential equations can be summarized:
 \begin{align*}
@@ -235,6 +238,26 @@ From \ref{eq:Jacobian}:
 		\frac{\partial f_3}{\partial x_0}&\frac{\partial f_3}{\partial x_1}.
 	\end{vmatrix}
 \end{align*}
+
+\subsection{Stability}
+
+If we compare the equations of motion with the definition of the Jacobian, it is easy to see that the 2nd partial derivatives of $U$ can be computed from $J$.
+\begin{align*}
+	U_{xx}=& \frac{\partial f_2}{\partial x_0}\\
+	=& \underbrace{n^2}_\text{$=1$, from \eqref{eq:def:n}} -\big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}\big] + 3\big[\mu_1\frac{(x_0+\mu_2)^2}{r_1^5} + \mu_2\frac{(x_0-\mu_1)^2}{r_2^5}\big]\\
+	=& 1-\bar{A} + \bar{D} \text{, where}\\
+	\bar{A} =&\big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}\big]\\
+	\bar{D} =& 3\big[\mu_1\frac{(x_0+\mu_2)^2}{r_1^5} + \mu_2\frac{(x_0-\mu_1)^2}{r_2^5}\big]\\
+	U_{xy}=& \frac{\partial f_2}{\partial x_1}\\
+	=&3 \big[\mu_1\frac{x_0+\mu_2}{r_1^5} + \mu_2\frac{x_0-\mu_1}{r_2^5}\big]x_1\\
+	=& \bar{C} \text{, where}\\
+	\bar{C}=&3 \big[\mu_1\frac{x_0+\mu_2}{r_1^5} + \mu_2\frac{x_0-\mu_1}{r_2^5}\big]x_1\\
+	U_{zz}=&\frac{\partial f_3}{\partial x_1}\\
+	=& n^2  + 3 \big(\frac{\mu_1}{r_1^5} + \frac{\mu_2}{r_2^5})x_1^2 - \big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}\big] \\
+	=& 1-\bar{A}+\bar{B} \text{, where}\\
+	\bar{B} =& 3 \big(\frac{\mu_1}{r_1^5} + \frac{\mu_2}{r_2^5})x_1^2 
+\end{align*}
+
 \section {The Three Body Problem}
 
 From \cite[(24)]{kotovych2002exactly}
