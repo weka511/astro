@@ -153,6 +153,9 @@ def jacobi(x,y,point=None):
     return 2*point.get_u(r1,r2)
 
 def create_lagrangian_points(mu2,dim=2):
+    '''
+    Create array with coordinates of Lagrangian points
+    '''
     product = np.zeros((3,dim))       
     solver1 = L1(mu2)
     alpha = solver1.get_alpha()
