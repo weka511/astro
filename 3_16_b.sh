@@ -44,4 +44,4 @@ while getopts "N:s:wi:" opt; do
     esac
   done
   
-./restricted.py $SHOW --mu2 0.001 --N $N --dx 0.008 0.008  --name fig_3_16a --step $step --integrator $integrator
+./restricted.py $SHOW --mu2 0.001 --N $N --dx 0.008 0.008  --name fig_3_16b --step $step --integrator $integrator
