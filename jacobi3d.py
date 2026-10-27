@@ -38,23 +38,22 @@ def parse_args():
     parser.add_argument('--show', default=False, action='store_true', help='Used to display figure')
     parser.add_argument('--limit',default=1,type=float,help='Used to set upper and lower bounds for X and Y')
     parser.add_argument('--minZ',default=-3.9,type=float,help='Used to normalize Z (lower limit)')
-    parser.add_argument('--maxZ',default=-2.89,type=float,help='Used to normalize Z (upper limit)')
+    parser.add_argument('--maxZ',default=-2.8,type=float,help='Used to normalize Z (upper limit)')
     parser.add_argument('--steps',default=1000,type=int,help='Number of steps when data generated')
     return parser.parse_args()
 
-def create(limit=2,  minZ=-3.9, maxZ=-2.84, steps=1000):
+def create_surface(limit=2, minZ=-3.9, maxZ=-2.84, steps=1000):
     '''
     Create X, Y, and Z cordinates for surfaces
     
     Parameters:
         limit   Used to set upper and lower bounds for X and Y 
-        minZ    Used to normalize Z (lower limit)
-        maxZ    Used to normalize Z (upper limit)
+        minZ    Used to clip and normalize Z (lower limit)
+        maxZ    Used to clip and normalize Z (upper limit)
         steps   Number of steps when data generated
     '''    
-    xlist = np.linspace(-limit, limit, steps)
-    ylist = np.linspace(-limit, limit, steps)
-    X, Y = np.meshgrid(xlist, ylist)
+    X, Y = np.meshgrid(np.linspace(-limit, limit, steps), 
+                       np.linspace(-limit, limit, steps))
     Z = -jacobi.jacobi(X, Y)
     Z[Z < minZ] = np.nan
     Z[Z > maxZ] = np.nan
@@ -74,26 +73,32 @@ def plot_3d(file_name,X,Y,Z,limit=1,  minZ=-3.9, maxZ=-2.84,heading=''):
         maxZ        Used to normalize Z (upper limit)
     '''
     fig = figure(figsize=(8,8))
-    ax = fig.add_subplot(111, projection='3d')    
-    surface = ax.plot_surface(X, Y, Z, 
-                              cmap=cm.jet, 
-                              norm=clrs.Normalize(vmin=minZ, vmax=maxZ, clip=False))
-    
+    ax = fig.add_subplot(111, projection='3d')      
     ax.set_xlim(-limit, limit)
     ax.set_ylim(-limit, limit)
-    fig.colorbar(surface, shrink=0.5, aspect=5)
+    fig.colorbar(ax.plot_surface(X, Y, Z, 
+                                 cmap=cm.jet, 
+                                 norm=clrs.Normalize(vmin=minZ, 
+                                                     vmax=maxZ,
+                                                     clip=False)), 
+                 shrink=0.5,
+                 aspect=5)
     fig.suptitle(heading)
     fig.savefig(file_name)
 
 def main():
-    '''Calculate and
-    Plot Potential surfaces for the Jacobi Integral
+    '''
+    Calculate and plot Potential surfaces for the Jacobi Integral
     '''
     args = parse_args()
     rcParams['text.usetex'] = True
     start = time()
     
-    X,Y,Z = create(limit=args.limit,maxZ=args.maxZ,minZ=args.minZ,steps=args.steps)
+    X,Y,Z = create_surface(limit=args.limit,
+                           maxZ=args.maxZ,
+                           minZ=args.minZ,
+                           steps=args.steps)
+    
     plot_3d(f'{Path(args.figs) / Path(__file__).stem}',X,Y,Z,
             limit=args.limit,
             maxZ=args.maxZ,
