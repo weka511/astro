@@ -26,9 +26,8 @@ from matplotlib import rcParams
 from matplotlib.pyplot import cm
 import numpy as np
 
-__version__ = '1.0'
+__version__ = '1.1'
 __author__ = 'Simon Crase'
-
 
 def parse_args():
     '''
@@ -49,7 +48,19 @@ def jacobi(x, y, n=1, mu2=0.2, Cj=0):
     r2 = np.sqrt((x - mu1)**2 + y**2)
     return n**2*(x**2 + y**2) + 2*(mu1/r1 + mu2/r2) - Cj
 
-def plot_jacobi(fig, n=1, mu2=0.2, Cj=3.9, limit=5, origin='lower'):
+def plot_jacobi(ax, n=1, mu2=0.2, Cj=3.9, limit=5, origin='lower'):
+    '''
+    Plot Jacobi integral
+    
+    Parameters:
+        ax
+        n
+        mu2
+        Cj=
+        limit
+        origin
+    '''
+    ax.set_aspect('equal', adjustable='box')
     X, Y = np.meshgrid(np.linspace(-limit, limit + 0.001, 100), 
                        np.linspace(-limit, limit + 0.001, 100))
     Z = jacobi(X, Y, n, mu2, Cj)
@@ -58,34 +69,33 @@ def plot_jacobi(fig, n=1, mu2=0.2, Cj=3.9, limit=5, origin='lower'):
     levels = list(range(z0, 0, 10)) + list(range(0, z1 + 1, 10))
     ticks = [z0, 0, z1]
     
-    ax = fig.add_subplot(1, 1, 1)
-    
-    cbar = fig.colorbar(ax.pcolormesh(X, Y, Z), 
-                        orientation='vertical', 
-                        ticks=ticks)
-    cbar.ax.set_yticklabels(['min', '0', 'max'])
     CS3 = ax.contourf(X, Y, Z, levels, cmap=cm.jet, origin=origin)
     CS2 = ax.contour(X, Y, Z, levels=[0], colors='w', origin=origin, linewidths=(1,))
-    cbar.add_lines(CS2)
     ax.set_xlabel('x')
     ax.set_ylabel('y')
-    ax.set_title(r'Zero velocity surfaces for $n={0},\mu_2 = {1},C_j={2}$'.format(n, mu2, Cj))
+    ax.set_title(r'$n={0},\mu_2 = {1},C_j={2}$'.format(n, mu2, Cj))
 
 def main():
+    '''
+    Calculate Zero velocity Surfaces for Jacobi constant associated 
+    with each Lagrange point, and plot them
+    '''
     args = parse_args()
     rcParams['text.usetex'] = True
     start = time()
     Params = np.array([
-                    [3.80465327630637,1.5],
-                    [3.552,2],
-                    [3.197,2],
-                    [2.84011,1]
+                    [3.80465327630637,2],    # L1
+                    [3.552,2],               # L2
+                    [3.197,2],               # L3
+                    [2.84011,1]              # L4/L5
     ])
     m,_ = Params.shape
+    fig = figure(figsize=(12,12))
+    fig.suptitle('Zero velocity surfaces')
     for i in range(m):
-        fig = figure()
-        plot_jacobi(fig=fig, Cj=Params[i,0], limit=Params[i,1])
-        fig.savefig(f'{Path(args.figs) / Path(__file__).stem}-{i+1}')
+        plot_jacobi(ax = fig.add_subplot(2,2,i+1), Cj=Params[i,0], limit=Params[i,1])
+    fig.tight_layout(h_pad=4,pad=2)
+    fig.savefig(f'{Path(args.figs) / Path(__file__).stem}')
   
     elapsed = time() - start
     minutes = int(elapsed / 60)
