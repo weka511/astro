@@ -43,7 +43,7 @@ verlet.py|Integrator using Velocity Verlet algorithm
  File | Purpose 
 --------------------------|---------------------------------------------------------------------
 astro.bib|Bibliography
-companion.tex|Derivations of equations for textbook
+companion.tex|Derivations of equations from textbook
 
 ## Data files
 
