@@ -142,6 +142,7 @@ Substituting in (\ref{eq:Pj})
 
 \section{The Restricted 3 Body Problem}
 
+\subsection{Equations of Motion}
 
 The equations of motion are given in \cite[(3.16-17)]{ssd}:
 \begin{align*}
@@ -161,6 +162,15 @@ The differential equations can be summarized:
 	f_2(\vec{x}) =& 2nx_3 + n^2x_0-\big[\mu_1\frac{x_0+\mu_2}{r_1^3} + \mu_2\frac{x_0-\mu_1}{r_2^3}\big]\\
 	f_3(\vec{x}) =& -2nx_2 + n^2x_1 - \big[\frac{\mu_1}{r_1^3} + \frac{\mu_2}{r_2^3}]x_1
 \end{align*}
+
+If we define $U(\vec{x})$
+\begin{align*}
+	U =& \frac{n^2}{2} + \frac{m_1}{r_1} + \frac{m_2}{r_2} \text{, we can write}\\
+	f_i(\vec{x}) =& \frac{\partial U}{\partial x_i}
+\end{align*}
+
+\subsection{The Jacobian}
+
 The solution $\vec{x}$ will be approximated using Gauss-Legendre method\cite{enwiki:1380988460}:
 \begin{align*}
 		\vec{x(t+h)} =& \vec{x(t)} + \vec{\gamma} \cdot \vec{k} \text{, where $\vec{k}$ satisfies}\\

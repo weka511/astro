@@ -179,13 +179,30 @@ def get_U(x,y,mu2=0.2,cutoff=np.inf):
     mu1 = 1 - mu2
     r1 = np.sqrt((x+mu2)**2 + y**2)                                       # (3.8)
     r2 = np.sqrt((x-mu1)**2 + y**2)                                       # (3.9)
-    U = 2*(mu1*(1/r1 + r1**2/2) + mu2*(1/r2 + r2**2/2) - mu1*mu2/2)    # (3.64)
+    U = 2*(mu1*(1/r1 + r1**2/2) + mu2*(1/r2 + r2**2/2) - mu1*mu2/2)       # (3.64)
     return min(U,cutoff)
 
+def plot(x,y,text='',marker='+',label=None,c='xkcd:black',ax=None):
+    '''
+    Used to plot a point, and optionally add label for legend
+    
+    Parameters:
+        x
+        y
+        text
+        marker
+        label
+        c
+        ax
+    '''
+    ax.scatter(x,y,marker=marker,label=None if label==None else f'{text}: {label}',c=c)
+    ax.annotate(text=text, xy=(x,y), ha='left', va='bottom', c=c)    
+    
 def main():
     '''
     Calculate Equilibrium points L1, L2, and L3, plus Jacobi constants, 
-    for Lagrange configuration of the 3 body problem
+    for Lagrange configuration of the 3 body problem. Plot all 5 Lagrangian points,
+    the Jacobi constants, and the zero velocity surfaces.
     '''    
     rcParams['text.usetex'] = True
     start  = time()    
@@ -213,99 +230,32 @@ def main():
     Z = np.clip(Z,a_min=Z.min(),a_max=Z.max())
     
     fig = figure(figsize=(12,12))
-    fig.suptitle('Figure 3.7')
+    fig.suptitle('Figure 3.7. Lagrangian equilibrium points and associated zero velocity surfaces')
     
     ax = fig.add_subplot(1,1,1)    
     C1 = ax.contourf(X, Y, np.log(Z),cmap='coolwarm')
+    
+    # Plot the zero velocity surfaces for the Lagrange points
     CS2 = ax.contour(X, Y, Z, levels=[jacobi1], colors='xkcd:red', linewidths=(1,))
     CS3 = ax.contour(X, Y, Z, levels=[jacobi2], colors='xkcd:cyan', linewidths=(1,))
     CS4 = ax.contour(X, Y, Z, levels=[jacobi3], colors='xkcd:bright green', linewidths=(1,))
-
-    # Plot L1, using (3.72)
-    ax.scatter(solver1.mu1-r2_1,0,
-               marker='+',
-               label=rf'$L_1$: $r_2$={r2_1:3f},err={err1:.3g},Jacobi={jacobi1:3f}',
-               c='xkcd:red')
-    ax.annotate(
-        text='$L_1$',        
-        xy=(solver1.mu1-r2_1,0), 
-        xytext=(1, 1),  
-        textcoords='offset points',
-        ha='left', 
-        va='bottom',
-        c='xkcd:red'
-    )    
     
-    # Plot L2, using (3.84)
-    ax.scatter(r2_2+solver2.mu1,0,
-               marker='+',
-               label=rf'$L_2$: $r_2$={r2_2:3f},err={err2:.3g},Jacobi={jacobi2:3f}',
-               c='xkcd:cyan')
+    # Plot L1, L2, L3 using (3.72), (3.84), and (3.89)
+    plot(solver1.mu1-r2_1,0,text='$L_1$',label=rf'{jacobi1:3f}',c='xkcd:red',ax=ax)
+    plot(r2_2+solver2.mu1,0, text='$L_2$',label=rf'{jacobi2:3f}',c='xkcd:cyan',ax=ax)
+    plot(-r1_3-solver3.mu2,0,text='$L_3$',label=rf'{jacobi3:3f}',c='xkcd:bright green',
+         ax=ax)
     
-    ax.annotate(
-        text='$L_2$',        
-        xy=(r2_2+solver2.mu1,0), 
-        xytext=(1, 1),  
-        textcoords='offset points',
-        ha='left', 
-        va='bottom',
-        c='xkcd:cyan'
-    )        
+    # Plot L4 and L5, using formula at start of Section 3/7/2
+    plot(1/2-args.mu2,np.sqrt(3)/2,text='$L_4$',c='xkcd:white',ax=ax)
+    plot(1/2-args.mu2,-np.sqrt(3)/2,text='$L_5$',c='xkcd:white',ax=ax)
     
-    # Plot L3, using (3.89)
-    ax.scatter(-r1_3-solver3.mu2,0,
-               marker='+',
-               label=rf'L3: $r_1$={r1_3:3f},err={err3:.3g},Jacobi={jacobi3:3f}',
-               c='xkcd:bright green')
+    # Plot origin and the two masses
+    plot(0,0,text='O',marker='o',c='xkcd:bright yellow',ax=ax)
+    plot(-solver1.mu2,0,text=r'$\mu_1$',marker='*',c='xkcd:black',ax=ax)
+    plot(solver1.mu1,0,text=r'$\mu_2$',marker='*',c='xkcd:black',ax=ax)
     
-    ax.annotate(
-        text='$L_3$',        
-        xy=(-r1_3-solver3.mu2,0), 
-        xytext=(1, 1),  
-        textcoords='offset points',
-        ha='left', 
-        va='bottom',
-        c='xkcd:bright green'
-    )        
-    
-    # The origin, and the two masses
-    
-    ax.scatter(0,0,marker='o',color='xkcd:yellow')
-    ax.annotate(
-        text='O',        
-        xy=(0,0), 
-        xytext=(1, 1),  
-        textcoords='offset points',
-        ha='left', 
-        va='bottom',
-        c='xkcd:yellow'
-    ) 
-    
-    ax.scatter(-solver1.mu2,0,marker='*',color='xkcd:black')
-    
-    ax.annotate(
-        text=r'$\mu_1$',        
-        xy=(-solver1.mu2,0), 
-        xytext=(1, 1),  
-        textcoords='offset points',
-        ha='left', 
-        va='bottom',
-        c='xkcd:black'
-    )    
-    
-    ax.scatter(solver1.mu1,0,marker='*',color='xkcd:black')
-    
-    ax.annotate(
-        text=r'$\mu_2$',        
-        xy=(solver1.mu1,0), 
-        xytext=(1, 1),  
-        textcoords='offset points',
-        ha='left', 
-        va='bottom',
-        c='xkcd:black'
-    )        
-    
-    ax.legend(title='Lagrange points',loc='upper left')
+    ax.legend(title='Jacobi constants',loc='upper left')
     ax.set_title(rf'$\mu2={args.mu2}$')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
