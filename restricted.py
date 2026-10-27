@@ -119,7 +119,7 @@ def parse_args():
                         default=IntegratorFactory.get_default(),
                         help='Choice of integrator')
     parser.add_argument('-n','--n',type=int,default=1,help='Number of iterations for Implicit Euler')
-    parser.add_argument('--dx',type=float,default=[0,0],nargs=2,help='Initial perturbation (position)')
+    parser.add_argument('--dx',type=float,default=[0,0],nargs=2,help='Initial perturbation (position) relaive to L4')
     parser.add_argument('--dv',type=float,default=[0,0],nargs=2,help='Initial perturbation (velocity)')
     parser.add_argument('--atol',type=float,default=1.0e-8,help='Tolerance for solving equation in implicit Runge Kutta')
     parser.add_argument('-m','--max_iterations',type=int,default=250,
@@ -139,7 +139,7 @@ def get_suptitle(args,integrator):
         
 def main():
     '''
-    Integrate equations (3.16) & (3.17) for a particle near a Lagrange Point
+    Integrate equations (3.16) & (3.17) for a particle near Lagrange Point L4
     '''
     rcParams['text.usetex'] = True
     start  = time()
@@ -183,8 +183,12 @@ def main():
             label='Speed',
             location='bottom',
             shrink=0.5)
-        
+        ax1.scatter(-f.mu2,0,c='xkcd:black',marker='o',s=25)
+        ax1.annotate(text=r'$\mu_1$',xy=(-f.mu2,0), ha='left', va='bottom', c='xkcd:black') 
+        ax1.scatter(f.mu1,0,c='xkcd:black',marker='o',s=5)
+        ax1.annotate(text=r'$\mu_2$',xy=(f.mu1,0), ha='left', va='bottom', c='xkcd:black')
         ax1.scatter(X[0,0],X[0,1],marker='x',c='xkcd:blue')
+        ax1.annotate(text='L_4',xy=(X[0,0],X[0,1]), ha='left', va='bottom', c='xkcd:black') 
         ax1.set_title('Position')
         ax1.set_xlabel('x')
         ax1.set_ylabel('y')
