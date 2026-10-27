@@ -128,6 +128,7 @@ def parse_args():
     parser.add_argument('--stride',type=int,default=1,help='Used to skip over some points while plotting')
     parser.add_argument('--name',default=Path(__file__).stem,help='File name for plot')
     parser.add_argument('--norepeat',default=False,action='store_true',help='Suppress 2nd run')
+    parser.add_argument('--L5',default=False,action='store_true',help='Also show L5')
     return parser.parse_args()
  
 def get_suptitle(args,integrator):
@@ -189,6 +190,9 @@ def main():
         ax1.annotate(text=r'$\mu_2$',xy=(f.mu1,0), ha='left', va='bottom', c='xkcd:black')
         ax1.scatter(X[0,0],X[0,1],marker='x',c='xkcd:blue')
         ax1.annotate(text='L_4',xy=(X[0,0],X[0,1]), ha='left', va='bottom', c='xkcd:black') 
+        if args.L5:
+            ax1.scatter(X[0,0],-X[0,1],marker='x',c='xkcd:blue')
+            ax1.annotate(text='L_5',xy=(X[0,0],-X[0,1]), ha='left', va='bottom', c='xkcd:black')             
         ax1.set_title('Position')
         ax1.set_xlabel('x')
         ax1.set_ylabel('y')
