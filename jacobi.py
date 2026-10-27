@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this software.  If not, see <http://www.gnu.org/licenses/>
 
-'''Plot Zero velocity Surfaces for the Jacobi Integral'''
+'''Plot zero velocity curves for the Jacobi Integral'''
 
 from argparse import ArgumentParser
 from math import floor,ceil
@@ -77,7 +77,7 @@ def plot_jacobi(ax, n=1, mu2=0.2, Cj=3.9, limit=5, origin='lower'):
 
 def main():
     '''
-    Calculate Zero velocity Surfaces for Jacobi constant associated 
+    Calculate zero velocity curves for Jacobi constant associated 
     with each Lagrange point, and plot them
     '''
     args = parse_args()

@@ -15,7 +15,7 @@
 -||orbital.py|Orbital calculations to support Exercise 2.2
 3|||**The Restricted Three Body Problem**
 3.2||restricted.py|Integrate equations (3.16) & (3.17) for particle near Lagrange Point L4
-3.3||jacobi.py|Zero velocity Surfaces for the Jacobi Integral
+3.3||jacobi.py|Zero velocity curves for the Jacobi Integral
 -||jacobi3d.py|Potential surfaces for the Jacobi Integral
 3.6||lagrange.py|Calculate Equilibrium points L1, L2, and L3, plus Jacobi constants, for Lagrange configuration of the 3 body problem
 -||fig_3_7.py|Plot the zero-velocity curves for the three critical values of the Jacobi Constant that pass through the points L1, L2, and L3
