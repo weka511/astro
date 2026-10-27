@@ -43,7 +43,7 @@ verlet.py|Integrator using Velocity Verlet algorithm
  File | Purpose 
 --------------------------|---------------------------------------------------------------------
 astro.bib|Bibliography
-orbit_space.tex|Derivations of equations for *earth_mars.py*
+companion.tex|Derivations of equations for textbook
 
 ## Data files
 
