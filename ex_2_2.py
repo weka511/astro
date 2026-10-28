@@ -28,11 +28,13 @@ Murray and Dermott, Exercise 2.2
 
 from argparse import ArgumentParser
 from pathlib import Path
+from time import strftime,time
 import numpy as np
 import pandas as pd
 from matplotlib.pyplot import figure, show
 from mpl_toolkits.mplot3d import Axes3D
-from orbital import get_mean_longitude,Calendar,create_orbit,is_minimum,get_distance
+from julian import Calendar
+from orbital import get_mean_longitude,create_orbit,is_minimum,get_distance
 
 __version__ = '1.1'
 __author__ = 'Simon Crase'
@@ -93,6 +95,7 @@ def get_date(string):
      
 def main():
      args = parse_args()
+     start  = time()
      df = pd.read_csv((Path(args.data)/args.planets).with_suffix('.csv'))
      f1,f2,f3 = get_date(args.from_date)
      t1,t2,t3 = get_date(args.to_date)
@@ -126,7 +129,10 @@ def main():
      fig.suptitle('Murray and Dermott, Exercise 2.2')
      fig.tight_layout(pad=2,h_pad=5,w_pad=3)
      fig.savefig((Path(args.figs)/Path(__file__).stem).with_suffix('.png'))
-     
+     elapsed = time() - start
+     minutes = int(elapsed/60)
+     seconds = elapsed - 60*minutes
+     print (f'Elapsed Time {minutes} m {seconds:.2f} s')     
      if args.show:
           show()
      

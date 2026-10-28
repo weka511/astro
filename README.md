@@ -25,7 +25,9 @@
 -||3_16_b.sh|Batch file to generate figure 3.16(b)
 -||3_17_a.sh|Batch file to generate figure 3.17(a)
 -||3_17_b.sh|Batch file to generate figure 3.17(b)
-A||md_data.py|Accessor function for data from Appendix A, plus code to validate data
+A|||Appendix A, **Solar System Data**
+-||julian.py|Conversion between Calendar dates and Julian dates
+-||md_data.py|Accessor function for data from Appendix A, plus code to validate data
 
 ## Orbital calculations: 
 
