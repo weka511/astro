@@ -21,10 +21,10 @@
 -||fig_3_7.py|Plot the zero-velocity curves for the three critical values of the Jacobi Constant that pass through the points L1, L2, and L3
 -||fig_3_8.py|Plot the three-dimensional surface defined by Cj=2U and the Lagrangian equilibrium points.
 3.7||fig_3_10.py|Figure 3-10 Plot the radial distances of the five Lagrangian points from the centre of mass as a function of log mu2
-3.9||3_16_a.sh|Batch file for issue [#100](https://github.com/weka511/astro/issues/100)
--||3_16_b.sh|Batch file for issue [#100](https://github.com/weka511/astro/issues/100)
--||3_17_a.sh|Batch file for issue [#100](https://github.com/weka511/astro/issues/100)
--||3_17_b.sh|Batch file for issue [#100](https://github.com/weka511/astro/issues/100)
+3.9||3_16_a.sh|Batch file to generate figure 3.16(a)
+-||3_16_b.sh|Batch file to generate figure 3.16(b)
+-||3_17_a.sh|Batch file to generate figure 3.17(a)
+-||3_17_b.sh|Batch file to generate figure 3.17(b)
 A||md_data.py|Accessor function for data from Appendix A, plus code to validate data
 
 ## Orbital calculations: 
