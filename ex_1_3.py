@@ -17,9 +17,10 @@
 
 '''
 Murray & Dermott, Exercise 1.3.
-Create a number of random sets of orbital periods orbital periods for a model 
+Create a large number of random sets of orbital periods orbital periods for a model 
 satellite system, similar to the three inner satellites of Uranus. For each set, 
-calculate the mean motion for each stellite and check n1-3n2+2n3.
+calculate the mean motion for each satellite and compute |n1-3n2+2n3|. 
+Show that the probability that delta_n<0.1 is ~0.3%.
 '''
 
 from argparse import ArgumentParser
@@ -27,23 +28,23 @@ from pathlib import Path
 from matplotlib.pyplot import figure, show
 import numpy as np
 
-__version__ = '1.0'
+__version__ = '1.1'
 __author__ = 'Simon Crase'
 
-def create_orbital_periods(T1=1.413, L=1.546, U=2.101, n=4, rng=np.random.default_rng()):
+def create_orbital_periods(T1=1.413, L=1.546, U=2.101, k=4, rng=np.random.default_rng()):
     '''
-    Create a number of random sets of orbital periods
+    Create a random set of orbital periods using (1.6) of Murray and Dermott
     
     Parameters:
-        T1
-        L
-        U
-        n
-        rng
+        T1       Starting value for each set
+        L        Lower limit on the ratio of succive orbital periods
+        U        Upper limit on the ratio of succive orbital periods
+        k        Size of each set
+        rng      Generator for random values
     '''
-    product = np.zeros((n))
+    product = np.zeros((k))
     product[0] = T1
-    for i in range(1, n):
+    for i in range(1, k):
         ratio = L + rng.uniform() * (U - L)
         product[i] = ratio * product[i - 1]
     return product
@@ -54,27 +55,41 @@ def parse_args():
     parser.add_argument('--seed', '-s', help='Seed for random number generator', default=None)
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--tolerance',type=float,default=0.1,help='Tolerance for delta_n') 
+    parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     return parser.parse_args()
 
+def create_delta_n(N,rng = np.random.default_rng()):
+    '''
+    Create a large number of random sets of orbital periods orbital periods for a model 
+    satellite system, similar to the three inner satellites of Uranus. For each set, 
+    calculate the mean motion for each satellite and compute |n1-3n2+2n3|. 
+    '''
+    delta_n = np.zeros((N))
+    weights = np.array([1,-3,2,0])  # Exercise 1.3 calculates: abs(n[0]-3*n[1] + 2*n[3])
+    for j,orbital_periods in enumerate([create_orbital_periods(rng=rng) for i in range(N)]):
+        n = 360 / orbital_periods
+        delta_n[j] = np.abs(np.dot(weights,n))
+    return delta_n
+
 def main():
+    '''
+    Generate orbits, calculate probabailty that delta_n within tolerance, 
+    and plot  histogram for delta_n
+    '''
     args = parse_args()
     rng = np.random.default_rng(args.seed)
-    delta_n = np.zeros((args.N))
-    weights = np.array([1,-3,2,0])
-    for j,orbits in enumerate([create_orbital_periods(rng=rng) for i in range(args.N)]):
-        n = 360 / orbits
-        delta_n[j] = np.abs(np.dot(weights,n))
-    P = len([delta for delta in delta_n if delta < args.tolerance]) / args.N
+    
+    delta_n = create_delta_n(args.N,rng=rng)
+    P_within_tolerance = len(delta_n[delta_n < args.tolerance])/len(delta_n)
     
     fig = figure(figsize=(6, 6))
     ax = fig.add_subplot(1, 1, 1)
     ax.set_xscale('log')
-    ax.hist(delta_n, bins=10**(np.arange(-2, 4, dtype=float)))
-    ax.set_title(f'Probability: {P} after {args.N:,} iterations')
+    ax.hist(delta_n, bins=10**(np.arange(-2, 4, dtype=float)),color='xkcd:blue')
+    ax.set_title(rf'$P[|n_1-3n_2+2n_3|<${args.tolerance}$]\approx$ {P_within_tolerance*100:.2f}% after {args.N:,} iterations')
     fig.savefig(Path(args.figs) / Path(__file__).stem)
-    show()
-
+    if args.show:
+        show()
 
 if __name__ == '__main__':
     main()
-
