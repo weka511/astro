@@ -134,19 +134,71 @@ def parse_args():
 def get_suptitle(args,integrator):
     '''
     Used to display details of integration
+    
+    Parameters:
+        The integrator being used
     '''
     return (rf'{Path(__file__).stem}: ({integrator}), $\mu_2=${args.mu2}, N={args.NIterations:,}, step={args.step}, '
             rf'$\delta x=${args.dx}, $\delta v=${args.dv}')
 
+def create_orbit(n,f,integrator,step_size,args):
+    '''
+    Integrate equation of motion
+    
+    Parameters:
+        n
+        f
+        integrator
+        step_size
+        args
+        
+    '''
+    X = np.zeros((n+1,4))
+    U = np.zeros((n+1))
+    X[0,0] = f.mu1 - 1/2
+    X[0,1] = np.sqrt(3)/2
+    X[0,0:2] += args.dx
+    X[0,2:] += args.dv
+    NU = 1
+    try:
+        for i in range(n):
+            X[i+1,:] = integrator.step(step_size,X[i,:])
+            U[i+1] = f.U
+            NU += 1
+            if i > 0 and i%args.freq == 0:
+                Logger.instance.info(f'Step {i:,} of {n:,}')
+    except ImplicitRungeKutta.Failed as e:
+        Logger.instance.exception(e,stack_info=True)  
+        for message in e.details:
+            Logger.instance.info(message)
+        Logger.instance.error('Terminating')
+    return X,U,NU
+
+def plot_point(x,y,text, c='xkcd:black',marker='o',s=None,ax=None): 
+    '''
+    This function is used to plot and annotate a single point
+    
+    Parameters:
+        x         Coordinate for point
+        y         Coordinate for point
+        text      Text to be displayed
+        c         Colour for point
+        marker    Marker to be displayed
+        s         Size for display
+        ax        Axis for display
+    '''
+    ax.scatter(x,y,c=c,marker=marker,s=s)
+    ax.annotate(text=text,xy=(x,y), ha='left', va='bottom', c=c) 
+    
 def plot_orbit(X,mu1,mu2,L5=False,ax=None):
     '''
-    Plot orbit of particle, and show positions of mu1, mu2, L4 and , optionally, L5.
+    Plot orbit of particle, and show positions of mu1, mu2, L4 and, optionally, L5.
     
     Parameters:o
         X     The positions and velocities
         mu1   Mass of larger body
         mu2   Mass of smaller body
-        L5    Indicates whther L5 is to be displayed also
+        L5    Indicates whether L5 is to be displayed also
         ax    Axis for display
     '''
     colorbar(
@@ -157,16 +209,14 @@ def plot_orbit(X,mu1,mu2,L5=False,ax=None):
         label='Speed',
         location='bottom',
         shrink=0.5)
-    ax.scatter(-mu2,0,c='xkcd:black',marker='o',s=25)
-    ax.annotate(text=r'$\mu_1$',xy=(-mu2,0), ha='left', va='bottom', c='xkcd:black') 
-    ax.scatter(mu1,0,c='xkcd:black',marker='o',s=5)
-    ax.annotate(text=r'$\mu_2$',xy=(mu1,0), ha='left', va='bottom', c='xkcd:black')
-    ax.scatter(X[0,0],X[0,1],marker='x',c='xkcd:red')
-    ax.annotate(text='L_4',xy=(X[0,0],X[0,1]), ha='left', va='bottom', c='xkcd:red') 
+    
+    plot_point(-mu2,0,text=r'$\mu_1$',ax=ax,s=64)
+    plot_point(mu1,0,text=r'$\mu_2$',ax=ax,s=4)
+    plot_point(X[0,0],X[0,1],text='$L_4$',marker='x',c='xkcd:red',ax=ax)
     if L5:
-        ax.scatter(X[0,0],-X[0,1],marker='x',c='xkcd:red')
-        ax.annotate(text='L_5',xy=(X[0,0],-X[0,1]), ha='left', va='bottom', c='xkcd:red')             
-    ax.set_title('Position')
+        plot_point(X[0,0],-X[0,1],text='$L_5$',marker='x',c='xkcd:red',ax=ax)
+               
+    ax.set_title('Orbit')
     ax.set_xlabel('x')
     ax.set_ylabel('y')
     
@@ -198,29 +248,8 @@ def main():
     fig = figure(figsize=(12,5 if args.norepeat else 10))    
     fig.suptitle(get_suptitle(args,integrator))
     for j in range(1 if args.norepeat else 2):
-        n = (j+1)*args.NIterations
-        step_size = args.step/(j+1)
+        X,U,NU = create_orbit((j+1)*args.NIterations ,f,integrator,args.step/(j+1),args)
         stride = args.stride*(j+1)
-        X = np.zeros((n+1,4))
-        U = np.zeros((n+1))
-        X[0,0] = f.mu1 - 1/2
-        X[0,1] = np.sqrt(3)/2
-        X[0,0:2] += args.dx
-        X[0,2:] += args.dv
-        NU = 1
-        try:
-            for i in range(n):
-                X[i+1,:] = integrator.step(step_size,X[i,:])
-                U[i+1] = f.U
-                NU += 1
-                if i > 0 and i%args.freq == 0:
-                    Logger.instance.info(f'Step {i:,} of {n:,}')
-        except ImplicitRungeKutta.Failed as e:
-            Logger.instance.exception(e,stack_info=True)  
-            for message in e.details:
-                Logger.instance.info(message)
-            Logger.instance.error('Terminating')
-       
         plot_orbit(X[::stride,:],f.mu1,f.mu2,
                    L5=args.L5,
                    ax=fig.add_subplot(2,2,2*j+1,
