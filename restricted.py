@@ -137,7 +137,53 @@ def get_suptitle(args,integrator):
     '''
     return (rf'{Path(__file__).stem}: ({integrator}), $\mu_2=${args.mu2}, N={args.NIterations:,}, step={args.step}, '
             rf'$\delta x=${args.dx}, $\delta v=${args.dv}')
-        
+
+def plot_orbit(X,mu1,mu2,L5=False,ax=None):
+    '''
+    Plot orbit of particle, and show positions of mu1, mu2, L4 and , optionally, L5.
+    
+    Parameters:o
+        X     The positions and velocities
+        mu1   Mass of larger body
+        mu2   Mass of smaller body
+        L5    Indicates whther L5 is to be displayed also
+        ax    Axis for display
+    '''
+    colorbar(
+        ax.scatter(X[:,0],X[:,1],
+                    s=1,
+                    c=np.sqrt(np.sqrt(X[:,2]**2 + X[:,3]**2)),
+                    cmap='viridis'),
+        label='Speed',
+        location='bottom',
+        shrink=0.5)
+    ax.scatter(-mu2,0,c='xkcd:black',marker='o',s=25)
+    ax.annotate(text=r'$\mu_1$',xy=(-mu2,0), ha='left', va='bottom', c='xkcd:black') 
+    ax.scatter(mu1,0,c='xkcd:black',marker='o',s=5)
+    ax.annotate(text=r'$\mu_2$',xy=(mu1,0), ha='left', va='bottom', c='xkcd:black')
+    ax.scatter(X[0,0],X[0,1],marker='x',c='xkcd:red')
+    ax.annotate(text='L_4',xy=(X[0,0],X[0,1]), ha='left', va='bottom', c='xkcd:red') 
+    if L5:
+        ax.scatter(X[0,0],-X[0,1],marker='x',c='xkcd:red')
+        ax.annotate(text='L_5',xy=(X[0,0],-X[0,1]), ha='left', va='bottom', c='xkcd:red')             
+    ax.set_title('Position')
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    
+def plot_jacobi(U,ax=None):
+    '''
+    Plot Jacobi integral (it should be constant)
+    
+    Parameters:
+        U       Jacobi integral
+        ax      Axis for display
+    '''
+    ax.plot(U)
+    ax.set_title('Jacobi Constant')
+    ax.set_ylim((U.min(),U.max()))
+    ax.set_xlabel('Iteration')
+    ax.set_ylabel('U')  
+    
 def main():
     '''
     Integrate equations (3.16) & (3.17) for a particle near Lagrange Point L4
@@ -175,36 +221,15 @@ def main():
                 Logger.instance.info(message)
             Logger.instance.error('Terminating')
        
-        ax1 = fig.add_subplot(2,2,2*j+1,adjustable='box',aspect='equal')
-        colorbar(
-            ax1.scatter(X[::stride,0],X[::stride,1],
-                        s=1,
-                        c=np.sqrt(np.sqrt(X[::stride,2]**2 + X[::stride,3]**2)),
-                        cmap='viridis'),
-            label='Speed',
-            location='bottom',
-            shrink=0.5)
-        ax1.scatter(-f.mu2,0,c='xkcd:black',marker='o',s=25)
-        ax1.annotate(text=r'$\mu_1$',xy=(-f.mu2,0), ha='left', va='bottom', c='xkcd:black') 
-        ax1.scatter(f.mu1,0,c='xkcd:black',marker='o',s=5)
-        ax1.annotate(text=r'$\mu_2$',xy=(f.mu1,0), ha='left', va='bottom', c='xkcd:black')
-        ax1.scatter(X[0,0],X[0,1],marker='x',c='xkcd:red')
-        ax1.annotate(text='L_4',xy=(X[0,0],X[0,1]), ha='left', va='bottom', c='xkcd:red') 
-        if args.L5:
-            ax1.scatter(X[0,0],-X[0,1],marker='x',c='xkcd:red')
-            ax1.annotate(text='L_5',xy=(X[0,0],-X[0,1]), ha='left', va='bottom', c='xkcd:red')             
-        ax1.set_title('Position')
-        ax1.set_xlabel('x')
-        ax1.set_ylabel('y')
-        
-        ax2 = fig.add_subplot(2,2,2*j+2)
-        U = U[1:NU:stride]/U[1]
-        ax2.plot(U)
-        ax2.set_title('Jacobi Constant')
-        ax2.set_ylim((U.min(),U.max()))
-        ax2.set_xlabel('Iteration')
-        ax2.set_ylabel('U')    
-  
+        plot_orbit(X[::stride,:],f.mu1,f.mu2,
+                   L5=args.L5,
+                   ax=fig.add_subplot(2,2,2*j+1,
+                                      adjustable='box',
+                                      aspect='equal'))
+             
+        plot_jacobi(U[1:NU:stride]/U[1],
+                    ax=fig.add_subplot(2,2,2*j+2))
+   
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/args.name)    
     
