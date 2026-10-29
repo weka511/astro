@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Check Kepler'''
+'''Exercise 1.1 from Murray and Dermott.'''
 
 from argparse import ArgumentParser
 from csv import reader
@@ -39,8 +39,22 @@ def parse_args():
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('--data', default='./data', help=f'Path to data files')
+    parser.add_argument('source', choices=['Kepler','J2000'])
     return parser.parse_args()
 
+def get_a_kepler():
+    return [
+        0.38806,              # Mercury
+        0.72414,              # Venus
+        1,                    # Earth
+        1.52350,              # Mars
+        5.2,                  # Jupiter
+        9.51                  # Saturn
+    ]
+
+def get_J2000(path):
+    data = pd.read_csv(path)
+    return data['a'].tolist()[:6]
 
 class Logger: 
     '''
@@ -74,16 +88,15 @@ def main():
     start  = time()
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
-    kepler = {
-        'Mercury':0.38806,
-        'Venus':0.72414,
-        'Earth':1,
-        'Mars':1.52350,
-        'Jupiter':5.2,
-        'Saturn':9.51 
-    }
-    data = pd.read_csv((Path(args.data)/'planets').with_suffix('.csv'))
-    
+    ratios = [
+        np.sqrt(15-6*np.sqrt(5)),
+        np.sqrt(3),
+        3
+    ]
+    a = (get_J2000((Path(args.data)/'planets').with_suffix('.csv')) 
+         if args.source=='J2000' 
+         else get_a_kepler())
+    a_ratios = [a[i]/a[i-1] for i in range(1,len(a))]
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1)
