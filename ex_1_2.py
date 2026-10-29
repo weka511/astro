@@ -109,19 +109,33 @@ def main():
     ratios = Platonic.create_ratios()
     aphelion_kepler[PlatonicSolidModel.EARTH] = get_aphelion(a[PlatonicSolidModel.EARTH],e[PlatonicSolidModel.EARTH])
     for i in range(PlatonicSolidModel.MARS,PlatonicSolidModel.SATURN+1):
-        solid = platonic_solids[i-1]  
-        ratio = ratios[solid]
-        perihelion_kepler[i] = aphelion_kepler[i-1]*ratio
+        perihelion_kepler[i] = aphelion_kepler[i-1]*ratios[platonic_solids[i-1]]
         major_axis = get_major_axis(perihelion_kepler[i],e[i])
         aphelion_kepler[i] = get_aphelion(major_axis,e[i])
-     
+        
+    perihelion_kepler[PlatonicSolidModel.EARTH] = get_perihelion(a[PlatonicSolidModel.EARTH],e[PlatonicSolidModel.EARTH])
+    for i in range(PlatonicSolidModel.VENUS,PlatonicSolidModel.MERCURY-1,-1): 
+        aphelion_kepler[i] = perihelion_kepler[i+1]/ratios[platonic_solids[i] ]
+        major_axis = get_major_axis(perihelion_kepler[i],e[i],from_perihelion=False)
+        perihelion_kepler[i] = get_perihelion(major_axis,e[i])
+        
     fig = figure(figsize=(12,12))
     
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1)
-    ax1.scatter(aphelion_data[PlatonicSolidModel.MARS:],aphelion_kepler[PlatonicSolidModel.MARS:])
-    ax1.plot(aphelion_data[PlatonicSolidModel.MARS:],aphelion_data[PlatonicSolidModel.MARS:])
-    fig.tight_layout(h_pad=2)
+    ax1.scatter(aphelion_data[PlatonicSolidModel.MARS:],aphelion_kepler[PlatonicSolidModel.MARS:],
+                label='Aphelion (outer planets)')
+    ax1.plot(aphelion_data[PlatonicSolidModel.MARS:],aphelion_data[PlatonicSolidModel.MARS:],
+                label='Aphelion (outer planets)')
+    ax1.scatter(aphelion_data[:PlatonicSolidModel.EARTH],aphelion_kepler[:PlatonicSolidModel.EARTH],
+                label='Perihelion (inner planets)')
+    ax1.plot(aphelion_data[:PlatonicSolidModel.EARTH],aphelion_data[:PlatonicSolidModel.EARTH],
+                label='Perihelion (inner planets)')
+    ax1.legend()
+    ax1.set_xlabel('Perihelion/Aphelion')
+    ax1.set_ylabel('Perihelion/Aphelion')
+    ax1.set_title('Kepler Platonic Solids Model, with eccentricities')
+    fig.tight_layout(h_pad=5,pad=3)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
     minutes = int(elapsed/60)
