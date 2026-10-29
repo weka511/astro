@@ -122,9 +122,9 @@ def main():
     kepler_rms = kepler_model.fit(a)
 
     models = [PlatonicSolidModel(solids) for solids in multiset_permutations(platonic_solids)]
-    i_best = np.argmin([m.fit(a) for m in models])
-    best = models[i_best].rms
-
+    i_min = np.argmin([m.fit(a) for m in models])
+    i_max = np.argmax([m.fit(a) for m in models])
+    
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     
@@ -137,12 +137,20 @@ def main():
     ax1.set_title(f'Data source={args.source}, RMS error = {kepler_rms:.3f}')
     
     ax2 = fig.add_subplot(2,2,2)
-    ax2.scatter(a,models[i_best].a_kepler,c='xkcd:purple',label='Predicted')
+    ax2.scatter(a,models[i_min].a_kepler,c='xkcd:purple',label='Predicted')
     ax2.plot(a,a,c='xkcd:green',label='Actual')
     ax2.legend()
     ax2.set_xlabel('Semi-major axis')
     ax2.set_ylabel('Semi-major axis (predicted)')
-    ax2.set_title(f'Model={models[i_best].solids}, RMS error = {models[i_best].rms:.3f}')
+    ax2.set_title(f'Model={models[i_min].solids}, RMS error = {models[i_min].rms:.3f}')
+    
+    ax3 = fig.add_subplot(2,2,3)
+    ax3.scatter(a,models[i_max].a_kepler,c='xkcd:purple',label='Predicted')
+    ax3.plot(a,a,c='xkcd:green',label='Actual')
+    ax3.legend()
+    ax3.set_xlabel('Semi-major axis')
+    ax3.set_ylabel('Semi-major axis (predicted)')
+    ax3.set_title(f'Model={models[i_max].solids}, RMS error = {models[i_max].rms:.3f}')    
     
     fig.tight_layout(h_pad=2,pad=3)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
