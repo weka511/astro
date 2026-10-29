@@ -30,6 +30,7 @@ from matplotlib import rcParams
 import numpy as np
 import pandas as pd
 from sympy.utilities.iterables import multiset_permutations
+from platonic import Platonic,PlatonicSolidModel
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -75,57 +76,8 @@ class Logger:
         
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
 
-class Platonic:
-    TETRAHEDRON = 4
-    CUBE = 6
-    OCTAHEDRON = 8
-    DODECAHEDRON = 12
-    ICOSAHEDRON = 20
-    
-    @staticmethod
-    def create_ratios():
-        '''
-        Used to create ratios of radii of circumsphere to insphere
-        '''
-        product = {
-            Platonic.DODECAHEDRON:np.sqrt(15-6*np.sqrt(5)),
-            Platonic.CUBE: np.sqrt(3),
-            Platonic.TETRAHEDRON: 3
-        }
-        
-        product[Platonic.OCTAHEDRON] = product[Platonic.CUBE]
-        product[Platonic.ICOSAHEDRON] = product[Platonic.DODECAHEDRON]
-        return product
 
-class PlatonicSolidModel:
-    
-    MERCURY = 0
-    VENUS = 1
-    EARTH = 2
-    MARS = 3
-    JUPITER = 4
-    SATURN = 5
-    N = 6
-    
-    ratios = Platonic.create_ratios()
-    
-    def __init__(self,solids):
-        self.solids = solids.copy()
-    
-    def fit(self,a):
-        '''
-        Calculate Major axis for each planet assuming a Platonic solid model
-        '''
-        self.a_kepler = np.zeros((PlatonicSolidModel.N))
-        self.a_kepler[PlatonicSolidModel.EARTH] = a[PlatonicSolidModel.EARTH]
-        for i in [PlatonicSolidModel.VENUS,PlatonicSolidModel.MERCURY]:
-            self.a_kepler[i] = self.a_kepler[i+1]/PlatonicSolidModel.ratios[self.solids[1-i]] 
-   
-        for i in [PlatonicSolidModel.MARS,PlatonicSolidModel.JUPITER,PlatonicSolidModel.SATURN]:
-            self.a_kepler[i] = self.a_kepler[i-1]*PlatonicSolidModel.ratios[self.solids[i-1]]         
-   
-        self.rms = np.sqrt(np.mean((a-self.a_kepler)**2))
-        return self.rms
+
 
 def main():
     '''
