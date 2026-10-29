@@ -39,8 +39,12 @@ def parse_args():
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     parser.add_argument('--data', default='./data', help=f'Path to data files')
-    parser.add_argument('source', choices=['Kepler','J2000'])
+    parser.add_argument('source', choices=['kepler','planets'])
     return parser.parse_args()
+
+def get_data(path):
+    data = pd.read_csv(path)
+    return data['a'].tolist()[:6],data['e'].tolist()[:6]   
 
 def get_a_kepler():
     return [
@@ -93,10 +97,8 @@ def main():
         np.sqrt(3),
         3
     ]
-    a = (get_J2000((Path(args.data)/'planets').with_suffix('.csv')) 
-         if args.source=='J2000' 
-         else get_a_kepler())
-    a_ratios = [a[i]/a[i-1] for i in range(1,len(a))]
+    a,e = get_data((Path(args.data)/args.source).with_suffix('.csv'))
+    a_ratios = [a[i]/a[i-1] for i in range(1,6)]
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1)
