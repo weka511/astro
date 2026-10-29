@@ -15,7 +15,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Template for python script'''
+'''
+Exercise 1.2 from Murray and Dermott. Calculate major axes using Kepler's model (Platonic solids),
+allowing for  eccentricity.
+'''
 
 from argparse import ArgumentParser
 from csv import reader
@@ -26,6 +29,7 @@ from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
 import pandas as pd
+from platonic import Platonic,PlatonicSolidModel
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -69,7 +73,16 @@ class Logger:
         add_handler(FileHandler(path_name),Logger.instance,level=DEBUG)
         add_handler(StreamHandler(),Logger.instance)   
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
-    
+
+def get_aphelion(a,e):
+    return a*(1+e)
+
+def get_perihelion(a,e):
+    return a*(1-e)
+
+def get_major_axis(x,e,from_perihelion=True):
+    return x/(1-e) if from_perihelion else x/(1+e)
+
 def main():
     '''
     Do whatever...
@@ -79,19 +92,35 @@ def main():
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
     names,a,e = get_data((Path(args.data)/args.source).with_suffix('.csv'))
-    perihelion = []
-    aphelion = []
+    perihelion_data = np.zeros((PlatonicSolidModel.N))
+    aphelion_data = np.zeros((PlatonicSolidModel.N))
+    perihelion_kepler = np.zeros((PlatonicSolidModel.N))
+    aphelion_kepler = np.zeros((PlatonicSolidModel.N))    
     for i in range(len(names)):
+        perihelion_data[i] = get_perihelion(a[i],e[i])
+        aphelion_data[i] = get_aphelion(a[i],e[i])
         if i < 3:
-            Logger.instance.info(f'{names[i]} Aphelion: {a[i]*(1+e[i])}')
+            Logger.instance.info(f'{names[i]} Aphelion: {aphelion_data[i]}')
         else:
-            Logger.instance.info(f'{names[i]} Perihelion: {a[i]*(1-e[i])}')   
-            
+            Logger.instance.info(f'{names[i]} Perihelion: {perihelion_data[i]}') 
+
+    platonic_solids = PlatonicSolidModel.create_kepler()
+    kepler_model = PlatonicSolidModel(platonic_solids) 
+    ratios = Platonic.create_ratios()
+    aphelion_kepler[PlatonicSolidModel.EARTH] = get_aphelion(a[PlatonicSolidModel.EARTH],e[PlatonicSolidModel.EARTH])
+    for i in range(PlatonicSolidModel.MARS,PlatonicSolidModel.SATURN+1):
+        solid = platonic_solids[i-1]  
+        ratio = ratios[solid]
+        perihelion_kepler[i] = aphelion_kepler[i-1]*ratio
+        major_axis = get_major_axis(perihelion_kepler[i],e[i])
+        aphelion_kepler[i] = get_aphelion(major_axis,e[i])
+     
     fig = figure(figsize=(12,12))
     
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1)
-    ...
+    ax1.scatter(aphelion_data[PlatonicSolidModel.MARS:],aphelion_kepler[PlatonicSolidModel.MARS:])
+    ax1.plot(aphelion_data[PlatonicSolidModel.MARS:],aphelion_data[PlatonicSolidModel.MARS:])
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start

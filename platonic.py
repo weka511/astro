@@ -23,6 +23,9 @@ __version__ = '1.0'
 __author__ = 'Simon Crase'
 
 class Platonic:
+    '''
+    This class represents the 5 Platonic Solids
+    '''
     TETRAHEDRON = 4
     CUBE = 6
     OCTAHEDRON = 8
@@ -60,7 +63,10 @@ class Platonic:
             
 
 class PlatonicSolidModel:
-    
+    '''
+    This class models the Solar system using Platonic solids,
+    in the manner of Kepler.
+    '''
     MERCURY = 0
     VENUS = 1
     EARTH = 2
@@ -70,10 +76,20 @@ class PlatonicSolidModel:
     N = 6
     
     ratios = Platonic.create_ratios()
+
+    @staticmethod   
+    def create_kepler():
+        return  [
+            Platonic.ICOSAHEDRON,
+            Platonic.OCTAHEDRON,
+            Platonic.DODECAHEDRON,
+            Platonic.TETRAHEDRON,
+            Platonic.CUBE
+        ]
     
     def __init__(self,solids):
         self.solids = solids.copy()
-        
+            
     def generate_annotations(self,a):
         j = 0
         inner = True
