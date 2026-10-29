@@ -74,20 +74,41 @@ class Logger:
         add_handler(StreamHandler(),Logger.instance)   
         
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
+
+class Platonic:
+    TETRAHEDRON = 4
+    CUBE = 6
+    OCTAHEDRON = 8
+    DODECAHEDRON = 12
+    ICOSAHEDRON = 20
+    
+    @staticmethod
+    def create_ratios():
+        '''
+        Used to create ratios of radii of circumsphere to insphere
+        '''
+        product = {
+            Platonic.DODECAHEDRON:np.sqrt(15-6*np.sqrt(5)),
+            Platonic.CUBE: np.sqrt(3),
+            Platonic.TETRAHEDRON: 3
+        }
         
-def create_platonic_ratios():
-    product = {
-        12:np.sqrt(15-6*np.sqrt(5)),
-        6: np.sqrt(3),
-        4: 3
-    }
-    product[8] = product[6]
-    product[20] = product[12]
-    return product
+        product[Platonic.OCTAHEDRON] = product[Platonic.CUBE]
+        product[Platonic.ICOSAHEDRON] = product[Platonic.DODECAHEDRON]
+        return product
 
 class PlatonicSolidModel:
     
-    platonic_ratios = create_platonic_ratios()
+    MERCURY = 0
+    VENUS = 1
+    EARTH = 2
+    MARS = 3
+    JUPITER = 4
+    SATURN = 5
+    N = 6
+    
+    ratios = Platonic.create_ratios()
+    
     def __init__(self,solids):
         self.solids = solids.copy()
     
@@ -95,13 +116,14 @@ class PlatonicSolidModel:
         '''
         Calculate Major axis for each planet assuming a Platonic solid model
         '''
-        self.a_kepler = np.zeros((6))
-        self.a_kepler[2] = a[2]                              # Earth
-        self.a_kepler[1] = self.a_kepler[2]/PlatonicSolidModel.platonic_ratios[self.solids[0]]  # Earth/Venus icosahedron
-        self.a_kepler[0] = self.a_kepler[1]/PlatonicSolidModel.platonic_ratios[self.solids[1]]  # Venus/Mercury octahedron
-        self.a_kepler[3] = self.a_kepler[2]*PlatonicSolidModel.platonic_ratios[self.solids[2]]  # Earth/Mars dodecadedron
-        self.a_kepler[4] = self.a_kepler[3]*PlatonicSolidModel.platonic_ratios[self.solids[3]]  # Mars/Jupiter tetrahedron
-        self.a_kepler[5] = self.a_kepler[4]*PlatonicSolidModel.platonic_ratios[self.solids[4]]  # Jupiter/Saturn cube
+        self.a_kepler = np.zeros((PlatonicSolidModel.N))
+        self.a_kepler[PlatonicSolidModel.EARTH] = a[PlatonicSolidModel.EARTH]
+        for i in [PlatonicSolidModel.VENUS,PlatonicSolidModel.MERCURY]:
+            self.a_kepler[i] = self.a_kepler[i+1]/PlatonicSolidModel.ratios[self.solids[1-i]] 
+   
+        for i in [PlatonicSolidModel.MARS,PlatonicSolidModel.JUPITER,PlatonicSolidModel.SATURN]:
+            self.a_kepler[i] = self.a_kepler[i-1]*PlatonicSolidModel.ratios[self.solids[i-1]]         
+   
         self.rms = np.sqrt(np.mean((a-self.a_kepler)**2))
         return self.rms
 
@@ -115,9 +137,14 @@ def main():
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
  
-    platonic_ratios = create_platonic_ratios()
     a = np.array(get_data((Path(args.data)/args.source).with_suffix('.csv')))
-    platonic_solids = [20,8,12,4,6]
+    platonic_solids = [
+        Platonic.ICOSAHEDRON,
+        Platonic.OCTAHEDRON,
+        Platonic.DODECAHEDRON,
+        Platonic.TETRAHEDRON,
+        Platonic.CUBE
+    ]
     kepler_model = PlatonicSolidModel(platonic_solids)
     kepler_rms = kepler_model.fit(a)
 
