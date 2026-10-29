@@ -76,8 +76,12 @@ class Logger:
         
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
 
-
-
+def annotate(a,model,ax=None):
+    for x,y,solid,inner in model.generate_annotations(a):
+        if inner:
+            ax.annotate(solid,(x,y))
+        else:
+            ax.annotate(solid,(x,y+1))
 
 def main():
     '''
@@ -111,6 +115,7 @@ def main():
     ax1 = fig.add_subplot(2,2,1)
     ax1.scatter(a,kepler_model.a_kepler,c='xkcd:purple',label='Predicted')
     ax1.plot(a,a,c='xkcd:green',label='Actual')
+    annotate(a,kepler_model,ax=ax1)
     ax1.legend()
     ax1.set_xlabel('Semi-major axis')
     ax1.set_ylabel('Semi-major axis (predicted)')
@@ -119,6 +124,7 @@ def main():
     ax2 = fig.add_subplot(2,2,2)
     ax2.scatter(a,models[i_min].a_kepler,c='xkcd:purple',label='Predicted')
     ax2.plot(a,a,c='xkcd:green',label='Actual')
+    annotate(a,models[i_min],ax=ax2)
     ax2.legend()
     ax2.set_xlabel('Semi-major axis')
     ax2.set_ylabel('Semi-major axis (predicted)')
@@ -127,6 +133,7 @@ def main():
     ax3 = fig.add_subplot(2,2,3)
     ax3.scatter(a,models[i_max].a_kepler,c='xkcd:purple',label='Predicted')
     ax3.plot(a,a,c='xkcd:green',label='Actual')
+    annotate(a,models[i_max],ax=ax3)
     ax3.legend()
     ax3.set_xlabel('Semi-major axis')
     ax3.set_ylabel('Semi-major axis (predicted)')

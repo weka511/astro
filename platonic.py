@@ -43,6 +43,21 @@ class Platonic:
         product[Platonic.OCTAHEDRON] = product[Platonic.CUBE]
         product[Platonic.ICOSAHEDRON] = product[Platonic.DODECAHEDRON]
         return product
+    
+    @staticmethod
+    def to_str(i):
+        match i:
+            case Platonic.TETRAHEDRON:
+                return 'Tetrahedron'
+            case Platonic.CUBE:
+                return 'Cube'
+            case Platonic.OCTAHEDRON:
+                return 'Octahedron'
+            case Platonic.DODECAHEDRON:
+                return 'Dodecahedron'
+            case Platonic.ICOSAHEDRON:
+                return 'Icosahedron'           
+            
 
 class PlatonicSolidModel:
     
@@ -58,6 +73,16 @@ class PlatonicSolidModel:
     
     def __init__(self,solids):
         self.solids = solids.copy()
+        
+    def generate_annotations(self,a):
+        j = 0
+        inner = True
+        for i in range(PlatonicSolidModel.N):
+            if i == PlatonicSolidModel.EARTH: 
+                inner = False
+            else:
+                yield a[i], self.a_kepler[i], Platonic.to_str(self.solids[j]),inner
+                j += 1
     
     def fit(self,a):
         '''
