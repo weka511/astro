@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 '''
-Exercise 1.1 from Murray and Dermott. Calculate major exes using Kepler's model (Platonic solids).
+Exercise 1.1 from Murray and Dermott. Calculate major axes using Kepler's model (Platonic solids).
 Fit best possible permuation of Platonic Solids, neglecting eccentricity.
 '''
 
@@ -94,13 +94,7 @@ def main():
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
  
     a = np.array(get_data((Path(args.data)/args.source).with_suffix('.csv')))
-    platonic_solids = [
-        Platonic.ICOSAHEDRON,
-        Platonic.OCTAHEDRON,
-        Platonic.DODECAHEDRON,
-        Platonic.TETRAHEDRON,
-        Platonic.CUBE
-    ]
+    platonic_solids = PlatonicSolidModel.create_kepler()
     kepler_model = PlatonicSolidModel(platonic_solids)
     kepler_rms = kepler_model.fit(a)
 
