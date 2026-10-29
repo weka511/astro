@@ -97,11 +97,11 @@ class PlatonicSolidModel:
         '''
         self.a_kepler = np.zeros((6))
         self.a_kepler[2] = a[2]                              # Earth
-        self.a_kepler[1] = self.a_kepler[2] / PlatonicSolidModel.platonic_ratios[self.solids[0]] # Earth/Venus icosahedron
-        self.a_kepler[0] = self.a_kepler[1] / PlatonicSolidModel.platonic_ratios[self.solids[1]]  # Venus/Mercury octahedron
-        self.a_kepler[3] = self.a_kepler[2] * PlatonicSolidModel.platonic_ratios[self.solids[2]]  # Earth/Mars dodecadedron
-        self.a_kepler[4] = self.a_kepler[3] * PlatonicSolidModel.platonic_ratios[self.solids[3]]  # Mars/Jupiter tetrahedron
-        self.a_kepler[5] = self.a_kepler[4] * PlatonicSolidModel.platonic_ratios[self.solids[4]]  # Jupiter/Saturn cube
+        self.a_kepler[1] = self.a_kepler[2]/PlatonicSolidModel.platonic_ratios[self.solids[0]]  # Earth/Venus icosahedron
+        self.a_kepler[0] = self.a_kepler[1]/PlatonicSolidModel.platonic_ratios[self.solids[1]]  # Venus/Mercury octahedron
+        self.a_kepler[3] = self.a_kepler[2]*PlatonicSolidModel.platonic_ratios[self.solids[2]]  # Earth/Mars dodecadedron
+        self.a_kepler[4] = self.a_kepler[3]*PlatonicSolidModel.platonic_ratios[self.solids[3]]  # Mars/Jupiter tetrahedron
+        self.a_kepler[5] = self.a_kepler[4]*PlatonicSolidModel.platonic_ratios[self.solids[4]]  # Jupiter/Saturn cube
         self.rms = np.sqrt(np.mean((a-self.a_kepler)**2))
         return self.rms
 
@@ -122,8 +122,9 @@ def main():
     kepler_rms = kepler_model.fit(a)
 
     models = [PlatonicSolidModel(solids) for solids in multiset_permutations(platonic_solids)]
-    i_min = np.argmin([m.fit(a) for m in models])
-    i_max = np.argmax([m.fit(a) for m in models])
+    rmss = [m.fit(a) for m in models]
+    i_min = np.argmin(rmss)
+    i_max = np.argmax(rmss)
     
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
@@ -150,9 +151,17 @@ def main():
     ax3.legend()
     ax3.set_xlabel('Semi-major axis')
     ax3.set_ylabel('Semi-major axis (predicted)')
-    ax3.set_title(f'Model={models[i_max].solids}, RMS error = {models[i_max].rms:.3f}')    
+    ax3.set_title(f'Model={models[i_max].solids}, RMS error = {models[i_max].rms:.3f}')   
     
-    fig.tight_layout(h_pad=2,pad=3)
+    ax4 = fig.add_subplot(2,2,4)
+    ax4.hist(rmss,color='xkcd:blue',density=True)
+    ax4.set_xlabel('RMS error')
+    ax4.set_ylabel('Frequency')
+    ax4.set_title('Distribution of Error')
+    ax4.axvline(x=kepler_rms, color='xkcd:red', linestyle='--', linewidth=2, label='Kepler')
+    ax4.legend()
+    
+    fig.tight_layout(h_pad=5,pad=3)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
     minutes = int(elapsed/60)
