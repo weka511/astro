@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Template for python script'''
+'''Exercise 1.2''
 
 from argparse import ArgumentParser
 from csv import reader
@@ -37,7 +37,12 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+    parser.add_argument('source', choices=['kepler','planets'])
     return parser.parse_args()
+
+def get_data(path):
+    data = pd.read_csv(path)
+    return data['a'].tolist()[:6],data['e'].tolist()[:6]  
 
 
 class Logger: 
