@@ -85,19 +85,25 @@ def create_platonic_ratios():
     product[20] = product[12]
     return product
 
-def fit(a,platonic_solids,platonic_ratios):
-    '''
-    Calculate Major axis for each planet assuming a Platonic sold model
-    '''
-    a_kepler = np.zeros((6))
-    a_kepler[2] = a[2]                              # Earth
-    a_kepler[1] = a_kepler[2] / platonic_ratios[platonic_solids[0]] # Earth/Venus icosahedron
-    a_kepler[0] = a_kepler[1] / platonic_ratios[platonic_solids[1]]  # Venus/Mercury octahedron
-    a_kepler[3] = a_kepler[2] * platonic_ratios[platonic_solids[2]]  # Earth/Mars dodecadedron
-    a_kepler[4] = a_kepler[3] * platonic_ratios[platonic_solids[3]]  # Mars/Jupiter tetrahedron
-    a_kepler[5] = a_kepler[4] * platonic_ratios[platonic_solids[4]]  # Jupiter/Saturn cube
-    rms = np.sqrt(np.mean((a-a_kepler)**2))
-    return a_kepler,rms
+class PlatonicSolidModel:
+    
+    platonic_ratios = create_platonic_ratios()
+    def __init__(self,solids):
+        self.solids = solids.copy()
+    
+    def fit(self,a):
+        '''
+        Calculate Major axis for each planet assuming a Platonic solid model
+        '''
+        self.a_kepler = np.zeros((6))
+        self.a_kepler[2] = a[2]                              # Earth
+        self.a_kepler[1] = self.a_kepler[2] / PlatonicSolidModel.platonic_ratios[self.solids[0]] # Earth/Venus icosahedron
+        self.a_kepler[0] = self.a_kepler[1] / PlatonicSolidModel.platonic_ratios[self.solids[1]]  # Venus/Mercury octahedron
+        self.a_kepler[3] = self.a_kepler[2] * PlatonicSolidModel.platonic_ratios[self.solids[2]]  # Earth/Mars dodecadedron
+        self.a_kepler[4] = self.a_kepler[3] * PlatonicSolidModel.platonic_ratios[self.solids[3]]  # Mars/Jupiter tetrahedron
+        self.a_kepler[5] = self.a_kepler[4] * PlatonicSolidModel.platonic_ratios[self.solids[4]]  # Jupiter/Saturn cube
+        self.rms = np.sqrt(np.mean((a-self.a_kepler)**2))
+        return self.rms
 
 def main():
     '''
@@ -112,35 +118,31 @@ def main():
     platonic_ratios = create_platonic_ratios()
     a = np.array(get_data((Path(args.data)/args.source).with_suffix('.csv')))
     platonic_solids = [20,8,12,4,6]
-    a_kepler,rms = fit(a,platonic_solids,platonic_ratios)
-    rms_best = rms
-    a_best = a_kepler.copy()
-    model = platonic_solids.copy()
-    for solids in multiset_permutations(platonic_solids):
-        aa,rms0 = fit(a,solids,platonic_ratios)
-        if rms0 < rms_best:
-            rms_best = rms0
-            a_best = aa
-            model = solids.copy()
+    kepler_model = PlatonicSolidModel(platonic_solids)
+    kepler_rms = kepler_model.fit(a)
+
+    models = [PlatonicSolidModel(solids) for solids in multiset_permutations(platonic_solids)]
+    i_best = np.argmin([m.fit(a) for m in models])
+    best = models[i_best].rms
 
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     
     ax1 = fig.add_subplot(2,2,1)
-    ax1.scatter(a,a_kepler,c='xkcd:purple',label='Predicted')
+    ax1.scatter(a,kepler_model.a_kepler,c='xkcd:purple',label='Predicted')
     ax1.plot(a,a,c='xkcd:green',label='Actual')
     ax1.legend()
     ax1.set_xlabel('Semi-major axis')
     ax1.set_ylabel('Semi-major axis (predicted)')
-    ax1.set_title(f'Data source={args.source}, RMS error = {rms:.3f}')
+    ax1.set_title(f'Data source={args.source}, RMS error = {kepler_rms:.3f}')
     
     ax2 = fig.add_subplot(2,2,2)
-    ax2.scatter(a,a_best,c='xkcd:purple',label='Predicted')
+    ax2.scatter(a,models[i_best].a_kepler,c='xkcd:purple',label='Predicted')
     ax2.plot(a,a,c='xkcd:green',label='Actual')
     ax2.legend()
     ax2.set_xlabel('Semi-major axis')
     ax2.set_ylabel('Semi-major axis (predicted)')
-    ax2.set_title(f'Model={model}, RMS error = {rms_best:.3f}')
+    ax2.set_title(f'Model={models[i_best].solids}, RMS error = {models[i_best].rms:.3f}')
     
     fig.tight_layout(h_pad=2,pad=3)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
