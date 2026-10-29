@@ -15,7 +15,10 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Exercise 1.1 from Murray and Dermott.'''
+'''
+Exercise 1.1 from Murray and Dermott. Calculate major exes using Kepler's model (Platonic solids).
+Fit best possible permuation of Platonic Solids, neglecting eccentricity.
+'''
 
 from argparse import ArgumentParser
 from csv import reader
@@ -83,6 +86,9 @@ def create_platonic_ratios():
     return product
 
 def fit(a,platonic_solids,platonic_ratios):
+    '''
+    Calculate Major axis for each planet assuming a Platonic sold model
+    '''
     a_kepler = np.zeros((6))
     a_kepler[2] = a[2]                              # Earth
     a_kepler[1] = a_kepler[2] / platonic_ratios[platonic_solids[0]] # Earth/Venus icosahedron
@@ -95,7 +101,8 @@ def fit(a,platonic_solids,platonic_ratios):
 
 def main():
     '''
-    Do whatever...
+    Calculate major exes using Kepler's model (Platonic solids).
+    Fit best possible permuation of Platonic Solids, neglecting eccentricity.
     '''
     rcParams['text.usetex'] = True
     start  = time()
@@ -118,6 +125,7 @@ def main():
 
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
+    
     ax1 = fig.add_subplot(2,2,1)
     ax1.scatter(a,a_kepler,c='xkcd:purple',label='Predicted')
     ax1.plot(a,a,c='xkcd:green',label='Actual')

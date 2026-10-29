@@ -5,7 +5,7 @@
 #|Ex|File| Description 
 ----|-----|--------------------|------------------------------------------------------------
 1||-| **Structure of the Solar System**
-1.2|1.1|ex_1_1.py|Murray & Dermott, Exercise 1.1
+1.2|1.1|ex_1_1.py|Murray & Dermott, Exercise 1.1. Calculate major axes using Kepler's model (Platonic solids). Fit best possible permuation of Platonic Solids, neglecting eccentricty.
 -|1.2|ex_1_2.py|Murray & Dermott, Exercise 1.2
 1.5|1.3|ex_1_3.py|Murray & Dermott, Exercise 1.3. Create a large number of random sets of orbital periods for a model satellite system, similar to the three inner satellites of Uranus. For each set, calculate the mean motion for each satellite and create hostogram for |n1-3n2+2n3}.
 1.7|1.4|ex_1_4.py|Taking the orbital periods listed in Table A.9 but excluding Epimetheus, Telesto, Calypso and Helen, use the criteria given in Section 1.7 to show there are 28 ratios of mean motions to consider in the Saturn System.
