@@ -15,7 +15,7 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-'''Exercise 1.2''
+'''Template for python script'''
 
 from argparse import ArgumentParser
 from csv import reader
@@ -25,6 +25,7 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
+import pandas as pd
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -37,13 +38,13 @@ def parse_args():
     parser.add_argument('--figs', default='./figs', help=f'Path to plots')
     parser.add_argument('--logs',default='./logs', help=f'Path to log files')
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
+    parser.add_argument('--data', default='./data', help=f'Path to data files')
     parser.add_argument('source', choices=['kepler','planets'])
     return parser.parse_args()
 
 def get_data(path):
     data = pd.read_csv(path)
-    return data['a'].tolist()[:6],data['e'].tolist()[:6]  
-
+    return data['Planet'].tolist()[:6],data['a'].tolist()[:6],data['e'].tolist()[:6]   
 
 class Logger: 
     '''
@@ -77,7 +78,17 @@ def main():
     start  = time()
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
+    names,a,e = get_data((Path(args.data)/args.source).with_suffix('.csv'))
+    perihelion = []
+    aphelion = []
+    for i in range(len(names)):
+        if i < 3:
+            Logger.instance.info(f'{names[i]} Aphelion: {a[i]*(1+e[i])}')
+        else:
+            Logger.instance.info(f'{names[i]} Perihelion: {a[i]*(1-e[i])}')   
+            
     fig = figure(figsize=(12,12))
+    
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1)
     ...
