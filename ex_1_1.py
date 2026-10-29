@@ -44,21 +44,7 @@ def parse_args():
 
 def get_data(path):
     data = pd.read_csv(path)
-    return data['a'].tolist()[:6],data['e'].tolist()[:6]   
-
-def get_a_kepler():
-    return [
-        0.38806,              # Mercury
-        0.72414,              # Venus
-        1,                    # Earth
-        1.52350,              # Mars
-        5.2,                  # Jupiter
-        9.51                  # Saturn
-    ]
-
-def get_J2000(path):
-    data = pd.read_csv(path)
-    return data['a'].tolist()[:6]
+    return data['a'].tolist()[:6]  
 
 class Logger: 
     '''
@@ -82,7 +68,18 @@ class Logger:
         Logger.instance.setLevel(DEBUG)
         add_handler(FileHandler(path_name),Logger.instance,level=DEBUG)
         add_handler(StreamHandler(),Logger.instance)   
+        
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
+        
+def create_platonic_ratios():
+    product = {
+        12:np.sqrt(15-6*np.sqrt(5)),
+        6: np.sqrt(3),
+        4: 3
+    }
+    product[8] = product[6]
+    product[20] = product[12]
+    return product
     
 def main():
     '''
@@ -92,18 +89,28 @@ def main():
     start  = time()
     args = parse_args()
     Logger.create(f'{Path(args.logs)/Path(__file__).stem}{strftime('%Y%m%d%H%M%S')}.log')
-    ratios = [
-        np.sqrt(15-6*np.sqrt(5)),
-        np.sqrt(3),
-        3
-    ]
-    a,e = get_data((Path(args.data)/args.source).with_suffix('.csv'))
-    a_ratios = [a[i]/a[i-1] for i in range(1,6)]
+ 
+    platonic_ratios = create_platonic_ratios()
+    a = np.array(get_data((Path(args.data)/args.source).with_suffix('.csv')))
+    
+    a_kepler = np.zeros((6))
+    a_kepler[2] = a[2]                              # Earth
+    a_kepler[1] = a_kepler[2] / platonic_ratios[20] # Earth/Venus icosahedron
+    a_kepler[0] = a_kepler[1] / platonic_ratios[8]  # Venus/Mercury octahedron
+    a_kepler[3] = a_kepler[2] * platonic_ratios[12]  # Earth/Mars dodecadedron
+    a_kepler[4] = a_kepler[3] * platonic_ratios[4]  # Mars/Jupiter tetrahedron
+    a_kepler[5] = a_kepler[4] * platonic_ratios[6]  # Jupiter/Saturn cube
+    rms = np.sqrt(np.mean((a-a_kepler)**2))
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1)
-    ...
-    fig.tight_layout(h_pad=2)
+    ax1.scatter(a,a_kepler,c='xkcd:purple',label='Predicted')
+    ax1.plot(a,a,c='xkcd:green',label='Actual')
+    ax1.legend()
+    ax1.set_xlabel('Semi-major axis')
+    ax1.set_ylabel('Semi-major axis (predicted)')
+    ax1.set_title(f'Data source={args.source}, RMS error = {rms:.3f}')
+    fig.tight_layout(h_pad=2,pad=3)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
     minutes = int(elapsed/60)
