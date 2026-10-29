@@ -26,6 +26,7 @@ from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
 import pandas as pd
+from sympy.utilities.iterables import multiset_permutations
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
@@ -80,7 +81,18 @@ def create_platonic_ratios():
     product[8] = product[6]
     product[20] = product[12]
     return product
-    
+
+def fit(a,platonic_solids,platonic_ratios):
+    a_kepler = np.zeros((6))
+    a_kepler[2] = a[2]                              # Earth
+    a_kepler[1] = a_kepler[2] / platonic_ratios[platonic_solids[0]] # Earth/Venus icosahedron
+    a_kepler[0] = a_kepler[1] / platonic_ratios[platonic_solids[1]]  # Venus/Mercury octahedron
+    a_kepler[3] = a_kepler[2] * platonic_ratios[platonic_solids[2]]  # Earth/Mars dodecadedron
+    a_kepler[4] = a_kepler[3] * platonic_ratios[platonic_solids[3]]  # Mars/Jupiter tetrahedron
+    a_kepler[5] = a_kepler[4] * platonic_ratios[platonic_solids[4]]  # Jupiter/Saturn cube
+    rms = np.sqrt(np.mean((a-a_kepler)**2))
+    return a_kepler,rms
+
 def main():
     '''
     Do whatever...
@@ -92,24 +104,36 @@ def main():
  
     platonic_ratios = create_platonic_ratios()
     a = np.array(get_data((Path(args.data)/args.source).with_suffix('.csv')))
-    
-    a_kepler = np.zeros((6))
-    a_kepler[2] = a[2]                              # Earth
-    a_kepler[1] = a_kepler[2] / platonic_ratios[20] # Earth/Venus icosahedron
-    a_kepler[0] = a_kepler[1] / platonic_ratios[8]  # Venus/Mercury octahedron
-    a_kepler[3] = a_kepler[2] * platonic_ratios[12]  # Earth/Mars dodecadedron
-    a_kepler[4] = a_kepler[3] * platonic_ratios[4]  # Mars/Jupiter tetrahedron
-    a_kepler[5] = a_kepler[4] * platonic_ratios[6]  # Jupiter/Saturn cube
-    rms = np.sqrt(np.mean((a-a_kepler)**2))
+    platonic_solids = [20,8,12,4,6]
+    a_kepler,rms = fit(a,platonic_solids,platonic_ratios)
+    rms_best = rms
+    a_best = a_kepler.copy()
+    model = platonic_solids.copy()
+    for solids in multiset_permutations(platonic_solids):
+        aa,rms0 = fit(a,solids,platonic_ratios)
+        if rms0 < rms_best:
+            rms_best = rms0
+            a_best = aa
+            model = solids.copy()
+
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
-    ax1 = fig.add_subplot(1,1,1)
+    ax1 = fig.add_subplot(2,2,1)
     ax1.scatter(a,a_kepler,c='xkcd:purple',label='Predicted')
     ax1.plot(a,a,c='xkcd:green',label='Actual')
     ax1.legend()
     ax1.set_xlabel('Semi-major axis')
     ax1.set_ylabel('Semi-major axis (predicted)')
     ax1.set_title(f'Data source={args.source}, RMS error = {rms:.3f}')
+    
+    ax2 = fig.add_subplot(2,2,2)
+    ax2.scatter(a,a_best,c='xkcd:purple',label='Predicted')
+    ax2.plot(a,a,c='xkcd:green',label='Actual')
+    ax2.legend()
+    ax2.set_xlabel('Semi-major axis')
+    ax2.set_ylabel('Semi-major axis (predicted)')
+    ax2.set_title(f'Model={model}, RMS error = {rms_best:.3f}')
+    
     fig.tight_layout(h_pad=2,pad=3)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
