@@ -16,7 +16,7 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 '''
-Exercise 1.2 from Murray and Dermott. Calculate major axes using Kepler's model (Platonic solids),
+Exercise 1.2 from Murray and Dermott. Calculate perihelion and aphelion distances using Kepler's model (Platonic solids),
 allowing for  eccentricity.
 '''
 
@@ -120,7 +120,8 @@ def search(a,e,perihelion_data,aphelion_data):
 
 def main():
     '''
-    Do whatever...
+    Calculate perihelion and aphelion distances using Kepler's model (Platonic solids),
+    allowing for  eccentricity
     '''
     rcParams['text.usetex'] = True
     start  = time()
