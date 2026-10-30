@@ -83,6 +83,25 @@ def get_perihelion(a,e):
 def get_major_axis(x,e,from_perihelion=True):
     return x/(1-e) if from_perihelion else x/(1+e)
 
+def build_polyhedra(a,e,platonic_solids = PlatonicSolidModel.create_kepler()):        
+    perihelion_kepler = np.zeros((PlatonicSolidModel.N))
+    aphelion_kepler = np.zeros((PlatonicSolidModel.N))    
+ 
+    ratios = Platonic.create_ratios()
+    aphelion_kepler[PlatonicSolidModel.EARTH] = get_aphelion(a[PlatonicSolidModel.EARTH],e[PlatonicSolidModel.EARTH])
+    for i in range(PlatonicSolidModel.MARS,PlatonicSolidModel.SATURN+1):
+        perihelion_kepler[i] = aphelion_kepler[i-1]*ratios[platonic_solids[i-1]]
+        major_axis = get_major_axis(perihelion_kepler[i],e[i])
+        aphelion_kepler[i] = get_aphelion(major_axis,e[i])
+        
+    perihelion_kepler[PlatonicSolidModel.EARTH] = get_perihelion(a[PlatonicSolidModel.EARTH],e[PlatonicSolidModel.EARTH])
+    for i in range(PlatonicSolidModel.VENUS,PlatonicSolidModel.MERCURY-1,-1): 
+        aphelion_kepler[i] = perihelion_kepler[i+1]/ratios[platonic_solids[i] ]
+        major_axis = get_major_axis(aphelion_kepler[i],e[i],from_perihelion=False)
+        perihelion_kepler[i] = get_perihelion(major_axis,e[i])
+        
+    return aphelion_kepler,perihelion_kepler
+
 def main():
     '''
     Do whatever...
@@ -94,8 +113,7 @@ def main():
     names,a,e = get_data((Path(args.data)/args.source).with_suffix('.csv'))
     perihelion_data = np.zeros((PlatonicSolidModel.N))
     aphelion_data = np.zeros((PlatonicSolidModel.N))
-    perihelion_kepler = np.zeros((PlatonicSolidModel.N))
-    aphelion_kepler = np.zeros((PlatonicSolidModel.N))    
+
     for i in range(len(names)):
         perihelion_data[i] = get_perihelion(a[i],e[i])
         aphelion_data[i] = get_aphelion(a[i],e[i])
@@ -103,22 +121,9 @@ def main():
             Logger.instance.info(f'{names[i]} Aphelion: {aphelion_data[i]}')
         else:
             Logger.instance.info(f'{names[i]} Perihelion: {perihelion_data[i]}') 
-
-    platonic_solids = PlatonicSolidModel.create_kepler()
-    kepler_model = PlatonicSolidModel(platonic_solids) 
-    ratios = Platonic.create_ratios()
-    aphelion_kepler[PlatonicSolidModel.EARTH] = get_aphelion(a[PlatonicSolidModel.EARTH],e[PlatonicSolidModel.EARTH])
-    for i in range(PlatonicSolidModel.MARS,PlatonicSolidModel.SATURN+1):
-        perihelion_kepler[i] = aphelion_kepler[i-1]*ratios[platonic_solids[i-1]]
-        major_axis = get_major_axis(perihelion_kepler[i],e[i])
-        aphelion_kepler[i] = get_aphelion(major_axis,e[i])
-        
-    perihelion_kepler[PlatonicSolidModel.EARTH] = get_perihelion(a[PlatonicSolidModel.EARTH],e[PlatonicSolidModel.EARTH])
-    for i in range(PlatonicSolidModel.VENUS,PlatonicSolidModel.MERCURY-1,-1): 
-        aphelion_kepler[i] = perihelion_kepler[i+1]/ratios[platonic_solids[i] ]
-        major_axis = get_major_axis(perihelion_kepler[i],e[i],from_perihelion=False)
-        perihelion_kepler[i] = get_perihelion(major_axis,e[i])
-        
+    
+    aphelion_kepler,perihelion_kepler = build_polyhedra(a,e)
+    #aphelion_data[PlatonicSolidModel.MARS:]-aphelion_kepler[PlatonicSolidModel.MARS:]    
     fig = figure(figsize=(12,12))
     
     fig.suptitle(Path(__file__).stem)
@@ -127,9 +132,9 @@ def main():
                 label='Aphelion (outer planets)')
     ax1.plot(aphelion_data[PlatonicSolidModel.MARS:],aphelion_data[PlatonicSolidModel.MARS:],
                 label='Aphelion (outer planets)')
-    ax1.scatter(aphelion_data[:PlatonicSolidModel.EARTH],aphelion_kepler[:PlatonicSolidModel.EARTH],
+    ax1.scatter(perihelion_data[:PlatonicSolidModel.EARTH],perihelion_kepler[:PlatonicSolidModel.EARTH],
                 label='Perihelion (inner planets)')
-    ax1.plot(aphelion_data[:PlatonicSolidModel.EARTH],aphelion_data[:PlatonicSolidModel.EARTH],
+    ax1.plot(perihelion_data[:PlatonicSolidModel.EARTH],perihelion_data[:PlatonicSolidModel.EARTH],
                 label='Perihelion (inner planets)')
     ax1.legend()
     ax1.set_xlabel('Perihelion/Aphelion')
