@@ -143,7 +143,7 @@ def main():
     rms_k = get_rms_error(perihelion_data,perihelion_kepler,aphelion_data,aphelion_kepler)
     fig = figure(figsize=(12,12))
     
-    fig.suptitle(Path(__file__).stem)
+    fig.suptitle(f'{Path(__file__).stem}: {args.source}')
     ax1 = fig.add_subplot(2,2,1)
     ax1.scatter(aphelion_data[PlatonicSolidModel.MARS:],aphelion_kepler[PlatonicSolidModel.MARS:],
                 label='Aphelion (outer planets)')
