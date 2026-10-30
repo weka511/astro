@@ -277,18 +277,20 @@ def get_bounds(n1,n2):
     Returns:
         Closest set of inegers, p,p_prime, such that 
         p_prime/(p_prime+1) < n1/n2 < p(p+1)
+        A flag indicationg whether p' is within range: otherwise substitute 1/3 for p'/(p'+1).
     '''
     
     assert n1 < n2
     r = n1/n2
-    if 1/3 < r < 1/2:
-        return 3,1
     p = int(np.ceil(r/(1-r)))
     p_prime = p - 1
     assert p_prime/(p_prime+1) < r and r < p/(p+1)
-    return p,p_prime
+    if 1/3 < r < 1/2:
+        return p,1,False
+    
+    return p,p_prime,True
         
-def get_abc(n1,n2,p,p_prime):
+def get_abc(n1,n2,p,p_prime,is_within_range):
     '''
     Calculate metrics from Murray & Dermott Section 1.7
     
@@ -297,8 +299,9 @@ def get_abc(n1,n2,p,p_prime):
         n2
         p
         p_prime
+        is_within_range
     '''
-    r_prime = p_prime/(p_prime+1)
+    r_prime = p_prime/(p_prime+1) if is_within_range else 1/3
     a = (n1/n2 - r_prime) / ( p/(p+1) - r_prime)    # M & D (1.19)     
     b = 0 if a <= 0.5 else 1                 # M & D (1.20)
     c = 2*np.pi*(a - b)                      # M & D (1.21)

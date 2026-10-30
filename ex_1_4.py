@@ -86,13 +86,14 @@ def create_mean_motion_ratios(names_and_periods):
      counts = dict()
      
      for name_i,name_j,n1,n2 in generate_pairs(names_and_periods):
-          (p,p_prime) = get_bounds(n1,n2)
+          (p,p_prime,is_within_range) = get_bounds(n1,n2)
           try:
                counts[f'{p}-{p_prime}'] += 1
           except KeyError:
                counts[f'{p}-{p_prime}'] = 1          
-          if p_prime == 0: continue       
-          a,b,c = get_abc(n1,n2,p,p_prime)
+          if p_prime == 0: 
+               continue       
+          a,b,c = get_abc(n1,n2,p,p_prime,is_within_range)
           if abs(c) < 0.15:   
                product.append((name_i,name_j, p,p_prime, c))
 
