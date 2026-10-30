@@ -29,6 +29,7 @@ from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
 import pandas as pd
+from sympy.utilities.iterables import multiset_permutations
 from platonic import Platonic,PlatonicSolidModel
 
 __version__ = '1.0'
@@ -102,6 +103,21 @@ def build_polyhedra(a,e,platonic_solids = PlatonicSolidModel.create_kepler()):
         
     return aphelion_kepler,perihelion_kepler
 
+def get_rms_error(perihelion_data,perihelion_kepler,aphelion_data,aphelion_kepler):
+    error = np.concatenate([
+        perihelion_data[:PlatonicSolidModel.EARTH]-perihelion_kepler[:PlatonicSolidModel.EARTH],
+        aphelion_data[PlatonicSolidModel.MARS:]-aphelion_kepler[PlatonicSolidModel.MARS:],
+                            ])
+    return np.sqrt(np.mean(error**2))
+
+def search(a,e,perihelion_data,aphelion_data):
+    rms_s = []
+    platonic_solids = PlatonicSolidModel.create_kepler()
+    for solids in multiset_permutations(platonic_solids):
+        aphelion_kepler_x,perihelion_kepler_x = build_polyhedra(a,e,platonic_solids=solids) 
+        rms_s.append(get_rms_error(perihelion_data,perihelion_kepler_x,aphelion_data,aphelion_kepler_x))
+    return rms_s
+
 def main():
     '''
     Do whatever...
@@ -123,11 +139,12 @@ def main():
             Logger.instance.info(f'{names[i]} Perihelion: {perihelion_data[i]}') 
     
     aphelion_kepler,perihelion_kepler = build_polyhedra(a,e)
-    #aphelion_data[PlatonicSolidModel.MARS:]-aphelion_kepler[PlatonicSolidModel.MARS:]    
+    rms_s = search(a,e,perihelion_data,aphelion_data)
+    rms_k = get_rms_error(perihelion_data,perihelion_kepler,aphelion_data,aphelion_kepler)
     fig = figure(figsize=(12,12))
     
     fig.suptitle(Path(__file__).stem)
-    ax1 = fig.add_subplot(1,1,1)
+    ax1 = fig.add_subplot(2,2,1)
     ax1.scatter(aphelion_data[PlatonicSolidModel.MARS:],aphelion_kepler[PlatonicSolidModel.MARS:],
                 label='Aphelion (outer planets)')
     ax1.plot(aphelion_data[PlatonicSolidModel.MARS:],aphelion_data[PlatonicSolidModel.MARS:],
@@ -139,7 +156,17 @@ def main():
     ax1.legend()
     ax1.set_xlabel('Perihelion/Aphelion')
     ax1.set_ylabel('Perihelion/Aphelion')
-    ax1.set_title('Kepler Platonic Solids Model, with eccentricities')
+    ax1.set_title('Kepler Platonic Solids Model, with eccentricities.'
+                  f' RMS={rms_k:.3f}')
+    
+    ax2 = fig.add_subplot(2,2,2)
+    ax2.hist(rms_s,color='xkcd:blue',label='RMS error',density=True)
+    ax2.axvline(x=rms_k, color='xkcd:red', linestyle='--', linewidth=2, label='RMS Kepler')
+    ax2.legend()
+    ax2.set_title('Analysis of RMS error')
+    ax2.set_xlabel('RMS')
+    ax2.set_ylabel('Frequency')
+    
     fig.tight_layout(h_pad=5,pad=3)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    
     elapsed = time() - start
