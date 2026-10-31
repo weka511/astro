@@ -21,6 +21,7 @@ from argparse import ArgumentParser
 from csv import DictReader
 from pathlib import Path
 from time import time
+from warnings import deprecated
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
@@ -40,8 +41,7 @@ def parse_args():
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     return parser.parse_args()
 
-
-
+@deprecated('Issue #122. Use pandas instead')
 def create_data(data_path,
                 exclude=[],
                 field='T'):
