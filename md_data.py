@@ -24,8 +24,9 @@ from time import time
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
+from shared.utils import create_xkcd_colours
 
-__version__ = '1.0'
+__version__ = '1.1'
 __author__ = 'Simon Crase'
 
 def parse_args():
@@ -39,20 +40,7 @@ def parse_args():
     parser.add_argument('--show',default=False,action='store_true',help='Used to display figure')
     return parser.parse_args()
 
-def create_xkcd_colours():
-    '''
-    48 colours from https://blog.xkcd.com/2010/05/03/color-survey-results/
-    '''
-    return [
-        'xkcd:purple','xkcd:green','xkcd:blue','xkcd:pink','xkcd:brown','xkcd:red',
-        'xkcd:light blue','xkcd:teal','xkcd:orange','xkcd:light green','xkcd:magenta','xkcd:yellow',
-        'xkcd:sky blue','xkcd:grey','xkcd:lime green','xkcd:light purple','xkcd:violet','xkcd:dark green',
-        'xkcd:turquoise','xkcd:lavender','xkcd:dark blue','xkcd:tan','xkcd:cyan','xkcd:aqua',
-        'xkcd:forest green','xkcd:mauve','xkcd:dark purple','xkcd:bright green','xkcd:maroon','xkcd:olive',
-        'xkcd:salmon','xkcd:beige','xkcd:royal blue','xkcd:navy','xkcd:lilac','xkcd:black',
-        'xkcd:hot pink','xkcd:light brown','xkcd:pale green','xkcd:peach','xkcd:olive green','xkcd:dark pink',
-        'xkcd:periwinkle','xkcd:sea green','xkcd:lime','xkcd:indigo','xkcd:mustard','xkcd:light pink'
-    ]  
+
 
 def create_data(data_path,
                 exclude=[],
@@ -103,7 +91,7 @@ def main():
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1,1,1,adjustable='box',aspect=1.0)
     ax1.bar([names[i] for i in index],ratios[index],
-            color=create_xkcd_colours())
+            color=create_xkcd_colours(64))
     ax1.set_title(rf'{args.name} $\sigma=${std:.3g}')
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs)/Path(__file__).stem)    

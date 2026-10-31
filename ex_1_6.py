@@ -34,7 +34,7 @@ from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Patch
 import numpy as np
 from ratios import Ratios,SimpleRatios,Resonance,get_periods
-from md_data import create_xkcd_colours
+from shared.utils import create_xkcd_colours
 
 class Logger: 
     instance = None
@@ -135,7 +135,7 @@ def main():
     for ratio in unique_ratios:
         Logger.instance.debug(f'{ratio[1]}:{ratio[0]}')
 
-    colours = create_xkcd_colours()  
+    colours = create_xkcd_colours(64)  
 
     fig = figure(figsize=(12,12))
     fig.suptitle(Path(__file__).stem)
