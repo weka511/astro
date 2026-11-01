@@ -36,6 +36,7 @@ A|||Appendix A, **Solar System Data**
 
  File | Purpose |
 --------------------------|---------------------------------------------------------------------
+adams.py|Adams-Bashforth-Moulton Predictor/Corrector
 euler.py|Simple Euler method for integrations ODE
 fehlberg.py|Explore use of Fehlberg's method
 integrators.py|Used to set up an integrator
