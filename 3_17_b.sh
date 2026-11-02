@@ -33,6 +33,9 @@ while getopts "N:s:wi:" opt; do
 	s)
       step="$OPTARG"
       ;;
+	i)
+      integrator="$OPTARG"
+      ;;
     \?)
       echo "Invalid option: -$OPTARG" >&2
       exit 1
