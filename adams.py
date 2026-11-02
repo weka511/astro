@@ -143,7 +143,7 @@ class Corrector:
         '''
         Used to display details of integrator
         '''
-        return f'{type(self).__name__}: order={self.order}'
+        return f'{type(self).__name__}: order={self.predictor.order}'
     
     def step(self, h:float, x:npt.NDArray[float]):
         '''

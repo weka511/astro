@@ -19,6 +19,7 @@
 This module is responsible for instantiating an integrator
 '''
 
+from adams import Corrector, Predictor
 from rki import ImplicitRungeKutta,ImplicitRungeKutta4,ImplicitRungeKutta2,NaiveSolver
 from rk import Rk4, Nystrom
 from euler import Euler
@@ -41,6 +42,7 @@ class IntegratorFactory:
            List of integrators that are available
         '''
         return [
+            'adams',
             'euler',
             'rki2',
             'rki4',
@@ -65,6 +67,9 @@ class IntegratorFactory:
         '''
   
         match integrator:
+            case 'adams':
+                return Corrector(Predictor(dy,6, Rk4(dy)),
+                                              n=5)                
             case 'euler':
                 return  Euler(dy,n=max_iterations,atol=atol)
             
