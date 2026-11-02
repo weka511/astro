@@ -166,7 +166,7 @@ class K_Solver(ABC):
 
 class NaiveSolver(K_Solver):
     '''
-    Establish k by following the procedure in Gear, SEction 2.5.1
+    Establish k by following the procedure in Gear, Section 2.5.1
     '''
     def __init__(self,atol=1e-8,max_iterations=200):
         '''
