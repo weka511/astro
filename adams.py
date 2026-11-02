@@ -22,9 +22,11 @@ from csv import reader
 from logging import basicConfig, getLogger, INFO, FileHandler, StreamHandler, Formatter, DEBUG
 from pathlib import Path
 from time import strftime, time
+from typing import Callable
 from matplotlib.pyplot import figure, show
 from matplotlib import rcParams
 import numpy as np
+import numpy.typing as npt
 from rk import Rk4
 
 __version__ = '1.0'
@@ -32,8 +34,24 @@ __author__ = 'Simon Crase'
 
 
 class Predictor:
+    '''
+    This class implements the Adams-Bashforth predictor
+    
+    Attributes:
+        dx
+        beta 
+        divisor
+        order
+        state
+        DX
+        starter
+        filled
+    '''
     @staticmethod
     def get_coefficients(order:int):
+        '''
+        Calculate the numerators for the coefficients
+        '''
         beta = [
             [1],
             [3, -1],
@@ -42,10 +60,9 @@ class Predictor:
             [1901, -2774, 2616, -1274, 251],
             [4277, -7923, 9982, -7298, 2877, -475]
         ]
-        return np.array(beta[order - 1])
+        return np.array(beta[order-1])
         
-
-    def __init__(self, dx, order, starter):
+    def __init__(self, dx:Callable[[npt.NDArray[float]], npt.NDArray[float]], order:int, starter):
         self.dx = dx
         self.beta = Predictor.get_coefficients(order)
         self.divisor = self.beta.sum()
@@ -61,7 +78,7 @@ class Predictor:
         '''
         return f'{type(self).__name__}: order={self.order}'
 
-    def step(self, h, x):
+    def step(self, h:float, x:npt.NDArray[float]):
         '''
         Compute x after next step
         
@@ -85,14 +102,27 @@ class Predictor:
             return x_new
         
     def roll(self):
+        '''
+        Used after a step to make room for the latest fx(x)
+        '''
         if self.filled:
-            self.DX1 = np.roll(self.DX,-1,axis=0)
-            self.DX = self.DX1
-
+            self.DX = np.roll(self.DX,-1,axis=0)
 
 class Corrector:
+    '''
+    This class implements the Adams-Moulton corrector
+    
+    Attributes:
+        beta 
+        divisor
+        predictor
+        n
+    '''
     @staticmethod
     def get_coefficients(order:int):
+        '''
+        Calculate the numerators for the coefficients
+        '''        
         beta = [
             [1],
             [1, 1],
@@ -101,10 +131,9 @@ class Corrector:
             [251, 646, -264, 106, -19],
             [475, 1427, -798, 482, -173, 27]
         ]
-        return np.array(beta[order - 1])
+        return np.array(beta[order-1])
     
-    def __init__(self, predictor,n=1):
-        self.dx = predictor.dx
+    def __init__(self, predictor,n:int=1):
         self.beta = Corrector.get_coefficients(predictor.order)
         self.divisor = self.beta.sum()
         self.predictor = predictor
@@ -116,7 +145,7 @@ class Corrector:
         '''
         return f'{type(self).__name__}: order={self.order}'
     
-    def step(self, h, x):
+    def step(self, h:float, x:npt.NDArray[float]):
         '''
         Compute x after next step
         
@@ -129,7 +158,6 @@ class Corrector:
             for i in range(self.n):
                 x_new = x + h* np.dot(self.beta,self.predictor.DX[:-1])/self.divisor
                 self.predictor.DX[-1,:] = self.predictor.dx(x_new)
-   
             self.predictor.roll()
             return x_new
         else:
@@ -184,8 +212,8 @@ def main():
     start = time()
     args = parse_args()
     starter = Rk4(dx)
-    predictor = Predictor(dx,args.order,starter)
-    corrector = Corrector(predictor,n=args.n)
+    corrector = Corrector(Predictor(dx,args.order,starter),
+                          n=args.n)
     h = args.step
     nn = int(2*args.N*np.pi/h)
     y = np.zeros((nn + 1, 2))
