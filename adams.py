@@ -42,19 +42,19 @@ class Predictor:
             [1901, -2774, 2616, -1274, 251],
             [4277, -7923, 9982, -7298, 2877, -475]
         ]
-        sums = [1, 2, 12, 24,720,1440]
-        return np.array(beta[order - 1]),sums[order - 1]
+        return np.array(beta[order - 1])
         
 
     def __init__(self, dx, order, starter):
         self.dx = dx
-        self.beta,self.divisor = Predictor.get_coefficients(order)
-        assert self.divisor == self.beta.sum()
+        self.beta = Predictor.get_coefficients(order)
+        self.divisor = self.beta.sum()
         self.order = order 
-        self.state = 0
-        self.DX = None
+        self.state = -1
+        self.DX = np.zeros((order+1,0))
         self.starter = starter
-
+        self.filled = False
+        
     def __str__(self):
         '''
         Used to display details of integrator
@@ -69,19 +69,25 @@ class Predictor:
            h    Step size
            x    Current value of x
         '''
-        if self.state == 0:
+        if self.state == -1:
             n, = x.shape
-            self.X = np.zeros((self.order, n))
-            self.X[self.order - 1 - self.state, :] = x
+            self.DX = np.full((self.order+1, n),np.nan)
             self.state += 1
-            self.X[self.order - 1 - self.state, :] = self.starter.step(h, x)
-            self.state += 1
-        elif self.state < self.order - 1:
-            self.state += 1
-            self.X[self.order - 1 - self.state, :] = self.starter.step(h, x)
+            
+        if self.state < self.order:        
+            self.DX[self.state, :] = self.dx(x)
+            self.state += 1    
+            return self.starter.step(h,x)              
         else:
-            pass
-        return self.X[0, :]
+            x_new = x + h* np.dot(self.beta,self.DX[:-1])/self.divisor
+            self.DX[-1,:] = self.dx(x_new)
+            self.filled = True
+            return x_new
+        
+    def roll(self):
+        if self.filled:
+            self.DX1 = np.roll(self.DX,-1,axis=0)
+            self.DX = self.DX1
 
 
 class Corrector:
@@ -95,19 +101,39 @@ class Corrector:
             [251, 646, -264, 106, -19],
             [475, 1427, -798, 482, -173, 27]
         ]
-        sums = [1, 2, 12, 24,720,1440]
-        return np.array(beta[order - 1]),sums[order - 1]  
+        return np.array(beta[order - 1])
     
-    def __init__(self, dx, beta, predictor):
-        self.dx = dx
-        self.beta = beta
-        self.order, = beta.shape
-
+    def __init__(self, predictor,n=1):
+        self.dx = predictor.dx
+        self.beta = Corrector.get_coefficients(predictor.order)
+        self.divisor = self.beta.sum()
+        self.predictor = predictor
+        self.n = n
+        
     def __str__(self):
         '''
         Used to display details of integrator
         '''
         return f'{type(self).__name__}: order={self.order}'
+    
+    def step(self, h, x):
+        '''
+        Compute x after next step
+        
+        Parameters:
+           h    Step size
+           x    Current value of x
+        '''
+        prediction = self.predictor.step(h,x)
+        if self.predictor.filled:
+            for i in range(self.n):
+                x_new = x + h* np.dot(self.beta,self.predictor.DX[:-1])/self.divisor
+                self.predictor.DX[-1,:] = self.predictor.dx(x_new)
+   
+            self.predictor.roll()
+            return x_new
+        else:
+            return prediction
 
 def parse_args():
     '''
@@ -118,6 +144,9 @@ def parse_args():
     parser.add_argument('--logs', default='./logs', help=f'Path to log files')
     parser.add_argument('--show', default=False, action='store_true', help='Used to display figure')
     parser.add_argument('--order',default=6,type=int)
+    parser.add_argument('--N',default=1,type=int)
+    parser.add_argument('--step',default=0.001,type=float)
+    parser.add_argument('--n',default=1,type=int)
     return parser.parse_args()
 
 
@@ -145,6 +174,7 @@ class Logger:
         add_handler(StreamHandler(), Logger.instance)
         np.set_printoptions(linewidth=np.nan) # Prevent lines being split when we log numpy arrays
 
+def dx(x): return [x[1], -x[0]]
 
 def main():
     '''
@@ -153,19 +183,20 @@ def main():
     rcParams['text.usetex'] = True
     start = time()
     args = parse_args()
-    def dx(x): return [x[1], -x[0]]
     starter = Rk4(dx)
     predictor = Predictor(dx,args.order,starter)
-    Corrector.get_coefficients(6)
-    h = 0.01
-    nn = 1000
+    corrector = Corrector(predictor,n=args.n)
+    h = args.step
+    nn = int(2*args.N*np.pi/h)
     y = np.zeros((nn + 1, 2))
     y[0, 0] = 1
     for i in range(nn):
-        y[i + 1, :] = predictor.step(h, y[i, :])
+        y[i + 1, :] = corrector.step(h, y[i, :])
+       
     fig = figure(figsize=(12, 12))
     fig.suptitle(Path(__file__).stem)
     ax1 = fig.add_subplot(1, 1, 1, adjustable='box', aspect=1.0)
+    ax1.scatter(y[0,0],y[0,1],marker='+')
     ax1.plot(y[:, 0], y[:, 1])
     fig.tight_layout(h_pad=2)
     fig.savefig(Path(args.figs) / Path(__file__).stem)
