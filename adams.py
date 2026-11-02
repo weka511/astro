@@ -44,7 +44,6 @@ class Predictor:
         state       Indicates whether DX has been fully populated
         DX          Matrix of x values from previous steps, used to calculate next X
         starter     Integrator used to populate DX initially
-        filled
     '''
     @staticmethod
     def get_coefficients(order:int):
@@ -79,8 +78,7 @@ class Predictor:
         self.state = -1
         self.DX = np.zeros((order+1,0))
         self.starter = starter
-        self.filled = False
-        
+          
     def __str__(self):
         '''
         Used to display details of integrator
@@ -107,14 +105,19 @@ class Predictor:
         else:
             x_new = x + h* np.dot(self.beta,self.DX[:-1])/self.divisor
             self.DX[-1,:] = self.dx(x_new)
-            self.filled = True
             return x_new
-        
+    
+    def has_filled(self):
+        '''
+        Indicates whether DX has been fully populated (except, possibly, the last row)
+        '''
+        return self.state >= self.order
+    
     def roll(self):
         '''
         Used after a step to make room for the latest fx(x)
         '''
-        if self.filled:
+        if self.has_filled():
             self.DX = np.roll(self.DX,-1,axis=0)
 
 class Corrector:
@@ -174,7 +177,7 @@ class Corrector:
            x    Current value of x
         '''
         prediction = self.predictor.step(h,x)
-        if self.predictor.filled:
+        if self.predictor.has_filled():
             for i in range(self.n):
                 x_new = x + h* np.dot(self.beta,self.predictor.DX[:-1])/self.divisor
                 self.predictor.DX[-1,:] = self.predictor.dx(x_new)
