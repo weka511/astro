@@ -27,7 +27,7 @@ from typing import Callable
 from unittest import TestCase, main
 import numpy as np
 import numpy.typing as npt
-
+from numpy.testing import assert_array_almost_equal
 __version__ = '1.0'
 __author__ = 'Simon Crase'
 
@@ -94,7 +94,7 @@ class Predictor:
            x    Current value of x
         '''
         if self.state == -1:
-            n, = x.shape
+            n = len(x)
             self.DX = np.full((self.order+1, n),np.nan)
             self.state += 1
             
@@ -187,11 +187,21 @@ class Corrector:
             return prediction
 
 
-class TestAdams(TestCase):
+class TestAdamsBashforth(TestCase):
     '''
-    Tests to verify predictor and corrector
+    Tests to verify predictor
     '''
-    def test_predictor_coefficients(self):
+    class MockStarter:
+        
+        def __init__(self,values):
+            self.values = values
+            self.index = 0
+            
+        def step(self,h,x):
+            self.index += 1
+            return self.values[self.index]
+        
+    def test_coefficients(self):
         '''
         Verify coefficients by comparing sums with expected values in Gear, Table 7.3
         '''
@@ -199,7 +209,27 @@ class TestAdams(TestCase):
         for i in range(len(expected_sums)):
             self.assertEqual(expected_sums[i],Predictor.get_coefficients(i+1).sum())
             
-    def test_corrector(self):
+    def test_gear_7_1(self):
+        self.helper(0.0001,100,decimal=4)
+        
+    def helper(self,h,N,order=6,decimal=3):
+        X = np.full((N,1),np.nan)
+        Target = np.zeros_like(X)
+        for i in range(N):
+            Target[i,0] = np.exp(-h*i)        
+        starter = self.MockStarter(Target)
+        predictor = Predictor(lambda x: -x,order,starter)
+        X[0,:] = np.array([1])
+        for i in range(1,N):
+            X[i] = predictor.step(h,X[i-1])
+ 
+        assert_array_almost_equal(Target,X,decimal=decimal)
+ 
+class TestAdamsMoulton(TestCase):  
+    '''
+    Tests to verify corrector
+    '''    
+    def test_coefficients(self):
         '''
         Verify coefficients by comparing sums with expected values in Gear, Table 7.4
         '''        
