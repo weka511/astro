@@ -186,20 +186,21 @@ class Corrector:
         else:
             return prediction
 
-
+class MockStarter:
+    
+    def __init__(self,values):
+        self.values = values
+        self.index = 0
+        
+    def step(self,h,x):
+        self.index += 1
+        return self.values[self.index]
+    
 class TestAdamsBashforth(TestCase):
     '''
     Tests to verify predictor
     '''
-    class MockStarter:
-        
-        def __init__(self,values):
-            self.values = values
-            self.index = 0
-            
-        def step(self,h,x):
-            self.index += 1
-            return self.values[self.index]
+
         
     def test_coefficients(self):
         '''
@@ -217,7 +218,7 @@ class TestAdamsBashforth(TestCase):
         Target = np.zeros_like(X)
         for i in range(N):
             Target[i,0] = np.exp(-h*i)        
-        starter = self.MockStarter(Target)
+        starter = MockStarter(Target)
         predictor = Predictor(lambda x: -x,order,starter)
         X[0,:] = np.array([1])
         for i in range(1,N):
@@ -237,6 +238,22 @@ class TestAdamsMoulton(TestCase):
         for i in range(len(expected_sums)):
             self.assertEqual(expected_sums[i],Corrector.get_coefficients(i+1).sum())    
 
-
+    def test_1(self):
+        self.helper(h=0.001,N=100,order=6,decimal=6)
+    
+    def helper(self,h=0.001,N=100,order=5,decimal=3):
+        X = np.full((N,1),np.nan)
+        Target = np.zeros_like(X)
+        for i in range(N):
+            Target[i,0] = np.exp(-h*i)        
+        starter = MockStarter(Target)
+        predictor = Predictor(lambda x: -x,order,starter)        
+        corrector = Corrector(predictor, n=5)
+        X[0,:] = np.array([1])
+        for i in range(1,N):
+            X[i] = corrector.step(h,X[i-1])
+ 
+        assert_array_almost_equal(Target,X,decimal=3)
+        
 if __name__ == '__main__':
     main()
