@@ -52,7 +52,7 @@ class IntegratorFactory:
         ]
     
     @staticmethod
-    def create(dy,integrator,atol,max_iterations):
+    def create(dy,integrator,atol=1e-8,max_iterations=200,order=6):
         '''
         Instantiate an integrator
         
@@ -68,8 +68,10 @@ class IntegratorFactory:
   
         match integrator:
             case 'adams':
-                return Corrector(Predictor(dy,6, Rk4(dy)),
-                                              n=5)                
+                return Corrector(
+                            Predictor(dy,order, Rk4(dy)),
+                            atol=atol,
+                            n=max_iterations)                
             case 'euler':
                 return  Euler(dy,n=max_iterations,atol=atol)
             
