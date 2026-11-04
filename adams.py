@@ -28,6 +28,7 @@ from unittest import TestCase, main
 import numpy as np
 import numpy.typing as npt
 from numpy.testing import assert_array_almost_equal
+
 __version__ = '1.0'
 __author__ = 'Simon Crase'
 
@@ -129,6 +130,7 @@ class Corrector:
         divisor     Common denominator of coefficients from Table 7.4
         predictor   Used to make initial prediction of x
         n           Number of correction steps
+        atol        Maximum tolerable error when we iterate
     '''
     @staticmethod
     def get_coefficients(order:int):
@@ -150,17 +152,18 @@ class Corrector:
         ]
         return np.array(beta[order-1])
     
-    def __init__(self, predictor,n:int=1):
+    def __init__(self, predictor,n:int=1,atol=1e-6):
         '''
         Parameters:
             dx         Function for right hand side of ODE
             predictor  Used to make initial prediction of x
-            n          Number of correction steps
+            n          Maximum number of correction steps
         '''
         self.beta = Corrector.get_coefficients(predictor.order)
         self.divisor = self.beta.sum()
         self.predictor = predictor
         self.n = n
+        self.atol = atol
         
     def __str__(self):
         '''
@@ -176,18 +179,24 @@ class Corrector:
            h    Step size
            x    Current value of x
         '''
+        x_previous = np.full_like(x,np.inf)
         prediction = self.predictor.step(h,x)
         if self.predictor.has_filled():
             for i in range(self.n):
                 x_new = x + h* np.dot(self.beta,self.predictor.DX[:-1])/self.divisor
                 self.predictor.DX[-1,:] = self.predictor.dx(x_new)
+                error = np.linalg.norm(x_new-x_previous)
+                if error < self.atol: break
+                x_previous = x_new
             self.predictor.roll()
             return x_new
         else:
             return prediction
 
 class MockStarter:
-    
+    '''
+    Used when testing to initialize Predictor.DX
+    '''
     def __init__(self,values):
         self.values = values
         self.index = 0
@@ -200,8 +209,6 @@ class TestAdamsBashforth(TestCase):
     '''
     Tests to verify predictor
     '''
-
-        
     def test_coefficients(self):
         '''
         Verify coefficients by comparing sums with expected values in Gear, Table 7.3
@@ -212,6 +219,9 @@ class TestAdamsBashforth(TestCase):
             
     def test_gear_7_1(self):
         self.helper(0.0001,100,decimal=4)
+        
+    def test_gear_7_1(self):
+        self.helper(0.0001,100,decimal=4)        
         
     def helper(self,h,N,order=6,decimal=3):
         X = np.full((N,1),np.nan)
@@ -239,7 +249,7 @@ class TestAdamsMoulton(TestCase):
             self.assertEqual(expected_sums[i],Corrector.get_coefficients(i+1).sum())    
 
     def test_1(self):
-        self.helper(h=0.001,N=100,order=6,decimal=6)
+        self.helper(h=0.0001,N=100000,order=6,decimal=6)
     
     def helper(self,h=0.001,N=100,order=5,decimal=3):
         X = np.full((N,1),np.nan)
