@@ -29,7 +29,7 @@ A|||Appendix A, **Solar System Data**
 -||julian.py|Conversion between Calendar dates and Julian dates
 -||md_data.py|Accessor function for data from Appendix A, plus code to validate data
 
-## Orbital calculations: 
+## ODE integrators 
 
  File | Purpose |
 --------------------------|---------------------------------------------------------------------
@@ -37,7 +37,7 @@ adams.py|Adams-Bashforth-Moulton Predictor/Corrector
 euler.py|Simple Euler method for integrations ODE
 fehlberg.py|Explore use of Fehlberg's method
 integrators.py|Used to set up an integrator
-rk4|Explicit Runge Kutta integrators
+rk4.py|Explicit Runge Kutta integrators
 rki.py|Implicit Runge Kutta (symplectic) integrators
 template.py|Template for python script
 Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor
