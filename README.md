@@ -40,5 +40,5 @@ integrators.py|Used to set up an integrator
 rk4.py|Explicit Runge Kutta integrators
 rki.py|Implicit Runge Kutta (symplectic) integrators
 template.py|Template for python script
-Lorentz.py|This tests the ImplicitRungeKutta Integrator by calculating the evolution of the Lorentz Attractor
+Lorentz.py|This tests an Integrator by calculating the evolution of the Lorentz Attractor
 verlet.py|Integrator using Velocity Verlet algorithm
