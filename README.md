@@ -29,16 +29,9 @@ A|||Appendix A, **Solar System Data**
 -||julian.py|Conversion between Calendar dates and Julian dates
 -||md_data.py|Accessor function for data from Appendix A, plus code to validate data
 
-## ODE integrators 
+## Misc
 
- File | Purpose |
---------------------------|---------------------------------------------------------------------
-adams.py|Adams-Bashforth-Moulton Predictor/Corrector
-euler.py|Simple Euler method for integrations ODE
-fehlberg.py|Explore use of Fehlberg's method
-integrators.py|Used to set up an integrator
-rk4.py|Explicit Runge Kutta integrators
-rki.py|Implicit Runge Kutta (symplectic) integrators
-template.py|Template for python script
-Lorentz.py|This tests an Integrator by calculating the evolution of the Lorentz Attractor
-verlet.py|Integrator using Velocity Verlet algorithm
+File| Description 
+-------------|------------------------------------------------------------
+astro.py|WingIDE project
+template.py|Template for python scripts

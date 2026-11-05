@@ -25,8 +25,8 @@ from time import strftime,time
 from matplotlib.pyplot import figure, show, colorbar
 from matplotlib import rcParams
 import numpy as np
-from integrators import IntegratorFactory
-from rki import ImplicitRungeKutta
+from shared.integrators import IntegratorFactory
+from shared.rki import ImplicitRungeKutta
 
 __version__ = '1.0'
 __author__ = 'Simon Crase'
