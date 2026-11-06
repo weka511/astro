@@ -40,6 +40,27 @@ Check calculations from \cite{ssd}
 
 \section{The Two-body problem}
 
+\subsection{Exercise 2.1}
+
+\begin{quotation}
+	Consider a two-body problem in which the force of attraction is proportional to the radial separation of the two bodies. Show that the motion of one mass with respect to the other is a centered ellipse\cite{ssd}.
+\end{quotation}
+
+
+Following \cite{baez2005Kepler}, the energy is given by:
+\begin{align*}
+	E =& \frac{m}{2}\big[\dot{x}^2 + \dot{y}^2 \big] + \frac{1}{2}k\big[x^2 + y^2\big]\\
+	=& \frac{m}{2}\big[\dot{r}^2 + r^2\dot{\theta}^2 \big] + \frac{1}{2}k r^2 \text{. We use Kepler's 2nd law}\\
+	h =& r^2\dot{\theta} \numberthis \label{eq:kepler:2}\\
+	E =& \frac{m}{2}\big[\dot{r}^2 + \frac{h^2}{r^2} \big] + \frac{1}{2}k r^2\\
+	\frac{2E}{m} =& \dot{r}^2 + \frac{h^2}{r^2} + \frac{k}{m} r^2\\
+	\dot{r} =& \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2}\text{, but also}\\
+	\dot{r} =& \frac{dr}{d\theta} \dot{\theta} \text{ and \eqref{eq:kepler:2} gives}\\
+	=& \frac{dr}{d\theta} \frac{h}{r^2}\\
+	=&\sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2}\\
+	\frac{dr}{d\theta} =& \frac{r^2}{h} \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2}
+\end{align*}
+
 \subsection{The Orbit in Space--\cite[2.8]{ssd}}
 
 From  \cite[(2.119) and (2.120)]{ssd}:
