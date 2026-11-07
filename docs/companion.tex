@@ -74,7 +74,8 @@ Following \cite{baez2005Kepler}, the energy is given by:
 	=& -\frac{1}{2}\int \frac{dz}{\sqrt{2\frac{E}{m h^2}z-  z^2 - (\frac{E}{m h^2})^2 + (\frac{E}{m h^2})^2- \frac{k}{m h^2} }}\\
 	=& -\frac{1}{2}\int \frac{dz}{\sqrt{ - (z-\frac{E}{m h^2})^2 + (\frac{E}{m h^2})^2- \frac{k}{m h^2} }} \numberthis \label{eq:theta}
 \end{align*}
-\begin{lemma}\label{lem:my_lemma}
+
+\begin{lemma}\label{lem:integral1}
 	\begin{align*}
 		\int \frac{dx}{\sqrt{1-x^2}} =& -\arccos x + C
 	\end{align*}
@@ -91,20 +92,33 @@ Following \cite{baez2005Kepler}, the energy is given by:
 	\end{align*}
 \end{proof}
 
-\begin{corollary}\label{lem:my_corollary}
+\begin{corollary}\label{cor:integral1}
 	\begin{align*}
-		\int \frac{dx}{\sqrt{a^2-b^2x^2}} =& -\frac{1}{b}\arccos \frac{b}{a}x + C
+		\int \frac{dx}{\sqrt{-a^2x^2 + 2bx +c}} =& -\arccos{\frac{x}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}} + C
 	\end{align*}
 \end{corollary}
 
 \begin{proof}
-		\begin{align*}
-		\int \frac{dx}{\sqrt{a^2-b^2x^2}} =& \frac{1}{\cancel{a}}\frac{\cancel{a}}{b}\int \frac{b}{a}\frac{dx}{\sqrt{1-\frac{b^2}{a^2}x^2}}\\
-		=& \frac{1}{b}\int \frac{dx^\prime}{\sqrt{1-dx^{\prime2}}} \textit{, where $x^\prime=\frac{b}{a}x$}\\
-		=& -\frac{1}{b}\arccos x^\prime + C\\
-		=& -\frac{1}{b}\arccos \frac{b}{a}x + C
+	\begin{align*}
+		\int \frac{dx}{\sqrt{-a^2x^2 + 2bx +c}} =& \frac{1}{a} \int \frac{dx}{\sqrt{- x^2 + 2\frac{b}{a^2}x +\frac{c}{a^2}}}\\
+		=& \frac{1}{a} \int \frac{dx}{\sqrt{- x^2 + 2\frac{b}{a^2}x -\frac{b^2}{a^4} + \frac{b^2}{a^4} +\frac{c}{a^2}}}\\
+		=& \frac{1}{a} \int \frac{dx}{\sqrt{- (x-\frac{b}{a^2})^2 +  \frac{b^2}{a^4} +\frac{c}{a^2}}}\\
+		=&\frac{1}{a\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}\int \frac{dx}{\sqrt{1-\big(\frac{x-\frac{b}{a^2}}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}\big)^2}}\\
+		=& \frac{1}{a} \int \frac{dx^\prime}{\sqrt{1-x^{\prime 2}}} \textit{, where $x^\prime = \frac{x}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}$}\\
+		=&-\arccos{x^\prime} + C \text{, from Lemma \ref{lem:integral1}}\\
+		=&-\arccos{\frac{x}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}} + C
 	\end{align*}
 \end{proof}
+
+From \eqref{eq:theta}
+\begin{align*}
+	\theta =& -\frac{h}{2}\int \frac{dz}{\sqrt{\frac{2E z}{m}- h^2 z^2 - \frac{k}{m} }} \text{. Define}\\
+	a =& h\\
+	b =& \frac{E}{m}\\
+	c =& \frac{k}{m} \text{, then Corollary \ref{cor:integral1} gives}\\
+	z =& \sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}\cos{(-\frac{2\theta}{h}) + C}\\
+	r^2 =& \frac{1}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}\cos{\frac{2\theta}{h} + C}}
+\end{align*}
 \subsection{The Orbit in Space--\cite[2.8]{ssd}}
 
 From  \cite[(2.119) and (2.120)]{ssd}:
