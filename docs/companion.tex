@@ -18,6 +18,7 @@
 
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{amsthm}
 \usepackage{gensymb}
 \usepackage{url}
 \usepackage{mathtools}
@@ -28,6 +29,9 @@
 \author{Simon Crase}
 \newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}}
 \newcommand{\bigO}[1]{\mathcal{O}\left(#1\right)}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
 \begin{document}
 
 \maketitle
@@ -54,13 +58,53 @@ Following \cite{baez2005Kepler}, the energy is given by:
 	h =& r^2\dot{\theta} \numberthis \label{eq:kepler:2}\\
 	E =& \frac{m}{2}\big[\dot{r}^2 + \frac{h^2}{r^2} \big] + \frac{1}{2}k r^2\\
 	\frac{2E}{m} =& \dot{r}^2 + \frac{h^2}{r^2} + \frac{k}{m} r^2\\
-	\dot{r} =& \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2}\text{, but also}\\
-	\dot{r} =& \frac{dr}{d\theta} \dot{\theta} \text{ and \eqref{eq:kepler:2} gives}\\
+	\dot{r} =& \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2}\text{. Using \eqref{eq:kepler:2} again}\\
+	\dot{r} =& \frac{dr}{d\theta} \dot{\theta} \\
 	=& \frac{dr}{d\theta} \frac{h}{r^2}\\
-	=&\sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2}\\
-	\frac{dr}{d\theta} =& \frac{r^2}{h} \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2}
+	\frac{dr}{d\theta} =& \frac{r^2}{h} \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2} \text{. Following \cite{goldstein1950mechanics} we substitute}\\
+	u =& \frac{1}{r}\\
+	-\frac{1}{\cancel{u^2}} \frac{du}{d\theta} =& \frac{1}{h \cancel{u^2}} \sqrt{\frac{2E}{m}- h^2 u^2 - \frac{k}{m u^2} } \\
+	 \frac{du}{d\theta} =& -\frac{1}{h} \sqrt{\frac{2E}{m}- h^2 u^2 - \frac{k}{m u^2} } \text{. Following \cite{goldstein1950mechanics} we substitute}\\
+	 u^2 =& z\\
+	 \frac{dz}{d\theta} =& 2u \frac{du}{d\theta}\\
+	 =& -\frac{2}{h} u \sqrt{\frac{2E}{m}- h^2 u^2 - \frac{k}{m u^2}}\\
+	 =& -\frac{2}{h}  \sqrt{\frac{2Eu^2}{m}- h^2 u^4 - \frac{k}{m} }\\
+	 =& -\frac{2}{h}  \sqrt{\frac{2E z}{m}- h^2 z^2 - \frac{k}{m} }\\
+	\theta =& -\frac{h}{2}\int \frac{dz}{\sqrt{\frac{2E z}{m}- h^2 z^2 - \frac{k}{m} }} \\
+	=& -\frac{1}{2}\int \frac{dz}{\sqrt{2\frac{E}{m h^2}z-  z^2 - (\frac{E}{m h^2})^2 + (\frac{E}{m h^2})^2- \frac{k}{m h^2} }}\\
+	=& -\frac{1}{2}\int \frac{dz}{\sqrt{ - (z-\frac{E}{m h^2})^2 + (\frac{E}{m h^2})^2- \frac{k}{m h^2} }} \numberthis \label{eq:theta}
 \end{align*}
+\begin{lemma}\label{lem:my_lemma}
+	\begin{align*}
+		\int \frac{dx}{\sqrt{1-x^2}} =& -\arccos x + C
+	\end{align*}
+\end{lemma}
 
+\begin{proof}
+	Substituting $\theta : x=\cos{\theta}$
+	\begin{align*}
+		\int \frac{dx}{\sqrt{1-x^2}} =& \frac{- \sin{\theta} \theta}{\sqrt{1-(\cos{\theta})^2}}\\
+		=&\frac{- \sin{\theta} \theta}{\sqrt{(\sin{\theta})^2}}\\
+		=&\frac{- \cancel{\sin{\theta}} \theta}{\cancel{\sin{\theta}}}\\
+		=&-\theta + C\\
+		=& -\arccos x + C
+	\end{align*}
+\end{proof}
+
+\begin{corollary}\label{lem:my_corollary}
+	\begin{align*}
+		\int \frac{dx}{\sqrt{a^2-b^2x^2}} =& -\frac{1}{b}\arccos \frac{b}{a}x + C
+	\end{align*}
+\end{corollary}
+
+\begin{proof}
+		\begin{align*}
+		\int \frac{dx}{\sqrt{a^2-b^2x^2}} =& \frac{1}{\cancel{a}}\frac{\cancel{a}}{b}\int \frac{b}{a}\frac{dx}{\sqrt{1-\frac{b^2}{a^2}x^2}}\\
+		=& \frac{1}{b}\int \frac{dx^\prime}{\sqrt{1-dx^{\prime2}}} \textit{, where $x^\prime=\frac{b}{a}x$}\\
+		=& -\frac{1}{b}\arccos x^\prime + C\\
+		=& -\frac{1}{b}\arccos \frac{b}{a}x + C
+	\end{align*}
+\end{proof}
 \subsection{The Orbit in Space--\cite[2.8]{ssd}}
 
 From  \cite[(2.119) and (2.120)]{ssd}:
