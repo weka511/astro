@@ -121,9 +121,33 @@ From \eqref{eq:theta}
 	z =& \sqrt{b^2 +c}\cos{(-2\theta) + C}\\
 	u^2 =& \sqrt{b^2 +c}\cos{(-2\theta) + C}\\
 	r^2 =& \frac{1}{\sqrt{b^2 +c}\cos{2\theta + C}}\\
-	r^2 =& \frac{1}{\sqrt{\frac{E^2}{m^2 h^4} +\frac{k}{m h^2}}\cos{2\theta+ C}}
+	r^2 =& \frac{1}{\sqrt{\frac{E^2}{m^2 h^4} +\frac{k}{m h^2}}\cos{2\theta+ C}} \numberthis \label{eq:r:theta}
 \end{align*}
 
+\begin{lemma}\label{lem:ellipse}
+	The locus of \eqref{eq:r:theta} is an ellipse.
+\end{lemma}
+
+\begin{proof}
+	Rewrite \eqref{eq:r:theta}:
+	\begin{align*}
+		r^2 =& \frac{1}{\alpha \cos{2\theta} + \beta} \text{, for suitable $\alpha$ and $\beta$, and define}\\
+		x =& r \cos{\theta} \text{, and}\\
+		y =& r \sin{\theta}
+	\end{align*}
+	Then the locus will be an ellipse, whose axes are aligned with the $xy$ coordinate system, if and only iff $\exists A>0$ and $B>0 :$
+	\begin{align*}
+		\frac{x^2}{A}+\frac{y^2}{B}=&1 \text{, now}\\
+		\frac{x^2}{A}+\frac{y^2}{B}=&\frac{\frac{\cos^2\theta}{A}+\frac{\sin^2\theta}{B}}{\alpha \cos{2\theta} + \beta}\\
+		=&\frac{1}{AB}\frac{B\cos^2\theta+A\sin^2\theta}{\alpha \cos{2\theta} + \beta}\\
+		=&\frac{1}{AB}\frac{(B-A)\cos^2\theta + A}{2\alpha \cos^2\theta+\beta}\\
+		=&\frac{1}{AB} \text{, where we have set}\\
+		A =& \beta \gamma \text{, for some $\gamma$}\\
+		B =& (2\alpha + \beta) \gamma\\
+		\frac{x^2}{A}+\frac{y^2}{B}=&(2\alpha + \beta) \beta \gamma^2 \text{, so we need}\\
+		\gamma =& \frac{1}{\sqrt{(2\alpha + \beta) \beta}}
+	\end{align*}
+\end{proof}
 \subsection{The Orbit in Space--\cite[2.8]{ssd}}
 
 From  \cite[(2.119) and (2.120)]{ssd}:
