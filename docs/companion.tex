@@ -24,6 +24,7 @@
 \usepackage{mathtools}
 \usepackage[nottoc]{tocbibind}
 \usepackage{cancel}
+\usepackage{thmtools} 
 %opening
 \title{Companion to Solar System Dynamics}
 \author{Simon Crase}
@@ -36,6 +37,7 @@
 
 \maketitle
 \tableofcontents
+\listoftheorems[title=List of Theorems]
 \begin{abstract}
 This document contains exercises from \cite{ssd}
 \end{abstract}
@@ -50,25 +52,27 @@ This document contains exercises from \cite{ssd}
 	Consider a two-body problem in which the force of attraction is proportional to the radial separation of the two bodies. Show that the motion of one mass with respect to the other is a centered ellipse\cite{ssd}.
 \end{quotation}
 
-
 I will follow the treatment in \cite{baez2005Kepler}; the energy is given by:
 \begin{align*}
 		E =& \frac{m}{2}\big[\dot{x}^2 + \dot{y}^2 \big] + \frac{1}{2}k\big[x^2 + y^2\big]\\
-	=& \frac{m}{2}\big[\dot{r}^2 + r^2\dot{\theta}^2 \big] + \frac{1}{2}k r^2 \text{. We use Kepler's 2nd law}\\
+	=& \frac{m}{2}\big[\dot{r}^2 + r^2\dot{\theta}^2 \big] + \frac{1}{2}k r^2 
+\end{align*}
+From Kepler's 2nd law:
+\begin{align*}
 	h =& r^2\dot{\theta} \numberthis \label{eq:kepler:2}\\
 	E =& \frac{m}{2}\big[\dot{r}^2 + \frac{h^2}{r^2} \big] + \frac{1}{2}k r^2\\
 	\frac{2E}{m} =& \dot{r}^2 + \frac{h^2}{r^2} + \frac{k}{m} r^2\\
 	\dot{r} =& \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2}
 \end{align*}
-We will determine the dependence of $r$ on $\theta$.
+We need the dependence of $r$ on $\theta$ to understand the shape of the orbit.
 \begin{align*}
-	\dot{r} =& \frac{dr}{d\theta} \dot{\theta} \text{. Using \eqref{eq:kepler:2} again}\\
-	=& \frac{dr}{d\theta} \frac{h}{r^2}\\
+	\dot{r} =& \frac{dr}{d\theta} \dot{\theta} \\
+	=& \frac{dr}{d\theta} \frac{h}{r^2}\text{, using \eqref{eq:kepler:2} again}\\
 	\frac{dr}{d\theta} =& \frac{r^2}{h} \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2} \text{. Following \cite{goldstein1950mechanics} we change the variable}\\
-	u =& \frac{1}{r}\\
+	u =& \frac{1}{r} \numberthis \label{eq:introduce:u}\\
 	-\frac{1}{\cancel{u^2}} \frac{du}{d\theta} =& \frac{1}{h \cancel{u^2}} \sqrt{\frac{2E}{m}- h^2 u^2 - \frac{k}{m u^2} } \\
 	 \frac{du}{d\theta} =& -\frac{1}{h} \sqrt{\frac{2E}{m}- h^2 u^2 - \frac{k}{m u^2} } \text{. Again change the variable, following \cite{goldstein1950mechanics}}\\
-	 u^2 =& z\\
+	 u^2 =& z \numberthis \label{eq:introduce:z}\\
 	 \frac{dz}{d\theta} =& 2u \frac{du}{d\theta}\\
 	 =& -\frac{2}{h} u \sqrt{\frac{2E}{m}- h^2 u^2 - \frac{k}{m u^2}}\\
 	 =& -\frac{2}{h}  \sqrt{\frac{2Eu^2}{m}- h^2 u^4 - \frac{k}{m} }\\
@@ -77,7 +81,7 @@ We will determine the dependence of $r$ on $\theta$.
 \end{align*}
 
 We need the following Lemma to integrate \eqref{eq:theta} .
-\begin{lemma}\label{lem:integral1}
+\begin{lemma}[$\int \frac{dx}{\sqrt{1-x^2}}$]\label{lem:integral1}
 	\begin{align*}
 		\int \frac{dx}{\sqrt{1-x^2}} =& -\arccos x + C
 	\end{align*}
@@ -94,7 +98,7 @@ We need the following Lemma to integrate \eqref{eq:theta} .
 	\end{align*}
 \end{proof}
 
-\begin{corollary}\label{cor:integral1}
+\begin{corollary}[$\int \frac{dx}{\sqrt{-a^2x^2 + 2bx +c}}$]\label{cor:integral1}
 	\begin{align*}
 		\int \frac{dx}{\sqrt{-a^2x^2 + 2bx +c}} =& -\arccos{\frac{x-\frac{b}{a^2}}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}} + C
 	\end{align*}
@@ -118,14 +122,14 @@ From \eqref{eq:theta}
 	a =& 1\\
 	b =& \frac{E}{mh^2}\\
 	c =& \frac{k}{mh^2} \text{, then Corollary \ref{cor:integral1} gives}\\
-	z =& \sqrt{b^2 +c}\cos{(-2\theta) + C}\\
-	u^2 =& \sqrt{b^2 +c}\cos{(-2\theta) + C}\\
-	r^2 =& \frac{1}{\sqrt{b^2 +c}\cos{2\theta + C}}\\
-	r^2 =& \frac{1}{\sqrt{\frac{E^2}{m^2 h^4} +\frac{k}{m h^2}}\cos{2\theta+ C}} \numberthis \label{eq:r:theta}
+	z =& \sqrt{[b^2 +c]}\cos{(-2\theta) + C}\\
+	u^2 =& \sqrt{[b^2 +c]}\cos{(-2\theta) + C} \text{, on applying \ref{eq:introduce:z}}\\
+	r^2 =& \frac{1}{[\sqrt{b^2 +c}]\cos{2\theta + C}} \text{, on applying \ref{eq:introduce:u}, which becomes:}\\
+	r^2 =& \frac{1}{\sqrt{[\frac{E^2}{m^2 h^4} +\frac{k}{m h^2}]}\cos{2\theta+ C}} \numberthis \label{eq:r:theta}
 \end{align*}
 
-\begin{lemma}\label{lem:ellipse}
-	The locus of \eqref{eq:r:theta} is an ellipse.
+\begin{lemma}[The locus of \eqref{eq:r:theta} is an ellipse]\label{lem:ellipse}
+	If $C > \frac{E^2}{m^2 h^4} + \frac{k}{m h^2}$, the locus of \eqref{eq:r:theta} is an ellipse.
 \end{lemma}
 
 \begin{proof}
@@ -137,17 +141,20 @@ From \eqref{eq:theta}
 		x =& r \cos{\theta} \text{, and}\\
 		y =& r \sin{\theta}
 	\end{align*}
-	Then the locus will be an ellipse, whose axes are aligned with the $xy$ coordinate system, if and only iff $\exists A>0$ and $B>0 :$
+	The locus will be an ellipse, whose axes are aligned with the $xy$ coordinate system, if and only iff $\exists A>0$ and $B>0 :$
 	\begin{align*}
 		\frac{x^2}{A}+\frac{y^2}{B}=&1 \text{, now}\\
 		\frac{x^2}{A}+\frac{y^2}{B}=&\frac{\frac{\cos^2\theta}{A}+\frac{\sin^2\theta}{B}}{\alpha \cos{2\theta} + \beta}\\
 		=&\frac{1}{AB}\frac{B\cos^2\theta+A\sin^2\theta}{\alpha \cos{2\theta} + \beta}\\
-		=&\frac{1}{AB}\frac{(B-A)\cos^2\theta + A}{2\alpha \cos^2\theta+\beta}\\
+		=&\frac{1}{AB}\frac{(B-A)\cos^2\theta + A}{2\alpha \cos^2\theta-\alpha+\beta}\\
 		=&\frac{1}{AB} \text{, where we have set}\\
-		A =& \beta \gamma \text{, for some $\gamma$}\\
-		B =& (2\alpha + \beta) \gamma\\
-		\frac{x^2}{A}+\frac{y^2}{B}=&(2\alpha + \beta) \beta \gamma^2 \text{, so we need}\\
-		\gamma =& \frac{1}{\sqrt{(2\alpha + \beta) \beta}}
+		A =& (\beta-\alpha) \gamma \text{, for some $\gamma$}\\
+		B -A=& 2\alpha \gamma\\
+		B =& A + 2\alpha \gamma\\
+		=& (\beta+\alpha) \gamma\\
+		\frac{x^2}{A}+\frac{y^2}{B}=&\frac{1}{(\beta-\alpha) (\beta+\alpha) \gamma^2} \text{, so we need}\\
+		\gamma =& \frac{1}{\sqrt{\beta^2 - \alpha^2}}\\
+		=& \frac{1}{\sqrt{C - \frac{E^2}{m^2 h^4} - \frac{k}{m h^2}}}
 	\end{align*}
 \end{proof}
 \subsection{The Orbit in Space--\cite[Section 2.8]{ssd}}
@@ -165,6 +172,7 @@ P_2 = \begin{pmatrix}
 0 & \cos I & - \sin I\\
 0 & \sin I & \cos I
 \end{pmatrix}
+\text{, }
 P_3 =& \begin{pmatrix}
 \cos \Omega & - \sin \Omega & 0\\
 \sin \Omega & cos \Omega & 0\\
