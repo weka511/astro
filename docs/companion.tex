@@ -37,7 +37,7 @@
 \maketitle
 \tableofcontents
 \begin{abstract}
-Check calculations from \cite{ssd}
+This document contains exercises from \cite{ssd}
 \end{abstract}
 
 \section{Structure of the Solar System}
@@ -51,30 +51,32 @@ Check calculations from \cite{ssd}
 \end{quotation}
 
 
-Following \cite{baez2005Kepler}, the energy is given by:
+I will follow the treatment in \cite{baez2005Kepler}; the energy is given by:
 \begin{align*}
-	E =& \frac{m}{2}\big[\dot{x}^2 + \dot{y}^2 \big] + \frac{1}{2}k\big[x^2 + y^2\big]\\
+		E =& \frac{m}{2}\big[\dot{x}^2 + \dot{y}^2 \big] + \frac{1}{2}k\big[x^2 + y^2\big]\\
 	=& \frac{m}{2}\big[\dot{r}^2 + r^2\dot{\theta}^2 \big] + \frac{1}{2}k r^2 \text{. We use Kepler's 2nd law}\\
 	h =& r^2\dot{\theta} \numberthis \label{eq:kepler:2}\\
 	E =& \frac{m}{2}\big[\dot{r}^2 + \frac{h^2}{r^2} \big] + \frac{1}{2}k r^2\\
 	\frac{2E}{m} =& \dot{r}^2 + \frac{h^2}{r^2} + \frac{k}{m} r^2\\
-	\dot{r} =& \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2}\text{. Using \eqref{eq:kepler:2} again}\\
-	\dot{r} =& \frac{dr}{d\theta} \dot{\theta} \\
+	\dot{r} =& \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2}
+\end{align*}
+We will determine the dependence of $r$ on $\theta$.
+\begin{align*}
+	\dot{r} =& \frac{dr}{d\theta} \dot{\theta} \text{. Using \eqref{eq:kepler:2} again}\\
 	=& \frac{dr}{d\theta} \frac{h}{r^2}\\
-	\frac{dr}{d\theta} =& \frac{r^2}{h} \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2} \text{. Following \cite{goldstein1950mechanics} we substitute}\\
+	\frac{dr}{d\theta} =& \frac{r^2}{h} \sqrt{\frac{2E}{m}-\frac{h^2}{r^2} - \frac{k}{m} r^2} \text{. Following \cite{goldstein1950mechanics} we change the variable}\\
 	u =& \frac{1}{r}\\
 	-\frac{1}{\cancel{u^2}} \frac{du}{d\theta} =& \frac{1}{h \cancel{u^2}} \sqrt{\frac{2E}{m}- h^2 u^2 - \frac{k}{m u^2} } \\
-	 \frac{du}{d\theta} =& -\frac{1}{h} \sqrt{\frac{2E}{m}- h^2 u^2 - \frac{k}{m u^2} } \text{. Following \cite{goldstein1950mechanics} we substitute}\\
+	 \frac{du}{d\theta} =& -\frac{1}{h} \sqrt{\frac{2E}{m}- h^2 u^2 - \frac{k}{m u^2} } \text{. Again change the variable, following \cite{goldstein1950mechanics}}\\
 	 u^2 =& z\\
 	 \frac{dz}{d\theta} =& 2u \frac{du}{d\theta}\\
 	 =& -\frac{2}{h} u \sqrt{\frac{2E}{m}- h^2 u^2 - \frac{k}{m u^2}}\\
 	 =& -\frac{2}{h}  \sqrt{\frac{2Eu^2}{m}- h^2 u^4 - \frac{k}{m} }\\
-	 =& -\frac{2}{h}  \sqrt{\frac{2E z}{m}- h^2 z^2 - \frac{k}{m} }\\
-	\theta =& -\frac{h}{2}\int \frac{dz}{\sqrt{\frac{2E z}{m}- h^2 z^2 - \frac{k}{m} }} \\
-	=& -\frac{1}{2}\int \frac{dz}{\sqrt{2\frac{E}{m h^2}z-  z^2 - (\frac{E}{m h^2})^2 + (\frac{E}{m h^2})^2- \frac{k}{m h^2} }}\\
-	=& -\frac{1}{2}\int \frac{dz}{\sqrt{ - (z-\frac{E}{m h^2})^2 + (\frac{E}{m h^2})^2- \frac{k}{m h^2} }} \numberthis \label{eq:theta}
+	 =& -2  \sqrt{\frac{2E z}{mh^2}-  z^2 - \frac{k}{mh^2} }\\
+	\theta =& -\frac{1}{2}\int \frac{dz}{\sqrt{\frac{2E z}{mh^2}- z^2 - \frac{k}{mh^2} }}  \numberthis \label{eq:theta}
 \end{align*}
 
+We need the following Lemma to integrate \eqref{eq:theta} .
 \begin{lemma}\label{lem:integral1}
 	\begin{align*}
 		\int \frac{dx}{\sqrt{1-x^2}} =& -\arccos x + C
@@ -84,9 +86,9 @@ Following \cite{baez2005Kepler}, the energy is given by:
 \begin{proof}
 	Substituting $\theta : x=\cos{\theta}$
 	\begin{align*}
-		\int \frac{dx}{\sqrt{1-x^2}} =& \frac{- \sin{\theta} \theta}{\sqrt{1-(\cos{\theta})^2}}\\
-		=&\frac{- \sin{\theta} \theta}{\sqrt{(\sin{\theta})^2}}\\
-		=&\frac{- \cancel{\sin{\theta}} \theta}{\cancel{\sin{\theta}}}\\
+		\int \frac{dx}{\sqrt{1-x^2}} =& \int \frac{- \sin{\theta} d\theta}{\sqrt{1-(\cos{\theta})^2}}\\
+		=&\int \frac{- \sin{\theta} d\theta}{\sqrt{(\sin{\theta})^2}}\\
+		=&\int \frac{- \cancel{\sin{\theta}} d\theta}{\cancel{\sin{\theta}}}\\
 		=&-\theta + C\\
 		=& -\arccos x + C
 	\end{align*}
@@ -94,7 +96,7 @@ Following \cite{baez2005Kepler}, the energy is given by:
 
 \begin{corollary}\label{cor:integral1}
 	\begin{align*}
-		\int \frac{dx}{\sqrt{-a^2x^2 + 2bx +c}} =& -\arccos{\frac{x}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}} + C
+		\int \frac{dx}{\sqrt{-a^2x^2 + 2bx +c}} =& -\arccos{\frac{x-\frac{b}{a^2}}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}} + C
 	\end{align*}
 \end{corollary}
 
@@ -103,22 +105,25 @@ Following \cite{baez2005Kepler}, the energy is given by:
 		\int \frac{dx}{\sqrt{-a^2x^2 + 2bx +c}} =& \frac{1}{a} \int \frac{dx}{\sqrt{- x^2 + 2\frac{b}{a^2}x +\frac{c}{a^2}}}\\
 		=& \frac{1}{a} \int \frac{dx}{\sqrt{- x^2 + 2\frac{b}{a^2}x -\frac{b^2}{a^4} + \frac{b^2}{a^4} +\frac{c}{a^2}}}\\
 		=& \frac{1}{a} \int \frac{dx}{\sqrt{- (x-\frac{b}{a^2})^2 +  \frac{b^2}{a^4} +\frac{c}{a^2}}}\\
-		=&\frac{1}{a\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}\int \frac{dx}{\sqrt{1-\big(\frac{x-\frac{b}{a^2}}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}\big)^2}}\\
-		=& \frac{1}{a} \int \frac{dx^\prime}{\sqrt{1-x^{\prime 2}}} \textit{, where $x^\prime = \frac{x}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}$}\\
+		=&\frac{1}{a\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}\int \frac{dx}{\sqrt{1-\bigg[\frac{x-\frac{b}{a^2}}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}\bigg]^2}}\\
+		=& \frac{1}{a} \int \frac{dx^\prime}{\sqrt{1-x^{\prime 2}}} \textit{, where $x^\prime = \frac{x-\frac{b}{a^2}}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}$}\\
 		=&-\arccos{x^\prime} + C \text{, from Lemma \ref{lem:integral1}}\\
-		=&-\arccos{\frac{x}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}} + C
+		=&-\arccos{\frac{x-\frac{b}{a^2}}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}}} + C
 	\end{align*}
 \end{proof}
 
 From \eqref{eq:theta}
 \begin{align*}
-	\theta =& -\frac{h}{2}\int \frac{dz}{\sqrt{\frac{2E z}{m}- h^2 z^2 - \frac{k}{m} }} \text{. Define}\\
-	a =& h\\
-	b =& \frac{E}{m}\\
-	c =& \frac{k}{m} \text{, then Corollary \ref{cor:integral1} gives}\\
-	z =& \sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}\cos{(-\frac{2\theta}{h}) + C}\\
-	r^2 =& \frac{1}{\sqrt{\frac{b^2}{a^4} +\frac{c}{a^2}}\cos{\frac{2\theta}{h} + C}}
+	\theta =& -\frac{1}{2}\int \frac{dz}{\sqrt{\frac{2E z}{mh^2}- z^2 - \frac{k}{mh^2} }} \text{. Define}\\
+	a =& 1\\
+	b =& \frac{E}{mh^2}\\
+	c =& \frac{k}{mh^2} \text{, then Corollary \ref{cor:integral1} gives}\\
+	z =& \sqrt{b^2 +c}\cos{(-2\theta) + C}\\
+	u^2 =& \sqrt{b^2 +c}\cos{(-2\theta) + C}\\
+	r^2 =& \frac{1}{\sqrt{b^2 +c}\cos{2\theta + C}}\\
+	r^2 =& \frac{1}{\sqrt{\frac{E^2}{m^2 h^4} +\frac{k}{m h^2}}\cos{2\theta+ C}}
 \end{align*}
+
 \subsection{The Orbit in Space--\cite[2.8]{ssd}}
 
 From  \cite[(2.119) and (2.120)]{ssd}:
