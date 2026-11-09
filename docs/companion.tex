@@ -19,12 +19,15 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsthm}
+\usepackage{float}
 \usepackage{gensymb}
 \usepackage{url}
 \usepackage{mathtools}
 \usepackage[nottoc]{tocbibind}
 \usepackage{cancel}
 \usepackage{thmtools} 
+\usepackage{tikz}
+\usetikzlibrary{3d, calc}
 %opening
 \title{Companion to Solar System Dynamics}
 \author{Simon Crase}
@@ -33,10 +36,14 @@
 \newtheorem{theorem}{Theorem}[section]
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proofpart}{Part}[theorem]
+\renewcommand\theproofpart{\arabic{proofpart}}
+
 \begin{document}
 
 \maketitle
 \tableofcontents
+\listoffigures
 \listoftheorems[title=List of Theorems]
 \begin{abstract}
 This document contains exercises from \cite{ssd}
@@ -49,7 +56,100 @@ This document contains exercises from \cite{ssd}
 \end{theorem}
 
 \begin{proof}
-	content...
+	I will consider each case separately
+	\begin{proofpart}[Cube]
+		Figure \ref{fig:cube} depicts a cube. If a sphere is inscribed in the cube, its radius will be half the side of the cube; without loss of generality we can suppose that the radius is 1.. The circumscribed sphere will pass through all the vertices of the cube, so its radius will the distance of any vertex from the centre. Since the radius, and hence the half length of any side is one, the required distance is $\sqrt{1^2+1^2+1^2}=\sqrt{3}.\qed$
+		\begin{figure}[H]
+			\begin{center}
+				\caption{Cube}\label{fig:cube}
+				\begin{tikzpicture}[line width=2pt]
+					\draw (0,2,0) -- (2,2,0) -- (2,0,0) -- (2,0,2) -- (0,0,2) -- (0,2,2) -- cycle;
+					\draw[line cap=round] (2,2,2) -- (0,2,2) (2,2,2) -- (2,0,2) (2,2,2) -- (2,2,0);
+				\end{tikzpicture}
+			\end{center}
+		\end{figure}
+	\end{proofpart}
+	\begin{proofpart}[Octahedron]
+		content...
+	\end{proofpart}
+	\begin{proofpart}[Tetrahedron]
+		foo
+		\begin{figure}[H]
+			\caption{Tetrahedron}
+		\begin{center}
+				\begin{tikzpicture}[
+				x={(1mm,-3.5mm)},
+				y={(1cm,0cm)},
+				z={(0cm,1cm)},
+				contour/.style={gray,densely dashed},
+				line width=0.8pt
+				]
+				% edge length a
+				\pgfmathsetmacro{\a}{4}
+				
+				% Coordinates of regular tetrahedron
+				\coordinate (A) at (0, 0, {sqrt(6)*\a/3});
+				\coordinate (B) at ({sqrt(3)*\a/6}, -\a/2, 0);
+				\coordinate (C) at ({sqrt(3)*\a/6}, \a/2, 0);
+				\coordinate (D) at ({-sqrt(3)*\a/3}, 0, 0);
+				
+				% Centroid of base triangle BCD
+				\coordinate (H) at (0, 0, 0);
+				
+				% Center of tetrahedron (incenter = circumcenter)
+				\coordinate (O) at (0, 0, {sqrt(6)*\a/12});
+				
+				% Labels
+				\node[above] at (A) {$A$};
+				\node[left] at (B) {$B$};
+				\node[right] at (C) {$C$};
+				\node[left] at (D) {$D$};
+				\node[below] at (H) {$H$};
+				\node[above right] at (O) {$O$};
+				
+				% Points
+				\fill (O) circle (1pt) (H) circle (1pt);
+				
+				% Edges
+				\draw (A) -- (B) -- (C) -- cycle;
+				\draw[dashed] (A) -- (D) -- (B);
+				\draw[dashed] (D) -- (C);
+				
+				% Contour lines for height annotation
+				\draw[contour] (A) -- ++ (0,2.2,0);
+				\draw[contour] (H) -- ++ (0,2.2,0);
+				\draw[contour] (O) -- ++ (0,2.2,0);
+				
+				% Height labels
+				\draw[<->] ($(A)+(0,2,0)$) -- ($(O)+(0,2,0)$) 
+				node[midway,right] {$\frac{\sqrt{6}}{4}a$};
+				\draw[<->] ($(H)+(0,2,0)$) -- ($(O)+(0,2,0)$) 
+				node[midway,right] {$\frac{\sqrt{6}}{12}a$};
+				
+				% Compute screen distance between O and A for circumradius
+				\path (A);
+				\pgfgetlastxy{\Ax}{\Ay}
+				\path (O);
+				\pgfgetlastxy{\Ox}{\Oy}
+				\pgfmathsetmacro{\Rscreen}{veclen(\Ax-\Ox,\Ay-\Oy)}
+				\pgfmathsetmacro{\rscreen}{\Rscreen/3}
+				
+				% Draw spheres as circles in projection (conventional)
+				\shade[ball color=blue!10, opacity=0.25] (O) circle (\Rscreen pt);
+				\shade[ball color=red!10, opacity=0.35] (O) circle (\rscreen pt);
+				
+				
+			\end{tikzpicture}
+		\end{center}
+		\end{figure}
+	\end{proofpart}
+	\begin{proofpart}[Dodechahedron]
+		TBP
+	\end{proofpart}
+		\begin{proofpart}[Icosahedron]
+		TBP
+	\end{proofpart}
+	
 \end{proof}
 
 \section{The Two-body problem}
